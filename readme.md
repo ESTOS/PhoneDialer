@@ -1,4 +1,5 @@
 PhoneDialer original copyright (c) 1995-2004 by JulMar Technology - http://www.julmar.com
+
 PhoneDialer 4.0 copyright (c) 2016/2017/2018 ESTOS GmbH / Starnberg - http://www.estos.de
 
 PhoneDialer 3.x/4.x extends the original JulMar phone dialer with additional features:
@@ -96,5 +97,7 @@ PhoneDialoer 4.4.0.2:
 - Agent Logout may require a password. Added logout parameters if the driver requires them.
 
 Sourcecode contains all modifications, and the required ATAPI lib also provided from JulMar Technology.
+
 Sourcecode is available for download from https://github.com/ESTOS/PhoneDialer
+
 Provided as Visual Studio 2017 project. (Visual Studio 2017 (c) Microsoft Corporation)

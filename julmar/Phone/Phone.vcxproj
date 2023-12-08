@@ -22,32 +22,32 @@
     <ProjectGuid>{E15B271A-D467-48C9-9689-9BDF7AF3CEC6}</ProjectGuid>
     <RootNamespace>Phone</RootNamespace>
     <Keyword>MFCProj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugUnicode|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugUnicode|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -126,6 +126,7 @@
     </Link>
     <Manifest>
       <AdditionalManifestFiles>.\commctl_X86.manifest;res\compatibility.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
     </Manifest>
     <PreBuildEvent>
       <Command>
@@ -165,6 +166,7 @@
     <Manifest>
       <AdditionalManifestFiles>.\commctl_AMD64.manifest;res\compatibility.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
       <AssemblyIdentity>$(TargetName), type=win32, version=1.0.0.0, processorArchitecture=AMD64</AssemblyIdentity>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
     </Manifest>
     <PreBuildEvent>
       <Command>
@@ -201,6 +203,7 @@
     </Link>
     <Manifest>
       <AdditionalManifestFiles>.\commctl_X86.manifest;res\compatibility.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
       <Command>X:\dev\global\buildtools\signfile.bat "estos EPhone Supporttool" $(TargetPath) estos 1</Command>
@@ -241,6 +244,7 @@
       <AdditionalManifestFiles>.\commctl_AMD64.manifest;res\compatibility.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
       <SuppressStartupBanner>false</SuppressStartupBanner>
       <AssemblyIdentity>$(TargetName), type=win32, version=1.0.0.0, processorArchitecture=AMD64</AssemblyIdentity>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
       <Command>X:\dev\global\buildtools\signfile.bat "estos EPhone Supporttool" $(TargetPath) estos 1</Command>

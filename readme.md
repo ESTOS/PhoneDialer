@@ -96,6 +96,9 @@ PhoneDialer 4.4.0.1:
 PhoneDialoer 4.4.0.2:
 - Agent Logout may require a password. Added logout parameters if the driver requires them.
 
+PhoneDialoer 4.4.0.3:
+- Fixed HIGH DPI issues
+
 Sourcecode contains all modifications, and the required ATAPI lib also provided from JulMar Technology.
 
 Sourcecode is available for download from https://github.com/ESTOS/PhoneDialer

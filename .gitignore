@@ -1,0 +1,9 @@
+/julmar/ATAPI/lib
+/julmar/Phone/x64
+/julmar/Phone/Win32
+/julmar/Phone/.vs
+/julmar/ATAPI/src/Win32
+/julmar/ATAPI/src/x64
+
+*.user
+julmar/Phone/Phone.aps

@@ -99,6 +99,9 @@ PhoneDialoer 4.4.0.2:
 PhoneDialoer 4.4.0.3:
 - Fixed HIGH DPI issues
 
+PhoneDialoer 4.4.0.4:
+- Do no longer show "line unavailable" for lines which have been removed on TAPI when restarting the ephone.exe
+
 Sourcecode contains all modifications, and the required ATAPI lib also provided from JulMar Technology.
 
 Sourcecode is available for download from https://github.com/ESTOS/PhoneDialer

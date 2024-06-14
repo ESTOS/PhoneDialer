@@ -107,6 +107,16 @@ void CTapiLine::Init (CTapiConnection* pConn, DWORD dwDeviceID)
         // Gather all the address information for each address on the line
         GatherAddressInformation();
     }                                
+	else
+	{
+		// In case the lineNegotiateAPIVersion fails, we don´t show this line in the phone.exe
+		// This happens e.g. 
+		// TAPI has lines
+		// Some lines get removed by the TAPI driver, the ephone.exe reflects that at runtime as it receives the appropriate remove notification
+		// On restart TAPI still reflects those lines but they are "dead"
+		// So we also flag that line removed here as if it would have been removed during runtime
+		m_iFlags |= Removed;
+	}
 
 }// CTapiLine::Init
 

@@ -206,7 +206,8 @@
       <EnableDpiAwareness>false</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
-      <Command>X:\dev\global\buildtools\signfile.bat "estos EPhone Supporttool" $(TargetPath) estos 1</Command>
+      <Command>SET BUILD_SIGNING_SUPPORTED=1
+X:\dev\global\buildtools\signfile.bat "estos EPhone Supporttool" $(TargetPath) estos 1</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>
@@ -247,7 +248,8 @@
       <EnableDpiAwareness>false</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
-      <Command>X:\dev\global\buildtools\signfile.bat "estos EPhone Supporttool" $(TargetPath) estos 1</Command>
+      <Command>SET BUILD_SIGNING_SUPPORTED=1
+X:\dev\global\buildtools\signfile.bat "estos EPhone Supporttool" $(TargetPath) estos 1</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>

@@ -106,4 +106,4 @@ Sourcecode contains all modifications, and the required ATAPI lib also provided 
 
 Sourcecode is available for download from https://github.com/ESTOS/PhoneDialer
 
-Provided as Visual Studio 2017 project. (Visual Studio 2017 (c) Microsoft Corporation)
+Provided as Visual Studio 2022 project. (Visual Studio 2022 (c) Microsoft Corporation)

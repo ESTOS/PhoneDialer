@@ -1,6 +1,5 @@
 PhoneDialer original copyright (c) 1995-2004 by JulMar Technology - http://www.julmar.com
-
-PhoneDialer 4.0 copyright (c) 2016/2017/2018 ESTOS GmbH / Starnberg - http://www.estos.de
+PhoneDialer 4.0 copyright (c) 2016-2024 estos GmbH / Starnberg - http://www.estos.de
 
 PhoneDialer 3.x/4.x extends the original JulMar phone dialer with additional features:
 
@@ -93,13 +92,13 @@ PhoneDialer 4.4.0.0:
 PhoneDialer 4.4.0.1:
 - Saving agent login parameters per line
 
-PhoneDialoer 4.4.0.2:
+PhoneDialer 4.4.0.2:
 - Agent Logout may require a password. Added logout parameters if the driver requires them.
 
-PhoneDialoer 4.4.0.3:
+PhoneDialer 4.4.0.3:
 - Fixed HIGH DPI issues
 
-PhoneDialoer 4.4.0.4:
+PhoneDialer 4.4.0.5:
 - Do no longer show "line unavailable" for lines which have been removed on TAPI when restarting the ephone.exe
 
 Sourcecode contains all modifications, and the required ATAPI lib also provided from JulMar Technology.

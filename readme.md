@@ -101,6 +101,9 @@ PhoneDialer 4.4.0.3:
 PhoneDialer 4.4.0.5:
 - Do no longer show "line unavailable" for lines which have been removed on TAPI when restarting the ephone.exe
 
+PhoneDialer 4.4.0.6:
+- Rework the CallCompletion dialog. If the call announces completion modes in the LineCallFeatures2 take them from there. If there are not CompletionModesAnnounced but the LCF_COMPLETECALL is set take them from the addresscaps
+
 Sourcecode contains all modifications, and the required ATAPI lib also provided from JulMar Technology.
 
 Sourcecode is available for download from https://github.com/ESTOS/PhoneDialer

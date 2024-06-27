@@ -26,14 +26,15 @@ static char THIS_FILE[] = __FILE__;
 
 struct
 {
-	const TCHAR *pszText;
+	const TCHAR* pszText;
 	DWORD dwMode;
+	DWORD dwCallFeature2;
 } g_Modes[] = {
 
-	{ _T("Camp On"),	LINECALLCOMPLMODE_CAMPON },
-	{ _T("Call back"),	LINECALLCOMPLMODE_CALLBACK },
-	{ _T("Intrude"),    LINECALLCOMPLMODE_INTRUDE },
-	{ _T("Message"),    LINECALLCOMPLMODE_MESSAGE },
+	{ _T("Camp On"),	LINECALLCOMPLMODE_CAMPON, LINECALLFEATURE2_COMPLCAMPON },
+	{ _T("Call back"),	LINECALLCOMPLMODE_CALLBACK, LINECALLFEATURE2_COMPLCALLBACK },
+	{ _T("Intrude"),    LINECALLCOMPLMODE_INTRUDE, LINECALLFEATURE2_COMPLINTRUDE },
+	{ _T("Message"),    LINECALLCOMPLMODE_MESSAGE, LINECALLFEATURE2_COMPLMESSAGE },
 	{ NULL, 0 },
 };
 
@@ -75,24 +76,24 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CCompleteCall message handlers
 
-void CCompleteCall::OnOK() 
+void CCompleteCall::OnOK()
 {
 	m_dwMode = (DWORD)m_cbMode.GetItemData(m_cbMode.GetCurSel());
 	m_dwMessageID = (DWORD)m_cbMessageID.GetItemData(m_cbMessageID.GetCurSel());
 	CDialog::OnOK();
 }
 
-BOOL CCompleteCall::OnInitDialog() 
+BOOL CCompleteCall::OnInitDialog()
 {
-    // Reset the font to all be ANSI var.
-    CFont fntAnsi;
-    fntAnsi.CreateStockObject (ANSI_VAR_FONT);
-    CWnd* pwndChild = GetWindow (GW_CHILD);
-    while (pwndChild != NULL && IsChild(pwndChild))
-    {
-        pwndChild->SetFont(&fntAnsi);
-        pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
-    }
+	// Reset the font to all be ANSI var.
+	CFont fntAnsi;
+	fntAnsi.CreateStockObject(ANSI_VAR_FONT);
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild != NULL && IsChild(pwndChild))
+	{
+		pwndChild->SetFont(&fntAnsi);
+		pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
+	}
 
 	// Fill in the caller id information
 	if (m_pCall->GetCallInfo()->dwOrigin & LINECALLORIGIN_OUTBOUND)
@@ -109,30 +110,44 @@ BOOL CCompleteCall::OnInitDialog()
 	// Connect all the controls via DDX
 	CDialog::OnInitDialog();
 
-	// Fill in the available completion modes
-	CTapiAddress* pAddr = m_pCall->GetAddressInfo();
-	LPLINEADDRESSCAPS lpCaps = pAddr->GetAddressCaps();
+	// Is the Call itself advertising Completion Modes?
+	// If yes we take the bitmask from the call, if not the one from the AddressCaps
+	DWORD dwCallFeatures2 = m_pCall->GetCallStatus()->dwCallFeatures2;
+	bool bCompareAddressCaps = true;
 	int i = 0;
 	for (i = 0; g_Modes[i].pszText != NULL; i++)
 	{
-		if ((lpCaps->dwCallCompletionModes & g_Modes[i].dwMode) != 0)
+		if (dwCallFeatures2 & g_Modes[i].dwCallFeature2)
+		{
+			bCompareAddressCaps = false;
+			break;
+		}
+	}
+
+	// Fill in the available completion modes
+	CTapiAddress* pAddr = m_pCall->GetAddressInfo();
+	LPLINEADDRESSCAPS lpCaps = pAddr->GetAddressCaps();
+	for (i = 0; g_Modes[i].pszText != NULL; i++)
+	{
+		if ((bCompareAddressCaps && (lpCaps->dwCallCompletionModes & g_Modes[i].dwMode)) ||
+			(!bCompareAddressCaps && (dwCallFeatures2 & g_Modes[i].dwCallFeature2)))
 		{
 			int iPos = m_cbMode.AddString(g_Modes[i].pszText);
-			ASSERT (iPos != CB_ERR);
+			ASSERT(iPos != CB_ERR);
 			m_cbMode.SetItemData(iPos, g_Modes[i].dwMode);
 		}
-	}	
+	}
 
 	// Fill in the messages
 	LPCSTR pszMessage = (LPCSTR)lpCaps + lpCaps->dwCompletionMsgTextOffset;
-	int iSize = (int) lpCaps->dwCompletionMsgTextEntrySize;
-	for (i = 0; i < (int) lpCaps->dwNumCompletionMessages; i++)
+	int iSize = (int)lpCaps->dwCompletionMsgTextEntrySize;
+	for (i = 0; i < (int)lpCaps->dwNumCompletionMessages; i++)
 	{
 		CString strBuff(pszMessage, iSize);
 		if (strBuff.IsEmpty() == FALSE)
 		{
 			int iPos = m_cbMessageID.AddString(strBuff);
-			ASSERT (iPos != CB_ERR);
+			ASSERT(iPos != CB_ERR);
 			m_cbMessageID.SetItemData(iPos, (DWORD)i);
 		}
 		pszMessage += iSize;
@@ -144,7 +159,7 @@ BOOL CCompleteCall::OnInitDialog()
 	return TRUE;
 }
 
-void CCompleteCall::OnSelChange() 
+void CCompleteCall::OnSelChange()
 {
 	int iPos = m_cbMode.GetCurSel();
 	if (iPos != CB_ERR)

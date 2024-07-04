@@ -672,8 +672,8 @@ IDR_MAINFRAME           ICON                    "res\\Phone.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,4,0,6
- PRODUCTVERSION 4,4,0,6
+ FILEVERSION 4,4,0,7
+ PRODUCTVERSION 4,4,0,7
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -690,12 +690,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "estos GmbH"
             VALUE "FileDescription", "estos Phone Dialer"
-            VALUE "FileVersion", "4.4.0.6"
+            VALUE "FileVersion", "4.4.0.7"
             VALUE "InternalName", "EPHONE.EXE"
             VALUE "LegalCopyright", "Copyright (C) 2024 estos GmbH"
             VALUE "OriginalFilename", "EPhone.EXE"
             VALUE "ProductName", "Phone Application"
-            VALUE "ProductVersion", "4.4.0.6"
+            VALUE "ProductVersion", "4.4.0.7"
         END
     END
     BLOCK "VarFileInfo"

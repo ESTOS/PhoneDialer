@@ -45,13 +45,13 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CECSTAAgentGroupStateDlg message handlers
 
-BOOL CECSTAAgentGroupStateDlg::OnInitDialog() 
+BOOL CECSTAAgentGroupStateDlg::OnInitDialog()
 {
 	// Change our title.
 	CString strTitle, strBuff;
 	GetWindowText(strTitle);
 	strBuff.Format(_T("%s - %s"), (const wchar_t*)strTitle, (const wchar_t*)m_pLine->GetLineName());
-	SetWindowText(strBuff);	
+	SetWindowText(strBuff);
 
 	// Connect all the controls via DDX
 	__super::OnInitDialog();
@@ -72,6 +72,11 @@ BOOL CECSTAAgentGroupStateDlg::OnInitDialog()
 			{
 				ECSTADEVSPECIFICELEMENT_SUPPORTEDAGENTFEATURES2* params2 = (ECSTADEVSPECIFICELEMENT_SUPPORTEDAGENTFEATURES2*)((BYTE*)agentFeaturesStruct.pData + agentFeaturesStruct.pData->dwStringOffset);
 				m_dwRequiredLoginLogoutParams = params2->dwRequiredLoginLogoutParams;
+				if (m_bGroupMode) {
+					// The login logout ids are set implicitly through the selected entry in the group list
+					m_dwRequiredLoginLogoutParams &= ~ECSTA150_AGENTLOGIN_GROUPID;
+					m_dwRequiredLoginLogoutParams &= ~ECSTA150_AGENTLOGOUT_GROUPID;
+				}
 			}
 		}
 		else
@@ -135,13 +140,13 @@ BOOL CECSTAAgentGroupStateDlg::OnInitDialog()
 
 	if (!(GetKeyState(VK_CONTROL) < 0))
 	{
-		GetDlgItem(IDC_CMDAGENTLOGIN)->ShowWindow(m_dwSupportedAgentStates & ~ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDOUT ? SW_SHOW : SW_HIDE);
+		GetDlgItem(IDC_CMDAGENTLOGIN)->ShowWindow(m_dwSupportedAgentStates & ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDOUT ? SW_SHOW : SW_HIDE);
 		GetDlgItem(IDC_CMDAGENTLOGOFF)->ShowWindow(m_dwSupportedAgentStates & ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDOUT ? SW_SHOW : SW_HIDE);
 		GetDlgItem(IDC_CMDAGENTNOTREADY)->ShowWindow(m_dwSupportedAgentStates & ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDIN_NOTREADY ? SW_SHOW : SW_HIDE);
 		GetDlgItem(IDC_CMDAGENTREADY)->ShowWindow(m_dwSupportedAgentStates & ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDIN_READY ? SW_SHOW : SW_HIDE);
 		GetDlgItem(IDC_CMDAGENTWORKINGAFTERCALL)->ShowWindow(m_dwSupportedAgentStates & ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDIN_WORKINGAFTERCALL ? SW_SHOW : SW_HIDE);
 	}
-	
+
 	GetDlgItem(IDC_STATIC_NOT_READY)->ShowWindow(m_dwSupportedAgentStates & ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDIN_NOTREADY_REQUIRES_REASON ? SW_SHOW : SW_HIDE);
 	GetDlgItem(IDC_TXTNOTREADYDETAIL)->ShowWindow(m_dwSupportedAgentStates & ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDIN_NOTREADY_REQUIRES_REASON ? SW_SHOW : SW_HIDE);
 
@@ -182,13 +187,13 @@ void CECSTAAgentGroupStateDlg::UpdateAgentState()
 {
 	ECSTA150DEVSPECIFIC20F agentStruct;
 	memset(&agentStruct, 0x00, sizeof(ECSTA150DEVSPECIFIC20F));
-	if(m_nLastAgentStateIndex >= 0 && m_nLastAgentStateIndex <= 15)
+	if (m_nLastAgentStateIndex >= 0 && m_nLastAgentStateIndex <= 15)
 	{
 		agentStruct.dwFlags = m_nLastAgentStateIndex;
 		agentStruct.dwFlags <<= 24;
 		agentStruct.dwFlags |= ECSTAAGENTFLAG_USEINDEX;
 	}
-	if(agentStruct.dwFlags == 0)
+	if (agentStruct.dwFlags == 0)
 		agentStruct.dwFlags = ECSTAAGENTFLAG_GETCURRENT;
 
 	ETSPVarStruct<VARSTRING> agentData;
@@ -334,18 +339,15 @@ void CECSTAAgentGroupStateDlg::ShowState(ECSTA150DEVSPECIFIC20F* pState)
 	if (pState)
 	{
 		SetDlgItemText(IDC_TXTAGENTSTATE, GetAgentStateText(pState->dwAgentState));
-		if(pState->dwAgentState == ECSTA150_agentStateNoAgent)
-			SetDlgItemText(IDC_TXT_ID, L"");
-		else
-		{
-			if(m_bGroupMode)
-				SetDlgItemText(IDC_TXT_ID, EStringToUnicode(pState->szAgentGroupID).c_str());
+		if (m_bGroupMode)
+			SetDlgItemText(IDC_TXT_ID, EStringToUnicode(pState->szAgentGroupID).c_str());
+		else {
+			if (pState->dwAgentState == ECSTA150_agentStateNoAgent)
+				SetDlgItemText(IDC_TXT_ID, L"");
 			else
 				SetDlgItemText(IDC_TXT_ID, EStringToUnicode(pState->szAgentID).c_str());
 		}
-
-
-		GetDlgItem(IDC_CMDAGENTLOGIN)->EnableWindow(pState->dwSupportedAgentRequests & ECSTA150_SUPPORTEDAGENTREQUESTS_LOGIN);
+		GetDlgItem(IDC_CMDAGENTLOGIN)->EnableWindow(pState->dwSupportedAgentRequests & ECSTA150_SUPPORTEDAGENTREQUESTS_LOGIN ? TRUE : FALSE);
 		GetDlgItem(IDC_CMDAGENTLOGOFF)->EnableWindow(pState->dwSupportedAgentRequests & ECSTA150_SUPPORTEDAGENTREQUESTS_LOGOUT ? TRUE : FALSE);
 		GetDlgItem(IDC_CMDAGENTNOTREADY)->EnableWindow(pState->dwSupportedAgentRequests & ECSTA150_SUPPORTEDAGENTREQUESTS_NOTREADY ? TRUE : FALSE);
 		GetDlgItem(IDC_CMDAGENTREADY)->EnableWindow(pState->dwSupportedAgentRequests & ECSTA150_SUPPORTEDAGENTREQUESTS_READY ? TRUE : FALSE);
@@ -371,7 +373,7 @@ void CECSTAAgentGroupStateDlg::PrepareRequest(ECSTA150AGENTSTATEREQUEST21& reque
 	GetDlgItemText(IDC_TXT_ID, strID);
 	CStdStringA strIDA = EStringToAnsi(strID);
 
-	if(m_pAddr)
+	if (m_pAddr)
 	{
 		CStdStringA strDevice = EStringToAnsi(m_pAddr->GetDialableAddress());
 		lstrcpynA(request.szDevice, strDevice.c_str(), _countof(request.szDevice));
@@ -406,7 +408,7 @@ void CECSTAAgentGroupStateDlg::OnBnClickedCmdagentlogin()
 			bHandleRequest = false;
 		}
 	}
-		
+
 	if (bHandleRequest)
 		HandleRequest(state);
 }

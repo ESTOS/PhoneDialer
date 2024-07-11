@@ -39,15 +39,15 @@ bool ECSTAAddressCaps::valid() const
 CString ECSTAAddressCaps::getDisplayText(const bool bWithAdditions /*= true*/) const
 {
 	CString strDisplayText;
-	if (!m_strDeviceName.IsEmpty())
-	{
-		strDisplayText += L" - ";
-		strDisplayText += m_strDeviceName;
-	}
 	if (!m_strDeviceID.IsEmpty())
 	{
 		strDisplayText += L" - ";
 		strDisplayText += m_strDeviceID;
+	}
+	if (!m_strDeviceName.IsEmpty())
+	{
+		strDisplayText += L" - ";
+		strDisplayText += m_strDeviceName;
 	}
 	if (!m_strDeviceType.IsEmpty())
 	{
@@ -58,6 +58,7 @@ CString ECSTAAddressCaps::getDisplayText(const bool bWithAdditions /*= true*/) c
 	{
 		if (m_dwAddressFlags & ECSTA_ADDRESSFLAG_IS_ACTIVEADDRESS)
 			strDisplayText += L" - active";
+		/*
 		if (m_dwAddressFlags & (ECSTA_ADDRESSFLAG_IS_ACD_GROUP_ADDRESS | ECSTA_ADDRESSFLAG_SUPPORTS_FORWARDS_ONLY))
 		{
 			strDisplayText += L" (";
@@ -73,6 +74,7 @@ CString ECSTAAddressCaps::getDisplayText(const bool bWithAdditions /*= true*/) c
 			strDisplayText += strAddon;
 			strDisplayText += L")";
 		}
+		*/
 	}
 	return strDisplayText;
 }

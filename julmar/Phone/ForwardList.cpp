@@ -42,14 +42,14 @@ BOOL CForwardList::OnInitDialog()
 
 	if (m_dwAddressCount > 1)
 	{
-		m_List.InsertColumn(0, _T("Address"), 0, 70);
-		m_List.InsertColumn(1, _T("Type"), 0, 230);
-		m_List.InsertColumn(2, _T("Destination"), 0, 150);
+		m_List.InsertColumn(0, _T("Address"), 0, 170);
+		m_List.InsertColumn(1, _T("Type"), 0, 220);
+		m_List.InsertColumn(2, _T("Destination"), 0, 155);
 	}
 	else
 	{
-		m_List.InsertColumn(0, _T("Type"), 0, 225);
-		m_List.InsertColumn(1, _T("Destination"), 0, 225);
+		m_List.InsertColumn(0, _T("Type"), 0, 272);
+		m_List.InsertColumn(1, _T("Destination"), 0, 272);
 	}
 
 	UpdateList();
@@ -116,7 +116,7 @@ void CForwardList::UpdateList()
 		if (pAddress)
 		{
 			LPLINEADDRESSSTATUS lpStatus = pAddress->GetAddressStatus(TRUE);
-			m_ForwardList.AddAddressStatus(lpStatus, pAddress->GetDialableAddress(), dwCount);
+			m_ForwardList.AddAddressStatus(lpStatus, pAddress->GetDisplayText(false), dwCount);
 		}
 	}
 	ETapiForwardEntryList::iterator it;

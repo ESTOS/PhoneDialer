@@ -110,7 +110,7 @@ class ECSTAAddressCaps
 {
 public:
 	bool valid() const;
-	CString getDisplayText() const;
+	CString getDisplayText(const bool bWithAdditions = true) const;
 	DWORD m_dwAddressFlags = 0;
 	CString m_strDeviceID;
 	CString m_strDeviceType;
@@ -470,6 +470,7 @@ public:
 	DWORD GetID(LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass);
 	void GetValidIDs(CStringArray& arrKeys) const;
 	CString GetDialableAddress();
+	CString GetDisplayText(const bool bWithAdditions);
 	LONG DevSpecific(LPVOID lpParams, DWORD dwSize);
 	LONG GetNewCalls(CObList& lstCalls);
 	LONG GetNumRings(LPDWORD lpdwNumRings);

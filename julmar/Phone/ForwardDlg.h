@@ -45,7 +45,7 @@ public:
 	CComboBox m_cbFwdModes;
 	CComboBox m_cbAddress;
 	BOOL m_bAllAddresses;
-	BOOL m_fSupportsDND;
+	BOOL m_bSupportsAllModes;
 	CString m_strCaller;
 	CString m_strDest;
 	UINT m_iNumRings;

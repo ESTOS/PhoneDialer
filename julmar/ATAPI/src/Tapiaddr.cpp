@@ -36,7 +36,7 @@ bool ECSTAAddressCaps::valid() const
 	return false;
 }
 
-CString ECSTAAddressCaps::getDisplayText() const
+CString ECSTAAddressCaps::getDisplayText(const bool bWithAdditions /*= true*/) const
 {
 	CString strDisplayText;
 	if (!m_strDeviceName.IsEmpty())
@@ -54,22 +54,25 @@ CString ECSTAAddressCaps::getDisplayText() const
 		strDisplayText += L" - ";
 		strDisplayText += m_strDeviceType;
 	}
-	if (m_dwAddressFlags & ECSTA_ADDRESSFLAG_IS_ACTIVEADDRESS)
-		strDisplayText += L" - active";
-	if (m_dwAddressFlags & (ECSTA_ADDRESSFLAG_IS_ACD_GROUP_ADDRESS | ECSTA_ADDRESSFLAG_SUPPORTS_FORWARDS_ONLY))
+	if (bWithAdditions)
 	{
-		strDisplayText += L" (";
-		CString strAddon;
-		if (m_dwAddressFlags & ECSTA_ADDRESSFLAG_IS_ACD_GROUP_ADDRESS)
-			strAddon += L"ACD";
-		if (m_dwAddressFlags & ECSTA_ADDRESSFLAG_SUPPORTS_FORWARDS_ONLY)
+		if (m_dwAddressFlags & ECSTA_ADDRESSFLAG_IS_ACTIVEADDRESS)
+			strDisplayText += L" - active";
+		if (m_dwAddressFlags & (ECSTA_ADDRESSFLAG_IS_ACD_GROUP_ADDRESS | ECSTA_ADDRESSFLAG_SUPPORTS_FORWARDS_ONLY))
 		{
-			if (!strAddon.IsEmpty())
-				strAddon += L" | ";
-			strAddon += L"FWD";
+			strDisplayText += L" (";
+			CString strAddon;
+			if (m_dwAddressFlags & ECSTA_ADDRESSFLAG_IS_ACD_GROUP_ADDRESS)
+				strAddon += L"ACD";
+			if (m_dwAddressFlags & ECSTA_ADDRESSFLAG_SUPPORTS_FORWARDS_ONLY)
+			{
+				if (!strAddon.IsEmpty())
+					strAddon += L" | ";
+				strAddon += L"FWD";
+			}
+			strDisplayText += strAddon;
+			strDisplayText += L")";
 		}
-		strDisplayText += strAddon;
-		strDisplayText += L")";
 	}
 	return strDisplayText;
 }
@@ -322,10 +325,31 @@ CString CTapiAddress::GetDialableAddress()
 			strAddress = lpszAddress;
 		}
 	}
-
 	return strAddress;
-
 } // CTapiAddress::GetDialableAddress
+
+CString CTapiAddress::GetDisplayText(const bool bWithAdditions)
+{
+	LPLINEADDRESSCAPS lpAddrCaps = GetAddressCaps();
+
+	CString strDisplayText;
+	if (lpAddrCaps && lpAddrCaps->dwAddressSize && lpAddrCaps->dwAddressOffset)
+	{
+		LPCTSTR lpszAddress = (LPCTSTR)(((LPBYTE)lpAddrCaps) + lpAddrCaps->dwAddressOffset);
+		strDisplayText = lpszAddress;
+	}
+
+	if (strDisplayText.IsEmpty())
+		strDisplayText.Format(_T("Address %ld"), GetAddressID());
+	else
+		strDisplayText.AppendFormat(L" - ID %ld", GetAddressID());
+
+	ECSTAAddressCaps addressCaps;
+	if (GetECSTAAddressCaps(addressCaps) == NO_ERROR)
+		strDisplayText += addressCaps.getDisplayText(bWithAdditions);
+
+	return strDisplayText;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::DevSpecific

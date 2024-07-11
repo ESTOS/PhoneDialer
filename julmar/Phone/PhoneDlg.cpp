@@ -835,17 +835,7 @@ void CPhoneDlg::OnChangeLine()
 			for (DWORD dwAddress = 0; dwAddress < pLine->GetAddressCount(); dwAddress++)
 			{
 				CTapiAddress* pAddr = pLine->GetAddress(dwAddress);
-				CString strName = pAddr->GetDialableAddress();
-				if (strName.IsEmpty())
-					strName.Format(_T("Address %ld"), dwAddress);
-				else
-					strName.Format(_T("%s - ID %ld"), (const wchar_t*)pAddr->GetDialableAddress(), dwAddress);
-
-				ECSTAAddressCaps addressCaps;
-				if (pAddr->GetECSTAAddressCaps(addressCaps) == NO_ERROR)
-					strName += addressCaps.getDisplayText();
-
-				int iPos = m_cbAddress.AddString(strName);
+				int iPos = m_cbAddress.AddString(pAddr->GetDisplayText(true));
 				ASSERT(iPos != CB_ERR);
 				m_cbAddress.SetItemDataPtr(iPos, pAddr);
 			}

@@ -35,7 +35,7 @@ CForwardDlg::CForwardDlg(CWnd* pParent, CTapiLine* pLine)
 
 	//{{AFX_DATA_INIT(CForwardDlg)
 	m_bAllAddresses = FALSE;
-	m_fSupportsDND = FALSE;
+	m_bSupportsAllModes = FALSE;
 	m_strCaller = _T("");
 	m_strDest = _T("");
 	m_iNumRings = 0;
@@ -79,11 +79,8 @@ BOOL CForwardDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	LINEDEVCAPS* pCaps = m_pLine->GetLineCaps();
-	if (pCaps && (pCaps->dwLineFeatures & LINEFEATURE_FORWARDDND))
-		m_fSupportsDND = TRUE;
 	if (GetKeyState(VK_CONTROL) < 0)
-		m_fSupportsDND = TRUE;
+		m_bSupportsAllModes = TRUE;
 
 	((CEdit*)GetDlgItem(IDC_NUMRINGS))->LimitText(3);
 	m_ctlSpin.SetRange(0, 999);
@@ -92,7 +89,7 @@ BOOL CForwardDlg::OnInitDialog()
 	for (unsigned int i = 0; i < m_pLine->GetAddressCount(); i++)
 	{
 		CTapiAddress* pAddr = m_pLine->GetAddress(i);
-		int iPos = m_cbAddress.AddString(pAddr->GetDialableAddress());
+		int iPos = m_cbAddress.AddString(pAddr->GetDisplayText(false));
 		m_cbAddress.SetItemData(iPos, (DWORD_PTR)pAddr);
 	}
 
@@ -168,9 +165,7 @@ void CForwardDlg::OnChange()
 		int iCurSel = m_cbFwdModes.GetCurSel();
 		if (iCurSel != CB_ERR)
 			dwFwdMode = (DWORD)m_cbFwdModes.GetItemData(iCurSel);
-		if (dwFwdMode == LINEFORWARDMODE_UNCOND && m_fSupportsDND && m_strDest.IsEmpty())
-			m_btnOK.EnableWindow(TRUE);
-		else if (dwFwdMode == EPHONEEXELINEFORWARDMODE_DND)
+		if (dwFwdMode == EPHONEEXELINEFORWARDMODE_DND)
 			m_btnOK.EnableWindow(TRUE);
 		else
 			m_btnOK.EnableWindow(!m_strDest.IsEmpty() && m_cbFwdModes.GetCurSel() != CB_ERR);
@@ -184,6 +179,31 @@ void CForwardDlg::OnAllAddresses()
 	if (m_bAllAddresses)
 	{
 		m_cbAddress.EnableWindow(FALSE);
+		bool bFindEntry = true;
+		{
+			CTapiAddress* pAddr = (CTapiAddress*)m_cbAddress.GetItemData(m_cbAddress.GetCurSel());
+			if (pAddr)
+			{
+				LINEADDRESSCAPS* lpCaps = pAddr->GetAddressCaps();
+				if (lpCaps && (lpCaps->dwForwardModes || lpCaps->dwAddressFeatures & LINEADDRFEATURE_FORWARDDND))
+					bFindEntry = false;
+			}
+		}
+		if (bFindEntry)
+		{
+			for (int iCount = 0; iCount < m_cbAddress.GetCount(); iCount++)
+			{
+				CTapiAddress* pAddr = (CTapiAddress*)m_cbAddress.GetItemData(iCount);
+
+				LINEADDRESSCAPS* lpCaps = pAddr->GetAddressCaps();
+				if (lpCaps && (lpCaps->dwForwardModes || lpCaps->dwAddressFeatures & LINEADDRFEATURE_FORWARDDND))
+				{
+					m_cbAddress.SetCurSel(iCount);
+					OnAddressChange();
+					break;
+				}
+			}
+		}
 	}
 	else
 	{
@@ -255,31 +275,55 @@ void CForwardDlg::OnAddressChange()
 	iCurSel = m_cbFwdModes.GetCurSel();
 	if (iCurSel != CB_ERR)
 		m_cbFwdModes.GetLBText(iCurSel, strFwdMode);
-
 	m_cbFwdModes.ResetContent();
 
 	LINEADDRESSCAPS* lpCaps = pAddr->GetAddressCaps(0, 0, TRUE);
 	if (lpCaps == NULL)
 		return;
 
-	if (m_iMinRings == 0 && m_iMaxRings == 0 && GetDlgItem(IDC_NUMRINGS)->IsWindowEnabled())
-	{
-		m_iMinRings = lpCaps->dwMinFwdNumRings;
-		m_iMaxRings = lpCaps->dwMaxFwdNumRings;
-		if (m_iMinRings == 0 && m_iMaxRings == 0)
-			GetDlgItem(IDC_NUMRINGS)->EnableWindow(FALSE);
-	}
+	m_iMinRings = lpCaps->dwMinFwdNumRings;
+	m_iMaxRings = lpCaps->dwMaxFwdNumRings;
+	GetDlgItem(IDC_NUMRINGS)->EnableWindow(m_iMinRings == 0 && m_iMaxRings == 0);
 
 	m_dwAvailFwdModes = lpCaps->dwForwardModes;
 
 	for (int i = 0; i < (sizeof(FwdModes) / sizeof(FwdModes[0])); i++)
 	{
-		if (lpCaps->dwForwardModes & FwdModes[i].dwFwdMode || FwdModes[i].dwFwdMode == EPHONEEXELINEFORWARDMODE_DND && (lpCaps->dwAddressFeatures & LINEADDRFEATURE_FORWARDDND || m_fSupportsDND))
+		bool bAddEntry = false;
+		if (m_bSupportsAllModes)
+		{
+			// Support all entries by holding control on dlg open
+			bAddEntry = true;
+		}
+		else if (FwdModes[i].dwFwdMode == EPHONEEXELINEFORWARDMODE_DND)
+		{
+			// DND is supported on the current address
+			if (lpCaps->dwAddressFeatures & LINEADDRFEATURE_FORWARDDND)
+				bAddEntry = true;
+		}
+		else if (lpCaps->dwForwardModes & FwdModes[i].dwFwdMode)
+		{
+			// The mode we are currently handling is supported by the tapi driver on the given address
+			bAddEntry = true;
+		}
+
+		if (bAddEntry)
 		{
 			iCurSel = m_cbFwdModes.AddString(FwdModes[i].pszName);
 			m_cbFwdModes.SetItemData(iCurSel, FwdModes[i].dwFwdMode);
 		}
 	}
+
+	if (m_cbFwdModes.GetCount() == 0)
+	{
+		if (m_cbAddress.GetCount() == 0)
+			m_cbFwdModes.AddString(L"Line does not support forwarding");
+		else
+			m_cbFwdModes.AddString(L"Address does not support forwarding");
+		m_cbFwdModes.EnableWindow(FALSE);
+	}
+	else
+		m_cbFwdModes.EnableWindow(TRUE);
 
 	iCurSel = CB_ERR;
 	if (!strFwdMode.IsEmpty())

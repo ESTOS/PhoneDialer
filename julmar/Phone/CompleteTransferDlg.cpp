@@ -3,20 +3,20 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
-#include "phone.h"
 #include "CompleteTransferDlg.h"
+#include "phone.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -28,7 +28,6 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CCompleteTransferDlg dialog
-
 
 CCompleteTransferDlg::CCompleteTransferDlg(CWnd* pParent, CTapiCall* pCall, CTapiCall* pCons, BOOL fIsConf)
 	: CDialog(CCompleteTransferDlg::IDD, pParent)
@@ -64,7 +63,6 @@ void CCompleteTransferDlg::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-
 BEGIN_MESSAGE_MAP(CCompleteTransferDlg, CDialog)
 	//{{AFX_MSG_MAP(CCompleteTransferDlg)
 	ON_WM_TIMER()
@@ -76,40 +74,37 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CCompleteTransferDlg message handlers
 
-void CCompleteTransferDlg::OnOK() 
+void CCompleteTransferDlg::OnOK()
 {
-	if (m_btnConf.IsWindowVisible())	// Consultation Call Transfer Window
+	if (m_btnConf.IsWindowVisible()) // Consultation Call Transfer Window
 	{
-		if ((m_pCons->GetCallStatus()->dwCallFeatures & LINECALLFEATURE_COMPLETETRANSF) == 0 &&
-			(m_pCall->GetCallStatus()->dwCallFeatures & LINECALLFEATURE_COMPLETETRANSF) == 0)
+		if ((m_pCons->GetCallStatus()->dwCallFeatures & LINECALLFEATURE_COMPLETETRANSF) == 0 && (m_pCall->GetCallStatus()->dwCallFeatures & LINECALLFEATURE_COMPLETETRANSF) == 0)
 		{
 			ErrorMsg("Call not in proper state to complete the transfer");
 			return;
 		}
 	}
-	else								// Conference Call Window
-	{
+	else // Conference Call Window
 		if ((m_pCons->GetCallStatus()->dwCallFeatures & LINECALLFEATURE_ADDTOCONF) == 0)
 		{
 			ErrorMsg("Call not in proper state to add to the conference");
 			return;
 		}
-	}
 
 	CDialog::OnOK();
 }
 
-BOOL CCompleteTransferDlg::OnInitDialog() 
+BOOL CCompleteTransferDlg::OnInitDialog()
 {
-    // Reset the font to all be ANSI var.
-    CFont fntAnsi;
-    fntAnsi.CreateStockObject (ANSI_VAR_FONT);
-    CWnd* pwndChild = GetWindow (GW_CHILD);
-    while (pwndChild != NULL && IsChild(pwndChild))
-    {
-        pwndChild->SetFont(&fntAnsi);
-        pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
-    }
+	// Reset the font to all be ANSI var.
+	CFont fntAnsi;
+	fntAnsi.CreateStockObject(ANSI_VAR_FONT);
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild != NULL && IsChild(pwndChild))
+	{
+		pwndChild->SetFont(&fntAnsi);
+		pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
+	}
 
 	// Fill in the caller id information
 	if (m_pCall->GetCallInfo()->dwOrigin & LINECALLORIGIN_OUTBOUND)
@@ -188,30 +183,25 @@ void CCompleteTransferDlg::UpdateTransferButton()
 	const LPLINECALLSTATUS pConsStatus = m_pCons->GetCallStatus();
 	const LPLINECALLSTATUS pCallStatus = m_pCall->GetCallStatus();
 
-	if(m_btnConf.IsWindowVisible()) // Consultation Call Transfer Window
+	if (m_btnConf.IsWindowVisible()) // Consultation Call Transfer Window
 	{
-		if (pConsStatus->dwCallFeatures & LINECALLFEATURE_COMPLETETRANSF &&
-			pCallStatus->dwCallFeatures & LINECALLFEATURE_COMPLETETRANSF)
+		if (pConsStatus->dwCallFeatures & LINECALLFEATURE_COMPLETETRANSF && pCallStatus->dwCallFeatures & LINECALLFEATURE_COMPLETETRANSF)
 		{
-			if(pConsStatus->dwCallFeatures2 == 0 && pCallStatus->dwCallFeatures2 == 0)
+			if (pConsStatus->dwCallFeatures2 == 0 && pCallStatus->dwCallFeatures2 == 0)
 			{
 				bEnableButton = true;
 			}
-			else
+			else if (IsDlgButtonChecked(IDC_CONFERENCE) == BST_CHECKED) // Transfer Conference
 			{
-				if(IsDlgButtonChecked(IDC_CONFERENCE) == BST_CHECKED) // Transfer Conference
-				{
-					if((pConsStatus->dwCallFeatures2 & LINECALLFEATURE2_TRANSFERCONF) && (pCallStatus->dwCallFeatures2 & LINECALLFEATURE2_TRANSFERCONF))
-						bEnableButton = true;
-				}
-				else	// Transfer Consult
-				{
-					if((pConsStatus->dwCallFeatures2 & LINECALLFEATURE2_TRANSFERNORM) && (pCallStatus->dwCallFeatures2 & LINECALLFEATURE2_TRANSFERNORM))
-						bEnableButton = true;
-				}
+				if ((pConsStatus->dwCallFeatures2 & LINECALLFEATURE2_TRANSFERCONF) && (pCallStatus->dwCallFeatures2 & LINECALLFEATURE2_TRANSFERCONF))
+					bEnableButton = true;
+			}
+			else // Transfer Consult
+			{
+				if ((pConsStatus->dwCallFeatures2 & LINECALLFEATURE2_TRANSFERNORM) && (pCallStatus->dwCallFeatures2 & LINECALLFEATURE2_TRANSFERNORM))
+					bEnableButton = true;
 			}
 		}
-
 	}
 	else
 	{
@@ -221,7 +211,7 @@ void CCompleteTransferDlg::UpdateTransferButton()
 	GetDlgItem(IDOK)->EnableWindow(bEnableButton ? TRUE : FALSE);
 }
 
-void CCompleteTransferDlg::OnTimer(UINT_PTR /*nIDEvent*/) 
+void CCompleteTransferDlg::OnTimer(UINT_PTR /*nIDEvent*/)
 {
 	UpdateData(TRUE);
 	CTime tmStamp(m_st);

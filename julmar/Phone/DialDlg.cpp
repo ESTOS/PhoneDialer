@@ -3,20 +3,20 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
-#include "Phone.h"
 #include "DialDlg.h"
+#include "Phone.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -26,7 +26,6 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CDialDlg dialog
-
 
 CDialDlg::CDialDlg(CWnd* pParent, CTapiLine* pLine, DWORD dwFeature)
 	: CDialog(CDialDlg::IDD, pParent)
@@ -51,7 +50,6 @@ void CDialDlg::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-
 BEGIN_MESSAGE_MAP(CDialDlg, CDialog)
 	//{{AFX_MSG_MAP(CDialDlg)
 	ON_EN_CHANGE(IDC_NUMBER, OnChangeNumber)
@@ -62,24 +60,24 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CDialDlg message handlers
 
-BOOL CDialDlg::OnInitDialog() 
+BOOL CDialDlg::OnInitDialog()
 {
-    // Reset the font to all be ANSI var.
-    CFont fntAnsi;
-    fntAnsi.CreateStockObject (ANSI_VAR_FONT);
-    CWnd* pwndChild = GetWindow (GW_CHILD);
-    while (pwndChild != NULL && IsChild(pwndChild))
-    {
-        pwndChild->SetFont(&fntAnsi);
-        pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
-    }
+	// Reset the font to all be ANSI var.
+	CFont fntAnsi;
+	fntAnsi.CreateStockObject(ANSI_VAR_FONT);
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild != NULL && IsChild(pwndChild))
+	{
+		pwndChild->SetFont(&fntAnsi);
+		pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
+	}
 
 	// Connect all the controls via DDX
 	CDialog::OnInitDialog();
 
 	switch (m_dwFeature)
 	{
-		case LINECALLFEATURE_DIAL:  
+		case LINECALLFEATURE_DIAL:
 			SetWindowText(_T("Dial a Number"));
 			m_btnOK.SetWindowText(_T("Dial"));
 			m_strInstr.LoadString(IDS_DIAL);
@@ -90,14 +88,14 @@ BOOL CDialDlg::OnInitDialog()
 			m_btnOK.SetWindowText(_T("Redirect"));
 			m_strInstr.LoadString(IDS_REDIRECT);
 			m_edtNumber.LimitText(100);
-//			SetWindowLong(m_edtNumber.GetSafeHwnd(), GWL_STYLE, m_edtNumber.GetStyle() | ES_NUMBER);
+			//			SetWindowLong(m_edtNumber.GetSafeHwnd(), GWL_STYLE, m_edtNumber.GetStyle() | ES_NUMBER);
 			break;
 		case LINECALLFEATURE_PARK:
 			SetWindowText(_T("Park a call"));
 			m_btnOK.SetWindowText(_T("Park"));
 			m_strInstr.LoadString(IDS_PARK);
 			m_edtNumber.LimitText(100);
-//			SetWindowLong(m_edtNumber.GetSafeHwnd(), GWL_STYLE, m_edtNumber.GetStyle() | ES_NUMBER);
+			//			SetWindowLong(m_edtNumber.GetSafeHwnd(), GWL_STYLE, m_edtNumber.GetStyle() | ES_NUMBER);
 			break;
 		case LINECALLFEATURE_GATHERDIGITS:
 			SetWindowText(_T("Enter CLIP no Screening"));
@@ -105,7 +103,9 @@ BOOL CDialDlg::OnInitDialog()
 			m_strInstr = "Enter a phone number as CLIP for the Make Call";
 			m_edtNumber.LimitText(100);
 			break;
-		default: ASSERT(FALSE); break;
+		default:
+			ASSERT(FALSE);
+			break;
 	}
 
 	if (m_dwFeature == LINECALLFEATURE_PARK)
@@ -113,20 +113,20 @@ BOOL CDialDlg::OnInitDialog()
 
 	UpdateData(FALSE);
 
-	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+	return TRUE; // return TRUE unless you set the focus to a control
+				 // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CDialDlg::OnChangeNumber() 
+void CDialDlg::OnChangeNumber()
 {
 	UpdateData(TRUE);
 	m_btnOK.EnableWindow(!m_strNumber.IsEmpty() || m_dwFeature == LINECALLFEATURE_PARK);
 	m_btnTranslate.EnableWindow(!m_strNumber.IsEmpty());
 }
 
-void CDialDlg::OnTranslate() 
+void CDialDlg::OnTranslate()
 {
-	LPLINETRANSLATEOUTPUT lpto = (LPLINETRANSLATEOUTPUT) malloc(1024);
+	LPLINETRANSLATEOUTPUT lpto = (LPLINETRANSLATEOUTPUT)malloc(1024);
 	lpto->dwTotalSize = 1024;
 
 	LONG lResult = m_pLine->TranslateAddress(m_strNumber, 0, 0, lpto);

@@ -1,28 +1,28 @@
 // TAPILINE.CPP
 //
-// This file contains the line-level functions for the 
+// This file contains the line-level functions for the
 // class library.
-// 
+//
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
 #include "atapi.h"
-#include "tapistr.h"
 #include "ecstaext.h"
+#include "tapistr.h"
 
-IMPLEMENT_DYNCREATE (CTapiLine, CTapiObject)
+IMPLEMENT_DYNCREATE(CTapiLine, CTapiObject)
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::CTapiLine
@@ -30,18 +30,18 @@ IMPLEMENT_DYNCREATE (CTapiLine, CTapiObject)
 // Constructor for the line object
 //
 CTapiLine::CTapiLine()
-{                       
-    m_pConn = NULL;
+{
+	m_pConn = NULL;
 	m_iFlags = 0;
-    m_hLine = NULL;
-    m_dwDeviceID = 0xffffffff;
-    m_dwAPIVersion = 0L;
-    m_lpLineCaps = NULL;
-    m_lpLineStatus = NULL;
+	m_hLine = NULL;
+	m_dwDeviceID = 0xffffffff;
+	m_dwAPIVersion = 0L;
+	m_lpLineCaps = NULL;
+	m_lpLineStatus = NULL;
 	memset(&m_lineExtID, 0x00, sizeof(m_lineExtID));
 	m_dwExtVersion = 0;
 
-}// CTapiLine::CTapiLine
+} // CTapiLine::CTapiLine
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::~CTapiLine
@@ -49,68 +49,63 @@ CTapiLine::CTapiLine()
 // Destructor for the line object
 //
 CTapiLine::~CTapiLine()
-{   
+{
 	// Close the line if necessary
 	Close();
 
-    // Delete all our address appearances.
+	// Delete all our address appearances.
 	CSingleLock Lock(&m_semAddress, TRUE);
 	for (int i = 0; i < (int)m_arrAddress.GetCount(); i++)
-    {
-        CTapiAddress* pAddr = (CTapiAddress*) m_arrAddress.GetAt(i);
-        delete pAddr;
-    }
-    m_arrAddress.RemoveAll();
+	{
+		CTapiAddress* pAddr = (CTapiAddress*)m_arrAddress.GetAt(i);
+		delete pAddr;
+	}
+	m_arrAddress.RemoveAll();
 
 	// Force any existing call appearances to disappear as well.
-	CSingleLock Lock2 (&m_semCalls, TRUE);
-    while (m_arrCalls.GetSize() > 0)
-    {
-		CTapiCall* pCall = (CTapiCall*) m_arrCalls[0];
+	CSingleLock Lock2(&m_semCalls, TRUE);
+	while (m_arrCalls.GetSize() > 0)
+	{
+		CTapiCall* pCall = (CTapiCall*)m_arrCalls[0];
 		m_arrCalls.RemoveAt(0);
 		delete pCall;
 	}
 
 	// Delete our two informational blocks.
 	if (m_lpLineCaps)
-		FreeMem (m_lpLineCaps);
+		FreeMem(m_lpLineCaps);
 	if (m_lpLineStatus)
-		FreeMem (m_lpLineStatus);
+		FreeMem(m_lpLineStatus);
 
-}// CTapiLine::~CTapiLine
+} // CTapiLine::~CTapiLine
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::Init
 //
 // Initialize the line object
 //
-void CTapiLine::Init (CTapiConnection* pConn, DWORD dwDeviceID)
-{                  
-    m_pConn = pConn;
-    
-    // Negotiate the API version with TAPI.
-    
-    if (lineNegotiateAPIVersion (pConn->GetLineAppHandle(),
-              dwDeviceID, TAPIVER_13, TAPIVER_31,
-			  &m_dwAPIVersion, &m_lineExtID) == 0)
-    {
+void CTapiLine::Init(CTapiConnection* pConn, DWORD dwDeviceID)
+{
+	m_pConn = pConn;
+
+	// Negotiate the API version with TAPI.
+
+	if (lineNegotiateAPIVersion(pConn->GetLineAppHandle(), dwDeviceID, TAPIVER_13, TAPIVER_31, &m_dwAPIVersion, &m_lineExtID) == 0)
+	{
 		// Save off the device ID.
-        m_dwDeviceID = dwDeviceID;
+		m_dwDeviceID = dwDeviceID;
 		m_dwExtVersion = 0;
 
-
-		if (IsTSP_ECSTA()) 
-		{
+		if (IsTSP_ECSTA())
 			lineNegotiateExtVersion(pConn->GetLineAppHandle(), dwDeviceID, m_dwAPIVersion, 0x00000000, 0xFFFFFFFF, &m_dwExtVersion);
-		}
 
-        // Gather all the address information for each address on the line
-        GatherAddressInformation();
-    }                                
+		// Gather all the address information for each address on the line
+		GatherAddressInformation();
+	}
 	else
 	{
 		// In case the lineNegotiateAPIVersion fails, we don´t show this line in the phone.exe
-		// This happens e.g. 
+		// This happens e.g.
 		// TAPI has lines
 		// Some lines get removed by the TAPI driver, the ephone.exe reflects that at runtime as it receives the appropriate remove notification
 		// On restart TAPI still reflects those lines but they are "dead"
@@ -118,7 +113,7 @@ void CTapiLine::Init (CTapiConnection* pConn, DWORD dwDeviceID)
 		m_iFlags |= Removed;
 	}
 
-}// CTapiLine::Init
+} // CTapiLine::Init
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GatherAddressInformation
@@ -128,8 +123,8 @@ void CTapiLine::Init (CTapiConnection* pConn, DWORD dwDeviceID)
 void CTapiLine::GatherAddressInformation()
 {
 	if (GetLineCaps() != NULL)
-    {
-		CSingleLock Lock (&m_semAddress, TRUE);
+	{
+		CSingleLock Lock(&m_semAddress, TRUE);
 		if (m_arrAddress.GetCount() > (int)GetAddressCount())
 		{
 			while (m_arrAddress.GetCount() > (int)GetAddressCount())
@@ -143,18 +138,18 @@ void CTapiLine::GatherAddressInformation()
 		for (int i = 0; i < m_arrAddress.GetCount(); i++)
 		{
 			CTapiAddress* pAddr = (CTapiAddress*)m_arrAddress.GetAt(i);
-			//update required?
+			// update required?
 			pAddr->GetAddressCaps(0, 0, TRUE);
 		}
 		for (int i = (int)m_arrAddress.GetCount(); i < (int)GetAddressCount(); i++)
-        {
-            CTapiAddress* pAddr = (CTapiAddress*) m_pConn->m_pAddrClass->CreateObject();
-            pAddr->Init (this, (DWORD)i);
-            m_arrAddress.Add(pAddr);
-        }
-    }    
+		{
+			CTapiAddress* pAddr = (CTapiAddress*)m_pConn->m_pAddrClass->CreateObject();
+			pAddr->Init(this, (DWORD)i);
+			m_arrAddress.Add(pAddr);
+		}
+	}
 
-}// CTapiLine::GatherAddressInformation
+} // CTapiLine::GatherAddressInformation
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetAddressCount
@@ -162,13 +157,13 @@ void CTapiLine::GatherAddressInformation()
 // Return the count of addresses on this line
 //
 DWORD CTapiLine::GetAddressCount() const
-{                             
+{
 	LPLINEDEVCAPS lpCaps = ((CTapiLine*)this)->GetLineCaps();
 	if (lpCaps)
-        return lpCaps->dwNumAddresses;
-    return 0;
+		return lpCaps->dwNumAddresses;
+	return 0;
 
-}// CTapiLine::GetAddressCount
+} // CTapiLine::GetAddressCount
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetAddress
@@ -176,13 +171,13 @@ DWORD CTapiLine::GetAddressCount() const
 // Return the address structure for an address id.
 //
 CTapiAddress* CTapiLine::GetAddress(DWORD dwAddr)
-{   
-	CSingleLock Lock (&m_semAddress, TRUE);
-    if (dwAddr < (DWORD) m_arrAddress.GetSize())
-        return (CTapiAddress*) m_arrAddress.GetAt((int)dwAddr);
-    return NULL;
-    
-}// CTapiLine::GetAddress
+{
+	CSingleLock Lock(&m_semAddress, TRUE);
+	if (dwAddr < (DWORD)m_arrAddress.GetSize())
+		return (CTapiAddress*)m_arrAddress.GetAt((int)dwAddr);
+	return NULL;
+
+} // CTapiLine::GetAddress
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetAddress
@@ -191,15 +186,15 @@ CTapiAddress* CTapiLine::GetAddress(DWORD dwAddr)
 //
 CTapiAddress* CTapiLine::GetAddress(LPCTSTR lpszAddr, DWORD dwSize, DWORD dwMode)
 {
-    if (IsOpen())
-    {
-        DWORD dwAddrId = 0xffffffff;
-        if (lineGetAddressID (GetLineHandle(), &dwAddrId, dwMode, lpszAddr, dwSize) == 0)
-            return GetAddress(dwAddrId);
-    }
-    return NULL;
+	if (IsOpen())
+	{
+		DWORD dwAddrId = 0xffffffff;
+		if (lineGetAddressID(GetLineHandle(), &dwAddrId, dwMode, lpszAddr, dwSize) == 0)
+			return GetAddress(dwAddrId);
+	}
+	return NULL;
 
-}// CTapiLine::GetAddress
+} // CTapiLine::GetAddress
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetNegotiatedAPIVersion
@@ -207,10 +202,10 @@ CTapiAddress* CTapiLine::GetAddress(LPCTSTR lpszAddr, DWORD dwSize, DWORD dwMode
 // Return the negotiated API version for TAPI
 //
 DWORD CTapiLine::GetNegotiatedAPIVersion() const
-{                                     
-    return m_dwAPIVersion;
+{
+	return m_dwAPIVersion;
 
-}// CTapiLine::GetNegotiatedAPIVersion
+} // CTapiLine::GetNegotiatedAPIVersion
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetTapiConnection
@@ -218,21 +213,21 @@ DWORD CTapiLine::GetNegotiatedAPIVersion() const
 // Return the owner TAPI connection object
 //
 CTapiConnection* CTapiLine::GetTapiConnection() const
-{                               
-    return m_pConn;
+{
+	return m_pConn;
 
-}// CTapiLine::GetTapiConnection
+} // CTapiLine::GetTapiConnection
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetDeviceID
 //
 // Return the device ID for the line object
-// 
+//
 DWORD CTapiLine::GetDeviceID() const
-{                         
-    return m_dwDeviceID;
+{
+	return m_dwDeviceID;
 
-}// CTapiLine::GetDeviceID
+} // CTapiLine::GetDeviceID
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::IsOpen
@@ -240,10 +235,10 @@ DWORD CTapiLine::GetDeviceID() const
 // Return whether this line is open for use.
 //
 BOOL CTapiLine::IsOpen() const
-{                    
-    return (m_hLine != NULL);
+{
+	return (m_hLine != NULL);
 
-}// CTapiLine::IsOpen
+} // CTapiLine::IsOpen
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetLineHandle
@@ -251,10 +246,10 @@ BOOL CTapiLine::IsOpen() const
 // Return the line handle for this line
 //
 HLINE CTapiLine::GetLineHandle() const
-{                           
-    return m_hLine;
+{
+	return m_hLine;
 
-}// CTapiLine::GetLineHandle
+} // CTapiLine::GetLineHandle
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetProviderInfo
@@ -262,47 +257,45 @@ HLINE CTapiLine::GetLineHandle() const
 // Return the name of the service provider for this device
 //
 CString CTapiLine::GetProviderInfo() const
-{                             
-    CString strProviderName = TAPISTR_NOPROVIDERINFO;
+{
+	CString strProviderName = TAPISTR_NOPROVIDERINFO;
 
-    if (m_lpLineCaps)
-    {    
-        if (m_lpLineCaps->dwProviderInfoSize &&
-            m_lpLineCaps->dwProviderInfoOffset)
-//            m_lpLineCaps->dwStringFormat == STRINGFORMAT_ASCII)
-        {
-            LPCTSTR lpszProvider = (LPCTSTR)(((BYTE*)m_lpLineCaps)+m_lpLineCaps->dwProviderInfoOffset);
-            strProviderName = lpszProvider;
-        }
-    }
+	if (m_lpLineCaps)
+	{
+		if (m_lpLineCaps->dwProviderInfoSize && m_lpLineCaps->dwProviderInfoOffset)
+		//            m_lpLineCaps->dwStringFormat == STRINGFORMAT_ASCII)
+		{
+			LPCTSTR lpszProvider = (LPCTSTR)(((BYTE*)m_lpLineCaps) + m_lpLineCaps->dwProviderInfoOffset);
+			strProviderName = lpszProvider;
+		}
+	}
 
-    return strProviderName;
+	return strProviderName;
 
-}// CTapiLine::GetProviderInfo
+} // CTapiLine::GetProviderInfo
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetSwitchInfo
-//                            
+//
 // Return the information about the switch
 //
 CString CTapiLine::GetSwitchInfo() const
 {
-    CString strSwitchInfo = TAPISTR_SWITCHUNKNOWN;
-    
-    if (m_lpLineCaps)
-    {
-        if (m_lpLineCaps->dwSwitchInfoSize &&
-            m_lpLineCaps->dwSwitchInfoOffset)
-//            m_lpLineCaps->dwStringFormat == STRINGFORMAT_ASCII)
-        {
-            LPCTSTR lpszSwitch = (LPCTSTR)(((BYTE*)m_lpLineCaps)+m_lpLineCaps->dwSwitchInfoOffset);
-            strSwitchInfo = lpszSwitch;
-        }
-    }
-    
-    return strSwitchInfo;
+	CString strSwitchInfo = TAPISTR_SWITCHUNKNOWN;
 
-}// CTapiLine::GetSwitchInfo
+	if (m_lpLineCaps)
+	{
+		if (m_lpLineCaps->dwSwitchInfoSize && m_lpLineCaps->dwSwitchInfoOffset)
+		//            m_lpLineCaps->dwStringFormat == STRINGFORMAT_ASCII)
+		{
+			LPCTSTR lpszSwitch = (LPCTSTR)(((BYTE*)m_lpLineCaps) + m_lpLineCaps->dwSwitchInfoOffset);
+			strSwitchInfo = lpszSwitch;
+		}
+	}
+
+	return strSwitchInfo;
+
+} // CTapiLine::GetSwitchInfo
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetLineName
@@ -310,28 +303,25 @@ CString CTapiLine::GetSwitchInfo() const
 // Return the line name for this line device
 //
 CString CTapiLine::GetLineName() const
-{                         
-    CString strLineName;
-    LPLINEDEVCAPS lpLineCaps = ((CTapiLine*)this)->GetLineCaps();
-    if (lpLineCaps)
-    {
-        if (lpLineCaps->dwLineNameSize &&
-            lpLineCaps->dwLineNameOffset)
-//            (lpLineCaps->dwStringFormat == STRINGFORMAT_ASCII ||
-//			 lpLineCaps->dwStringFormat == STRINGFORMAT_UNICODE))
-        {
-            LPCTSTR lpszLineName = (LPCTSTR)(((BYTE*)lpLineCaps)+lpLineCaps->dwLineNameOffset);
-            strLineName = lpszLineName;
-        }
-        else
-            strLineName = TAPISTR_NOLINENAME;
-    }
-    else
-        strLineName = TAPISTR_NOLINE;            
+{
+	CString strLineName;
+	LPLINEDEVCAPS lpLineCaps = ((CTapiLine*)this)->GetLineCaps();
+	if (lpLineCaps)
+		if (lpLineCaps->dwLineNameSize && lpLineCaps->dwLineNameOffset)
+		//            (lpLineCaps->dwStringFormat == STRINGFORMAT_ASCII ||
+		//			 lpLineCaps->dwStringFormat == STRINGFORMAT_UNICODE))
+		{
+			LPCTSTR lpszLineName = (LPCTSTR)(((BYTE*)lpLineCaps) + lpLineCaps->dwLineNameOffset);
+			strLineName = lpszLineName;
+		}
+		else
+			strLineName = TAPISTR_NOLINENAME;
+	else
+		strLineName = TAPISTR_NOLINE;
 
-    return strLineName;
-    
-}// CTapiLine::GetLineName
+	return strLineName;
+
+} // CTapiLine::GetLineName
 
 const ECSTALINEDEVCAPS4* CTapiLine::GetECSTALineCaps4()
 {
@@ -347,7 +337,6 @@ const ECSTALINEDEVCAPS4* CTapiLine::GetECSTALineCaps4()
 	return NULL;
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetLineCaps
 //
@@ -355,58 +344,55 @@ const ECSTALINEDEVCAPS4* CTapiLine::GetECSTALineCaps4()
 // of the structure.
 //
 const LPLINEDEVCAPS CTapiLine::GetLineCaps(DWORD dwAPIVersion, DWORD dwExtVersion, BOOL fForceRealloc)
-{   
+{
 	// If there is no version information, then use our negotiated version.
 	if (dwAPIVersion == 0)
 		dwAPIVersion = GetNegotiatedAPIVersion();
 	if (dwExtVersion == 0)
 		dwExtVersion = m_dwExtVersion;
 
-    if (m_lpLineCaps != NULL && !fForceRealloc)
+	if (m_lpLineCaps != NULL && !fForceRealloc)
 		return m_lpLineCaps;
 
-    // Allocate a buffer for the line capabilities
-    DWORD dwSize = (m_lpLineCaps) ? m_lpLineCaps->dwTotalSize : sizeof(LINEDEVCAPS)+1024;
-    while (TRUE)
-    {
+	// Allocate a buffer for the line capabilities
+	DWORD dwSize = (m_lpLineCaps) ? m_lpLineCaps->dwTotalSize : sizeof(LINEDEVCAPS) + 1024;
+	while (TRUE)
+	{
 		if (m_lpLineCaps == NULL)
 		{
-			m_lpLineCaps = (LPLINEDEVCAPS) AllocMem ( dwSize);
+			m_lpLineCaps = (LPLINEDEVCAPS)AllocMem(dwSize);
 			if (m_lpLineCaps == NULL)
 				return NULL;
 		}
-        
-        // Mark the size we are sending.
-        ((LPVARSTRING)m_lpLineCaps)->dwTotalSize = dwSize;
-        if (lineGetDevCaps (m_pConn->GetLineAppHandle(), GetDeviceID(), 
-						    dwAPIVersion, dwExtVersion, m_lpLineCaps) != 0)
+
+		// Mark the size we are sending.
+		((LPVARSTRING)m_lpLineCaps)->dwTotalSize = dwSize;
+		if (lineGetDevCaps(m_pConn->GetLineAppHandle(), GetDeviceID(), dwAPIVersion, dwExtVersion, m_lpLineCaps) != 0)
 			return NULL;
-        
-        // If we didn't get it all, then reallocate the buffer and retry it.
-        if (m_lpLineCaps->dwNeededSize <= dwSize)
+
+		// If we didn't get it all, then reallocate the buffer and retry it.
+		if (m_lpLineCaps->dwNeededSize <= dwSize)
 		{
-			//memset((LPBYTE)m_lpLineCaps + m_lpLineCaps->dwUsedSize, 0, dwSize - m_lpLineCaps->dwUsedSize);
+			// memset((LPBYTE)m_lpLineCaps + m_lpLineCaps->dwUsedSize, 0, dwSize - m_lpLineCaps->dwUsedSize);
 			return m_lpLineCaps;
 		}
 
-        dwSize = m_lpLineCaps->dwNeededSize;
-		FreeMem (m_lpLineCaps);
-        m_lpLineCaps = NULL;
-    }    
+		dwSize = m_lpLineCaps->dwNeededSize;
+		FreeMem(m_lpLineCaps);
+		m_lpLineCaps = NULL;
+	}
 
-}// CTapiLine::GetLineCaps
+} // CTapiLine::GetLineCaps
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::Open
 //
 // Open the line device
 //
-LONG CTapiLine::Open(DWORD dwPrivilege, DWORD dwMediaMode, 
-					 DWORD dwAPIVersion, DWORD dwExtVersion,
-					 LPLINECALLPARAMS const lpCallParams)
-{   
-    if (IsOpen())
-        return FALSE;
+LONG CTapiLine::Open(DWORD dwPrivilege, DWORD dwMediaMode, DWORD dwAPIVersion, DWORD dwExtVersion, LPLINECALLPARAMS const lpCallParams)
+{
+	if (IsOpen())
+		return FALSE;
 
 	// If no version information given, use the highest negotiated during
 	// our INIT process.
@@ -416,14 +402,12 @@ LONG CTapiLine::Open(DWORD dwPrivilege, DWORD dwMediaMode,
 	if (dwExtVersion == 0)
 		dwExtVersion = m_dwExtVersion;
 
-    LONG lResult = lineOpen (m_pConn->GetLineAppHandle(), GetDeviceID(),
-                             &m_hLine, dwAPIVersion, dwExtVersion,
-                             (DWORD_PTR)this, dwPrivilege, dwMediaMode, lpCallParams);
+	LONG lResult = lineOpen(m_pConn->GetLineAppHandle(), GetDeviceID(), &m_hLine, dwAPIVersion, dwExtVersion, (DWORD_PTR)this, dwPrivilege, dwMediaMode, lpCallParams);
 	if (lResult != 0)
 		m_hLine = NULL;
 	return lResult;
 
-}// CTapiLine::Open                     
+} // CTapiLine::Open
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::Close
@@ -431,17 +415,17 @@ LONG CTapiLine::Open(DWORD dwPrivilege, DWORD dwMediaMode,
 // Close the line (and all calls)
 //
 LONG CTapiLine::Close()
-{                  
-    if (!IsOpen())
-        return FALSE;
+{
+	if (!IsOpen())
+		return FALSE;
 
-	LONG lResult = lineClose (GetLineHandle());
+	LONG lResult = lineClose(GetLineHandle());
 	if (lResult == 0)
 		OnClose();
 
-    return lResult;
+	return lResult;
 
-}// CTapiLine::Close
+} // CTapiLine::Close
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetCallFromHandle
@@ -449,19 +433,19 @@ LONG CTapiLine::Close()
 // Given the HCALL handle to a call appearance on this line, return the
 // C++ object representing that call if available.
 //
-CTapiCall* CTapiLine::GetCallFromHandle (HCALL hCall)
-{                               
-    // Go through our call array and determine if the call exists.
-	CSingleLock Lock (&m_semCalls, TRUE);
-    for (int i = 0; i < m_arrCalls.GetSize(); i++)
-    {
-		CTapiCall* pTest = (CTapiCall*) m_arrCalls[i];
+CTapiCall* CTapiLine::GetCallFromHandle(HCALL hCall)
+{
+	// Go through our call array and determine if the call exists.
+	CSingleLock Lock(&m_semCalls, TRUE);
+	for (int i = 0; i < m_arrCalls.GetSize(); i++)
+	{
+		CTapiCall* pTest = (CTapiCall*)m_arrCalls[i];
 		if (pTest->GetCallHandle() == hCall)
 			return pTest;
 	}
 	return NULL;
 
-}// CTapiLine::GetCallFromHandle
+} // CTapiLine::GetCallFromHandle
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::FindCall
@@ -470,11 +454,11 @@ CTapiCall* CTapiLine::GetCallFromHandle (HCALL hCall)
 //
 CTapiCall* CTapiLine::FindCall(DWORD dwStates, DWORD dwFeatures)
 {
-    // Go through our call array and determine if the call exists.
-	CSingleLock Lock (&m_semCalls, TRUE);
-    for (int i = 0; i < m_arrCalls.GetSize(); i++)
-    {
-		CTapiCall* pCall = (CTapiCall*) m_arrCalls[i];
+	// Go through our call array and determine if the call exists.
+	CSingleLock Lock(&m_semCalls, TRUE);
+	for (int i = 0; i < m_arrCalls.GetSize(); i++)
+	{
+		CTapiCall* pCall = (CTapiCall*)m_arrCalls[i];
 		if (pCall->GetCallState() & dwStates)
 		{
 			LPLINECALLSTATUS lpStatus = pCall->GetCallStatus();
@@ -484,7 +468,7 @@ CTapiCall* CTapiLine::FindCall(DWORD dwStates, DWORD dwFeatures)
 	}
 	return NULL;
 
-}// CTapiLine::FindCall
+} // CTapiLine::FindCall
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::LineCallback
@@ -492,72 +476,70 @@ CTapiCall* CTapiLine::FindCall(DWORD dwStates, DWORD dwFeatures)
 // Callback from the CTapiConnection object about one of our settings or calls
 // changing.
 //
-void CTapiLine::LineCallback (DWORD hDevice, DWORD dwMsg, DWORD_PTR dwParam1, 
-                                DWORD_PTR dwParam2, DWORD_PTR dwParam3)
-{                          
-    switch (dwMsg)
-    {
+void CTapiLine::LineCallback(DWORD hDevice, DWORD dwMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2, DWORD_PTR dwParam3)
+{
+	switch (dwMsg)
+	{
 		case LINE_APPNEWCALL:
 			CreateNewCall((HCALL)dwParam2);
 			break;
 
-        case LINE_ADDRESSSTATE:   
-            if ((HLINE)hDevice == GetLineHandle())
+		case LINE_ADDRESSSTATE:
+			if ((HLINE)hDevice == GetLineHandle())
 				OnAddressStateChange((DWORD)dwParam1, (DWORD)dwParam2);
-            break;
+			break;
 
-       
 		case LINE_AGENTSTATUS:
 			OnAgentStateChange((DWORD)dwParam1, (DWORD)dwParam2, (DWORD)dwParam3);
 			break;
 
-        case LINE_CALLINFO:
-            OnCallInfoChange((HCALL)hDevice, (DWORD)dwParam1);
-            break;
-        
-        case LINE_CALLSTATE:
-            OnCallStateChange ((HCALL)hDevice, (DWORD)dwParam1, (DWORD)dwParam2, (DWORD)dwParam3);
-            break;
+		case LINE_CALLINFO:
+			OnCallInfoChange((HCALL)hDevice, (DWORD)dwParam1);
+			break;
 
-        case LINE_DEVSPECIFIC:
-            OnDevSpecific (hDevice, (DWORD)dwParam1, (DWORD)dwParam2, (DWORD)dwParam3);
-            break;
-        
-        case LINE_DEVSPECIFICFEATURE:
-            OnDevSpecificFeature (hDevice, (DWORD)dwParam1, (DWORD)dwParam2, (DWORD)dwParam3);
-            break;
+		case LINE_CALLSTATE:
+			OnCallStateChange((HCALL)hDevice, (DWORD)dwParam1, (DWORD)dwParam2, (DWORD)dwParam3);
+			break;
 
-        case LINE_GATHERDIGITS:
-            OnGatherDigitsComplete ((HCALL)hDevice, (DWORD)dwParam1);
-            break;
+		case LINE_DEVSPECIFIC:
+			OnDevSpecific(hDevice, (DWORD)dwParam1, (DWORD)dwParam2, (DWORD)dwParam3);
+			break;
 
-        case LINE_GENERATE:
-            OnGenerateComplete ((HCALL)hDevice, (DWORD)dwParam1);
-            break;
+		case LINE_DEVSPECIFICFEATURE:
+			OnDevSpecificFeature(hDevice, (DWORD)dwParam1, (DWORD)dwParam2, (DWORD)dwParam3);
+			break;
 
-        case LINE_LINEDEVSTATE:  
-            ASSERT ((HLINE)hDevice == GetLineHandle());
-            OnDeviceStateChange ((DWORD)dwParam1, (DWORD)dwParam2, (DWORD)dwParam3);
-            break;
+		case LINE_GATHERDIGITS:
+			OnGatherDigitsComplete((HCALL)hDevice, (DWORD)dwParam1);
+			break;
 
-        case LINE_MONITORDIGITS:
-            OnDigitDetected ((HCALL)hDevice, (DWORD)dwParam1, (DWORD)dwParam2);
-            break;
+		case LINE_GENERATE:
+			OnGenerateComplete((HCALL)hDevice, (DWORD)dwParam1);
+			break;
 
-        case LINE_MONITORMEDIA:
-            OnCallMediaModeChange ((HCALL)hDevice, (DWORD)dwParam1);
-            break;
+		case LINE_LINEDEVSTATE:
+			ASSERT((HLINE)hDevice == GetLineHandle());
+			OnDeviceStateChange((DWORD)dwParam1, (DWORD)dwParam2, (DWORD)dwParam3);
+			break;
 
-        case LINE_MONITORTONE:
-            OnToneDetected ((HCALL)hDevice, (DWORD)dwParam1);
-            break;
+		case LINE_MONITORDIGITS:
+			OnDigitDetected((HCALL)hDevice, (DWORD)dwParam1, (DWORD)dwParam2);
+			break;
 
-        default:
-            TRACE (_T("CTapiLine: unknown TAPI callback %ld\r\n"), dwMsg);
-            break;    
-    }
+		case LINE_MONITORMEDIA:
+			OnCallMediaModeChange((HCALL)hDevice, (DWORD)dwParam1);
+			break;
 
-}// CTapiLine::LineCallback
+		case LINE_MONITORTONE:
+			OnToneDetected((HCALL)hDevice, (DWORD)dwParam1);
+			break;
+
+		default:
+			TRACE(_T("CTapiLine: unknown TAPI callback %ld\r\n"), dwMsg);
+			break;
+	}
+
+} // CTapiLine::LineCallback
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnAddressStateChange
@@ -565,13 +547,13 @@ void CTapiLine::LineCallback (DWORD hDevice, DWORD dwMsg, DWORD_PTR dwParam1,
 // This virtual function is called whenever the status of one of our addresses
 // has changed.
 //
-void CTapiLine::OnAddressStateChange (DWORD dwAddressID, DWORD dwState)
-{                                                                      
-    CTapiAddress* pAddr = GetAddress((int)dwAddressID);
-    if (pAddr != NULL)
-        pAddr->OnStateChange (dwState);
+void CTapiLine::OnAddressStateChange(DWORD dwAddressID, DWORD dwState)
+{
+	CTapiAddress* pAddr = GetAddress((int)dwAddressID);
+	if (pAddr != NULL)
+		pAddr->OnStateChange(dwState);
 
-}// CTapiLine::OnAddressStateChange
+} // CTapiLine::OnAddressStateChange
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnAgentStateChange
@@ -579,13 +561,13 @@ void CTapiLine::OnAddressStateChange (DWORD dwAddressID, DWORD dwState)
 // This virtual function is called whenever the status of one of our agent addresses
 // has changed.
 //
-void CTapiLine::OnAgentStateChange (DWORD dwAddressID, DWORD dwFields, DWORD dwState)
-{                                                                      
-    CTapiAddress* pAddr = GetAddress((int)dwAddressID);
-    if (pAddr != NULL)
-        pAddr->OnAgentStateChange (dwFields, dwState);
+void CTapiLine::OnAgentStateChange(DWORD dwAddressID, DWORD dwFields, DWORD dwState)
+{
+	CTapiAddress* pAddr = GetAddress((int)dwAddressID);
+	if (pAddr != NULL)
+		pAddr->OnAgentStateChange(dwFields, dwState);
 
-}// CTapiLine::OnAgentStateChange
+} // CTapiLine::OnAgentStateChange
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnCallInfoChange
@@ -594,13 +576,13 @@ void CTapiLine::OnAgentStateChange (DWORD dwAddressID, DWORD dwFields, DWORD dwS
 // call appearances changes.  Its default implementation is to pass it down to
 // the call appearance object.
 //
-void CTapiLine::OnCallInfoChange (HCALL hCall, DWORD dwCallInfoState)
-{                              
-    CTapiCall* pCall = GetCallFromHandle (hCall);
-    if (pCall)
-        pCall->OnInfoChange (dwCallInfoState);
+void CTapiLine::OnCallInfoChange(HCALL hCall, DWORD dwCallInfoState)
+{
+	CTapiCall* pCall = GetCallFromHandle(hCall);
+	if (pCall)
+		pCall->OnInfoChange(dwCallInfoState);
 
-}// CTapiLine::OnCallInfoChange
+} // CTapiLine::OnCallInfoChange
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnCallStateChange
@@ -609,28 +591,27 @@ void CTapiLine::OnCallInfoChange (HCALL hCall, DWORD dwCallInfoState)
 // appearances has changed.  Its default behavior is to pass it down to the
 // call appearance object.
 //
-void CTapiLine::OnCallStateChange (HCALL hCall, DWORD dwState, 
-                            DWORD dwStateDetail, DWORD dwPrivilage)
-{                                            
+void CTapiLine::OnCallStateChange(HCALL hCall, DWORD dwState, DWORD dwStateDetail, DWORD dwPrivilage)
+{
 	try
 	{
 		// Find the call - create a new call if one doesn't exist.
-		CTapiCall* pCall = CreateNewCall (hCall);
+		CTapiCall* pCall = CreateNewCall(hCall);
 		if (pCall != NULL)
-			pCall->OnStateChange (dwState, dwStateDetail, dwPrivilage);
+			pCall->OnStateChange(dwState, dwStateDetail, dwPrivilage);
 	}
-	catch(...)
+	catch (...)
 	{
 	}
 
-}// CTapiLine::OnCallStateChange
+} // CTapiLine::OnCallStateChange
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::CreateNewCall
 //
 // This method is called to create a new call on this line.
 //
-CTapiCall* CTapiLine::CreateNewCall (HCALL hCall)
+CTapiCall* CTapiLine::CreateNewCall(HCALL hCall)
 {
 	if (hCall == NULL)
 		return NULL;
@@ -639,23 +620,23 @@ CTapiCall* CTapiLine::CreateNewCall (HCALL hCall)
 	// come through here while we are searching/creating
 	// the call.  Otherwise, timing conditions could cause
 	// TWO objects to be created for the same call.
-	CSingleLock Lock (&m_semCalls, TRUE);
+	CSingleLock Lock(&m_semCalls, TRUE);
 	CTapiCall* pCall = GetCallFromHandle(hCall);
 	if (pCall)
 		return pCall;
-	
+
 	// Create a new call object for this call.
-	pCall = (CTapiCall*) GetTapiConnection()->m_pCallClass->CreateObject();
-	pCall->Init (this, hCall);
+	pCall = (CTapiCall*)GetTapiConnection()->m_pCallClass->CreateObject();
+	pCall->Init(this, hCall);
 
 	m_arrCalls.Add(pCall);
 	Lock.Unlock();
-	
+
 	OnNewCall(pCall);
 
 	return pCall;
 
-}// CTapiLine::CreateNewCall
+} // CTapiLine::CreateNewCall
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::RemoveCall
@@ -668,10 +649,10 @@ void CTapiLine::RemoveCall(CTapiCall* pCall)
 	if (pCall->GetCallState() != LINECALLSTATE_IDLE)
 		return;
 
-	CSingleLock Lock (&m_semCalls, TRUE);
+	CSingleLock Lock(&m_semCalls, TRUE);
 	for (int i = 0; i < m_arrCalls.GetSize(); i++)
 	{
-		CTapiCall* pTest = (CTapiCall*) m_arrCalls[i];
+		CTapiCall* pTest = (CTapiCall*)m_arrCalls[i];
 		if (pCall == pTest)
 		{
 			m_arrCalls.RemoveAt(i);
@@ -679,7 +660,7 @@ void CTapiLine::RemoveCall(CTapiCall* pCall)
 		}
 	}
 
-}// CTapiLine::RemoveCall
+} // CTapiLine::RemoveCall
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnNewCall
@@ -687,11 +668,11 @@ void CTapiLine::RemoveCall(CTapiCall* pCall)
 // This method gets called whenever a new call object is created on this
 // line.  It is invoked from the address object
 //
-void CTapiLine::OnNewCall (CTapiCall* /*pCall*/)
+void CTapiLine::OnNewCall(CTapiCall* /*pCall*/)
 {
 	/* Do nothing */
 
-}// CTapiLine::OnNewCall
+} // CTapiLine::OnNewCall
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnClose
@@ -699,21 +680,21 @@ void CTapiLine::OnNewCall (CTapiCall* /*pCall*/)
 // Close the line
 //
 void CTapiLine::OnClose()
-{                     
-    m_hLine = NULL;
-	
+{
+	m_hLine = NULL;
+
 	// Go through the addresses on this line and remove all the call
 	// appearance objects.
-	CSingleLock Lock (&m_semCalls, TRUE);
-    while (m_arrCalls.GetSize() > 0)
-    {
-		CTapiCall* pCall = (CTapiCall*) m_arrCalls[0];
+	CSingleLock Lock(&m_semCalls, TRUE);
+	while (m_arrCalls.GetSize() > 0)
+	{
+		CTapiCall* pCall = (CTapiCall*)m_arrCalls[0];
 		m_arrCalls.RemoveAt(0);
 		pCall->Deallocate();
 		delete pCall;
 	}
-	
-}// CTapiLine::OnClose
+
+} // CTapiLine::OnClose
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnDevSpecific
@@ -721,12 +702,11 @@ void CTapiLine::OnClose()
 // This function is called whenever we receive a device-specific message from
 // a service provider.  The default implementation does nothing.
 //
-void CTapiLine::OnDevSpecific (DWORD /*dwHandle*/, DWORD /*dwParam1*/, 
-                               DWORD /*dwParam2*/, DWORD /*dwParam3*/)
-{                           
-    /* Do nothing */
-    
-}// CTapiLine::OnDevSpecific
+void CTapiLine::OnDevSpecific(DWORD /*dwHandle*/, DWORD /*dwParam1*/, DWORD /*dwParam2*/, DWORD /*dwParam3*/)
+{
+	/* Do nothing */
+
+} // CTapiLine::OnDevSpecific
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnDevSpecificFeature
@@ -734,12 +714,11 @@ void CTapiLine::OnDevSpecific (DWORD /*dwHandle*/, DWORD /*dwParam1*/,
 // This function is called whenever we receive a device-specific message from
 // a service provider.  The default implementation does nothing.
 //
-void CTapiLine::OnDevSpecificFeature (DWORD /*dwHandle*/, DWORD /*dwParam1*/, 
-                               DWORD /*dwParam2*/, DWORD /*dwParam3*/)
-{                           
-    /* Do nothing */
-    
-}// CTapiLine::OnDevSpecificFeature
+void CTapiLine::OnDevSpecificFeature(DWORD /*dwHandle*/, DWORD /*dwParam1*/, DWORD /*dwParam2*/, DWORD /*dwParam3*/)
+{
+	/* Do nothing */
+
+} // CTapiLine::OnDevSpecificFeature
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnGatherDigitsComplete
@@ -747,13 +726,13 @@ void CTapiLine::OnDevSpecificFeature (DWORD /*dwHandle*/, DWORD /*dwParam1*/,
 // The call in question has completed gathering the digits.  Pass the
 // result onto the appropriate call appearance.
 //
-void CTapiLine::OnGatherDigitsComplete (HCALL hCall, DWORD dwReason)
+void CTapiLine::OnGatherDigitsComplete(HCALL hCall, DWORD dwReason)
 {
-    CTapiCall* pCall = GetCallFromHandle (hCall);
-    if (pCall)
-        pCall->OnGatherDigitsComplete (dwReason);
-        
-}// CTapiLine::OnGatherDigitsComplete
+	CTapiCall* pCall = GetCallFromHandle(hCall);
+	if (pCall)
+		pCall->OnGatherDigitsComplete(dwReason);
+
+} // CTapiLine::OnGatherDigitsComplete
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnGenerateComplete
@@ -761,13 +740,13 @@ void CTapiLine::OnGatherDigitsComplete (HCALL hCall, DWORD dwReason)
 // Tone generation on the specified call appearance has completed.  Pass
 // the result onto the appropropriate call appearance.
 //
-void CTapiLine::OnGenerateComplete (HCALL hCall, DWORD dwReason)
-{                                
-    CTapiCall* pCall = GetCallFromHandle (hCall);
-    if (pCall)
-        pCall->OnGenerateComplete (dwReason);
+void CTapiLine::OnGenerateComplete(HCALL hCall, DWORD dwReason)
+{
+	CTapiCall* pCall = GetCallFromHandle(hCall);
+	if (pCall)
+		pCall->OnGenerateComplete(dwReason);
 
-}// CTapiLine::OnGenerateComplete
+} // CTapiLine::OnGenerateComplete
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnDeviceStateChange
@@ -775,7 +754,7 @@ void CTapiLine::OnGenerateComplete (HCALL hCall, DWORD dwReason)
 // Our line device has changed status for some reason.  Default implementation
 // is to do nothing.
 //
-void CTapiLine::OnDeviceStateChange (DWORD dwDeviceState, DWORD /*dwStateDetail1*/, DWORD /*dwStateDetail2*/)
+void CTapiLine::OnDeviceStateChange(DWORD dwDeviceState, DWORD /*dwStateDetail1*/, DWORD /*dwStateDetail2*/)
 {
 	if (dwDeviceState & LINEDEVSTATE_CAPSCHANGE)
 	{
@@ -784,7 +763,7 @@ void CTapiLine::OnDeviceStateChange (DWORD dwDeviceState, DWORD /*dwStateDetail1
 		dwDeviceState &= ~LINEDEVSTATE_CAPSCHANGE;
 	}
 
-}// CTapiLine::OnDeviceStateChange   
+} // CTapiLine::OnDeviceStateChange
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnDigitDetected
@@ -792,13 +771,13 @@ void CTapiLine::OnDeviceStateChange (DWORD dwDeviceState, DWORD /*dwStateDetail1
 // Override called whenever a digit is detected on a particular call
 // appearance.
 //
-void CTapiLine::OnDigitDetected (HCALL hCall, DWORD dwDigit, DWORD dwDigitMode)
-{                             
-    CTapiCall* pCall = GetCallFromHandle (hCall);
-    if (pCall)
-        pCall->OnDigitDetected (dwDigit, dwDigitMode);    
+void CTapiLine::OnDigitDetected(HCALL hCall, DWORD dwDigit, DWORD dwDigitMode)
+{
+	CTapiCall* pCall = GetCallFromHandle(hCall);
+	if (pCall)
+		pCall->OnDigitDetected(dwDigit, dwDigitMode);
 
-}// CTapiLine::OnDigitDetected
+} // CTapiLine::OnDigitDetected
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnCallMediaModeChange
@@ -806,107 +785,99 @@ void CTapiLine::OnDigitDetected (HCALL hCall, DWORD dwDigit, DWORD dwDigitMode)
 // The media mode of the specified call appearance has changed.  Pass it
 // down to the appropriate call appearance.
 //
-void CTapiLine::OnCallMediaModeChange (HCALL hCall, DWORD dwMediaMode)
-{                                   
-    CTapiCall* pCall = GetCallFromHandle (hCall);
-    if (pCall)
-        pCall->OnMediaModeChange (dwMediaMode);
+void CTapiLine::OnCallMediaModeChange(HCALL hCall, DWORD dwMediaMode)
+{
+	CTapiCall* pCall = GetCallFromHandle(hCall);
+	if (pCall)
+		pCall->OnMediaModeChange(dwMediaMode);
 
-}// CTapiLine::OnCallMediaModeChange
+} // CTapiLine::OnCallMediaModeChange
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnToneDetected
 //
 // A DTMF tone was detected.  Pass it to the call appearance object.
 //
-void CTapiLine::OnToneDetected (HCALL hCall, DWORD dwAppSpecific)
-{                            
-    CTapiCall* pCall = GetCallFromHandle (hCall);
-    if (pCall)
-        pCall->OnToneDetected (dwAppSpecific);
+void CTapiLine::OnToneDetected(HCALL hCall, DWORD dwAppSpecific)
+{
+	CTapiCall* pCall = GetCallFromHandle(hCall);
+	if (pCall)
+		pCall->OnToneDetected(dwAppSpecific);
 
-}// CTapiLine::OnToneDetected
+} // CTapiLine::OnToneDetected
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::MakeCall
 //
 // Place a call onto a call appearance on this line.
 //
-LONG CTapiLine::MakeCall (CTapiCall** pCall, 
-                          LPCTSTR lpszDestAddr, DWORD dwCountry, 
-                          LPLINECALLPARAMS const lpCallParams)
-{                      
+LONG CTapiLine::MakeCall(CTapiCall** pCall, LPCTSTR lpszDestAddr, DWORD dwCountry, LPLINECALLPARAMS const lpCallParams)
+{
 	HCALL hCall;
-    LONG lResult = GetTAPIConnection()->WaitForReply(
-			ManageAsynchRequest(lineMakeCall (GetLineHandle(), &hCall, lpszDestAddr, 
-                                  dwCountry, lpCallParams)));
-    if (!lResult)
+	LONG lResult = GetTAPIConnection()->WaitForReply(ManageAsynchRequest(lineMakeCall(GetLineHandle(), &hCall, lpszDestAddr, dwCountry, lpCallParams)));
+	if (!lResult)
 		*pCall = CreateNewCall(hCall);
-    return lResult;
+	return lResult;
 
-}// CTapiLine::MakeCall                                    
+} // CTapiLine::MakeCall
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetID
 //
 // Return the specified ID for the address on the line device.
 //
-LONG CTapiLine::GetID (DWORD dwAddressID, LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass)
+LONG CTapiLine::GetID(DWORD dwAddressID, LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass)
 {
-    return lineGetID (GetLineHandle(), dwAddressID, NULL, LINECALLSELECT_ADDRESS, lpDeviceID, lpszDeviceClass);
+	return lineGetID(GetLineHandle(), dwAddressID, NULL, LINECALLSELECT_ADDRESS, lpDeviceID, lpszDeviceClass);
 
-}// CTapiLine::GetID
+} // CTapiLine::GetID
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetID
 //
 // Return the specified ID for the the line device.
 //
-LONG CTapiLine::GetID (LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass)
-{                      
-    return lineGetID (GetLineHandle(), 0L, NULL, LINECALLSELECT_LINE, lpDeviceID, lpszDeviceClass);
+LONG CTapiLine::GetID(LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass)
+{
+	return lineGetID(GetLineHandle(), 0L, NULL, LINECALLSELECT_LINE, lpDeviceID, lpszDeviceClass);
 
-}// CTapiLine::GetID
+} // CTapiLine::GetID
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::Config
 //
 // Manage the configuration for this line device
 //
-LONG CTapiLine::Config (CWnd* pwndOwner, LPCTSTR lpszDeviceClass)
-{   
-    return lineConfigDialog (m_dwDeviceID, (pwndOwner) ? pwndOwner->GetSafeHwnd() : NULL, 
-							 lpszDeviceClass);
+LONG CTapiLine::Config(CWnd* pwndOwner, LPCTSTR lpszDeviceClass)
+{
+	return lineConfigDialog(m_dwDeviceID, (pwndOwner) ? pwndOwner->GetSafeHwnd() : NULL, lpszDeviceClass);
 
-}// CTapiLine::Config
+} // CTapiLine::Config
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::ConfigEdit
 //
 // Manage the configuration for this line device
 //
-LONG CTapiLine::ConfigEdit (CWnd* pwndOwner, LPCTSTR lpszDeviceClass, 
-                            LPVOID const lpDeviceConfigIn, DWORD dwSize, 
-                            LPVARSTRING lpDeviceConfigOut)
+LONG CTapiLine::ConfigEdit(CWnd* pwndOwner, LPCTSTR lpszDeviceClass, LPVOID const lpDeviceConfigIn, DWORD dwSize, LPVARSTRING lpDeviceConfigOut)
 {
-    return ::lineConfigDialogEdit (m_dwDeviceID, (pwndOwner) ? pwndOwner->GetSafeHwnd() : NULL, 
-						lpszDeviceClass, lpDeviceConfigIn, dwSize, lpDeviceConfigOut);
+	return ::lineConfigDialogEdit(m_dwDeviceID, (pwndOwner) ? pwndOwner->GetSafeHwnd() : NULL, lpszDeviceClass, lpDeviceConfigIn, dwSize, lpDeviceConfigOut);
 
-}// CTapiLine::ConfigEdit
-                     
+} // CTapiLine::ConfigEdit
+
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetIcon
 //
 // Return the icon for this line device.
 //
 HICON CTapiLine::GetIcon(LPCTSTR lpszDeviceClass)
-{                     
-    HICON hIcon = NULL;
-    if (::lineGetIcon (m_dwDeviceID, lpszDeviceClass, &hIcon) == 0)
+{
+	HICON hIcon = NULL;
+	if (::lineGetIcon(m_dwDeviceID, lpszDeviceClass, &hIcon) == 0)
 		return hIcon;
 	return NULL;
 
-}// CTapiLine::GetIcon
+} // CTapiLine::GetIcon
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetLineStatus
@@ -914,47 +885,45 @@ HICON CTapiLine::GetIcon(LPCTSTR lpszDeviceClass)
 // Return the status of this line device
 //
 const LPLINEDEVSTATUS CTapiLine::GetLineStatus()
-{   
-    // Allocate a buffer for the line information
-    DWORD dwSize = (m_lpLineStatus) ? m_lpLineStatus->dwTotalSize : sizeof (LINEDEVSTATUS) + 1024;
-    while (TRUE)
-    {   
+{
+	// Allocate a buffer for the line information
+	DWORD dwSize = (m_lpLineStatus) ? m_lpLineStatus->dwTotalSize : sizeof(LINEDEVSTATUS) + 1024;
+	while (TRUE)
+	{
 		if (m_lpLineStatus == NULL)
 		{
-			m_lpLineStatus = (LPLINEDEVSTATUS) AllocMem( dwSize);
+			m_lpLineStatus = (LPLINEDEVSTATUS)AllocMem(dwSize);
 			if (m_lpLineStatus == NULL)
 				return NULL;
 		}
-        
-        // Mark the size we are sending.
-        ((LPVARSTRING)m_lpLineStatus)->dwTotalSize = dwSize;
-        if (lineGetLineDevStatus (GetLineHandle(), m_lpLineStatus) != 0)
-            return NULL;
-        
-        if (m_lpLineStatus->dwNeededSize <= dwSize)
-            return m_lpLineStatus;
 
-        // If we didn't get it all, then reallocate the buffer and retry it.
-        dwSize = m_lpLineStatus->dwNeededSize;
-		FreeMem (m_lpLineStatus);
-        m_lpLineStatus = NULL;
-    }    
+		// Mark the size we are sending.
+		((LPVARSTRING)m_lpLineStatus)->dwTotalSize = dwSize;
+		if (lineGetLineDevStatus(GetLineHandle(), m_lpLineStatus) != 0)
+			return NULL;
 
-}// CTapiLine::GetLineStatus
+		if (m_lpLineStatus->dwNeededSize <= dwSize)
+			return m_lpLineStatus;
+
+		// If we didn't get it all, then reallocate the buffer and retry it.
+		dwSize = m_lpLineStatus->dwNeededSize;
+		FreeMem(m_lpLineStatus);
+		m_lpLineStatus = NULL;
+	}
+
+} // CTapiLine::GetLineStatus
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::SwapHold
 //
 // Swap two call appearances on hold
 //
-LONG CTapiLine::SwapHold (CTapiCall* pCall, CTapiCall* pCall2)
-{                     
-	CTapiCall* pActive, *pHeld;
+LONG CTapiLine::SwapHold(CTapiCall* pCall, CTapiCall* pCall2)
+{
+	CTapiCall *pActive, *pHeld;
 
-	ASSERT (pCall && pCall2);
-	if ((pCall->GetCallState() & (LINECALLSTATE_ONHOLD | 
-		LINECALLSTATE_ONHOLDPENDTRANSFER |
-		LINECALLSTATE_ONHOLDPENDCONF)) != 0)
+	ASSERT(pCall && pCall2);
+	if ((pCall->GetCallState() & (LINECALLSTATE_ONHOLD | LINECALLSTATE_ONHOLDPENDTRANSFER | LINECALLSTATE_ONHOLDPENDCONF)) != 0)
 	{
 		pHeld = pCall;
 		pActive = pCall2;
@@ -965,49 +934,49 @@ LONG CTapiLine::SwapHold (CTapiCall* pCall, CTapiCall* pCall2)
 		pActive = pCall;
 	}
 
-    return ManageAsynchRequest(lineSwapHold (pActive->GetCallHandle(), pHeld->GetCallHandle()));
+	return ManageAsynchRequest(lineSwapHold(pActive->GetCallHandle(), pHeld->GetCallHandle()));
 
-}// CTapiLine::SwapHold
+} // CTapiLine::SwapHold
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::SetStatusMessages
 //
 // Set the status notifications
 //
-LONG CTapiLine::SetStatusMessages (DWORD dwLineStates, DWORD dwAddressStates)
-{                                                    
-    if (!IsOpen())
-        return LINEERR_INVALLINEHANDLE;
-    return lineSetStatusMessages (GetLineHandle(), dwLineStates, dwAddressStates);
+LONG CTapiLine::SetStatusMessages(DWORD dwLineStates, DWORD dwAddressStates)
+{
+	if (!IsOpen())
+		return LINEERR_INVALLINEHANDLE;
+	return lineSetStatusMessages(GetLineHandle(), dwLineStates, dwAddressStates);
 
-}// CTapiLine::SetStatusMessages
+} // CTapiLine::SetStatusMessages
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetStatusMessages
 //
 // Get the status notifications
 //
-LONG CTapiLine::GetStatusMessages (LPDWORD lpdwLineStatus, LPDWORD lpdwAddressStates)
+LONG CTapiLine::GetStatusMessages(LPDWORD lpdwLineStatus, LPDWORD lpdwAddressStates)
 {
-    if (!IsOpen())
-        return LINEERR_INVALLINEHANDLE;
-    return lineGetStatusMessages (GetLineHandle(), lpdwLineStatus, lpdwAddressStates);
+	if (!IsOpen())
+		return LINEERR_INVALLINEHANDLE;
+	return lineGetStatusMessages(GetLineHandle(), lpdwLineStatus, lpdwAddressStates);
 
-}// CTapiLine::GetStatusMessages
-              
+} // CTapiLine::GetStatusMessages
+
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::DevSpecific
 //
-// Enables service providers to provide access to features not offered by 
-// other TAPI functions. The meaning of these extensions are device specific, 
-// and taking advantage of these extensions requires the application to be 
+// Enables service providers to provide access to features not offered by
+// other TAPI functions. The meaning of these extensions are device specific,
+// and taking advantage of these extensions requires the application to be
 // fully aware of them.
 //
 LONG CTapiLine::DevSpecificFeature(DWORD dwFeature, LPVOID lpParams, DWORD dwSize)
-{                         
-    return ManageAsynchRequest(lineDevSpecificFeature (GetLineHandle(), dwFeature, lpParams, dwSize));
+{
+	return ManageAsynchRequest(lineDevSpecificFeature(GetLineHandle(), dwFeature, lpParams, dwSize));
 
-}// CTapiLine::DevSpecific
+} // CTapiLine::DevSpecific
 
 LONG CTapiLine::SetECSTAAgentState(ECSTA150AGENTSTATEREQUEST21* pAgentStateRequest)
 {
@@ -1018,275 +987,241 @@ LONG CTapiLine::DevSpecific(DWORD dwAddressID, HCALL hCall, LPVOID lpParams, DWO
 {
 	return ManageAsynchRequest(lineDevSpecific(GetLineHandle(), dwAddressID, hCall, lpParams, dwSize));
 
-}// CTapiLine::DevSpecific
+} // CTapiLine::DevSpecific
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::Forward
 //
-// Forwards calls destined for the specified address on the specified line, 
-// according to the specified forwarding instructions. When an originating 
-// address (dwAddressID) is forwarded, the specified incoming calls for 
+// Forwards calls destined for the specified address on the specified line,
+// according to the specified forwarding instructions. When an originating
+// address (dwAddressID) is forwarded, the specified incoming calls for
 // that address are deflected to the other number by the switch.
-// This function provides a combination of forward and do-not-disturb features. 
+// This function provides a combination of forward and do-not-disturb features.
 //
 // dwAddress = -1L for all addresses forwarded, otherwise 0-numAddress-1.
-//  
-LONG CTapiLine::Forward (DWORD dwAddress, LPLINEFORWARDLIST const lpForwardList, 
-                         DWORD dwNumRingsNoAnswer, CTapiCall** pConsCall, 
-                         LPLINECALLPARAMS const lpCallParams)
-{               
-    HCALL hCall = NULL;
-    *pConsCall = NULL;
-          
-    LONG lResult = ManageAsynchRequest(
-		lineForward (GetLineHandle(), (dwAddress == (DWORD)-1L) ? TRUE : FALSE,
-                              (dwAddress == (DWORD)-1L) ? 0 : dwAddress,
-                              lpForwardList, dwNumRingsNoAnswer, &hCall, 
-                              lpCallParams));
-    if (!GetTAPIConnection()->WaitForReply(lResult))
-        *pConsCall = GetCallFromHandle(hCall);
-    return lResult;
+//
+LONG CTapiLine::Forward(DWORD dwAddress, LPLINEFORWARDLIST const lpForwardList, DWORD dwNumRingsNoAnswer, CTapiCall** pConsCall, LPLINECALLPARAMS const lpCallParams)
+{
+	HCALL hCall = NULL;
+	*pConsCall = NULL;
 
-}// CTapiLine::Forward
-    
+	LONG lResult = ManageAsynchRequest(lineForward(GetLineHandle(), (dwAddress == (DWORD)-1L) ? TRUE : FALSE, (dwAddress == (DWORD)-1L) ? 0 : dwAddress, lpForwardList, dwNumRingsNoAnswer, &hCall, lpCallParams));
+	if (!GetTAPIConnection()->WaitForReply(lResult))
+		*pConsCall = GetCallFromHandle(hCall);
+	return lResult;
+
+} // CTapiLine::Forward
+
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::CancelForward
 //
 // Cancels any forwarding being done on the specified address (-1L = all).
 //
-LONG CTapiLine::CancelForward (DWORD dwAddress)
-{                           
-    return ManageAsynchRequest(
-		lineForward (GetLineHandle(), (dwAddress == (DWORD)-1L) ? TRUE : FALSE,
-                              (dwAddress == (DWORD)-1L) ? 0 : dwAddress,
-                              NULL, 0, NULL, NULL));
-}// CTapiLine::CancelForward
+LONG CTapiLine::CancelForward(DWORD dwAddress)
+{
+	return ManageAsynchRequest(lineForward(GetLineHandle(), (dwAddress == (DWORD)-1L) ? TRUE : FALSE, (dwAddress == (DWORD)-1L) ? 0 : dwAddress, NULL, 0, NULL, NULL));
+} // CTapiLine::CancelForward
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::SetDevConfig
 //
-// Allows the application to restore the configuration of a media stream 
+// Allows the application to restore the configuration of a media stream
 // device on a line device to a setup previously obtained using lineGetDevConfig.
-// For example, the contents of this structure could specify data rate, 
-// character format, modulation schemes, and error control protocol 
-// settings for a "datamodem" media device associated with the line. 
+// For example, the contents of this structure could specify data rate,
+// character format, modulation schemes, and error control protocol
+// settings for a "datamodem" media device associated with the line.
 //
-LONG CTapiLine::SetDevConfig (LPVOID const lpBuff, DWORD dwSize, LPCTSTR lpszDeviceClass)
-{                                                          
-    return ManageAsynchRequest(lineSetDevConfig (GetDeviceID(), lpBuff, dwSize, lpszDeviceClass));
+LONG CTapiLine::SetDevConfig(LPVOID const lpBuff, DWORD dwSize, LPCTSTR lpszDeviceClass)
+{
+	return ManageAsynchRequest(lineSetDevConfig(GetDeviceID(), lpBuff, dwSize, lpszDeviceClass));
 
-}// CTapiLine::SetDevConfig
+} // CTapiLine::SetDevConfig
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::SetDeviceStatus
 //
 // Allows the application to change the status of the line device.
 //
-LONG CTapiLine::SetDeviceStatus (DWORD dwDevState, BOOL fSet)
-{                                                          
-    return ManageAsynchRequest(lineSetLineDevStatus (GetLineHandle(), dwDevState, (fSet) ? -1L : 0));
+LONG CTapiLine::SetDeviceStatus(DWORD dwDevState, BOOL fSet)
+{
+	return ManageAsynchRequest(lineSetLineDevStatus(GetLineHandle(), dwDevState, (fSet) ? -1L : 0));
 
-}// CTapiLine::SetDeviceStatus
+} // CTapiLine::SetDeviceStatus
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetDevConfig
 //
-// Returns an "opaque" data structure object the contents of which are 
-// specific to the line (service provider) and device class. 
-// The data structure object stores the current configuration of a 
+// Returns an "opaque" data structure object the contents of which are
+// specific to the line (service provider) and device class.
+// The data structure object stores the current configuration of a
 // media-stream device associated with the line device.
 //
-LONG CTapiLine::GetDevConfig (LPVOID lpBuff, DWORD dwSize, LPCTSTR lpszDeviceClass)
-{                          
-    LPVARSTRING lpVarString = (LPVARSTRING) AllocMem( sizeof(VARSTRING)+dwSize);
-    if (lpVarString == NULL)
-        return LINEERR_NOMEM;
-        
-    lpVarString->dwStringFormat = STRINGFORMAT_BINARY;
-    lpVarString->dwTotalSize = sizeof(VARSTRING)+dwSize;
-    lpVarString->dwStringSize = 0L;
-    memset (lpBuff, 0, (size_t)dwSize);
-    
-    LONG lResult = lineGetDevConfig (GetDeviceID(), lpVarString, lpszDeviceClass);
-    if (lResult == 0)
-    {
-        memcpy (lpBuff, (LPSTR)lpVarString+lpVarString->dwStringOffset, 
-                (size_t)lpVarString->dwStringSize);
-    }
+LONG CTapiLine::GetDevConfig(LPVOID lpBuff, DWORD dwSize, LPCTSTR lpszDeviceClass)
+{
+	LPVARSTRING lpVarString = (LPVARSTRING)AllocMem(sizeof(VARSTRING) + dwSize);
+	if (lpVarString == NULL)
+		return LINEERR_NOMEM;
 
-    FreeMem(lpVarString);
-    return lResult;    
+	lpVarString->dwStringFormat = STRINGFORMAT_BINARY;
+	lpVarString->dwTotalSize = sizeof(VARSTRING) + dwSize;
+	lpVarString->dwStringSize = 0L;
+	memset(lpBuff, 0, (size_t)dwSize);
 
-}// CTapiLine::GetDevConfig
+	LONG lResult = lineGetDevConfig(GetDeviceID(), lpVarString, lpszDeviceClass);
+	if (lResult == 0)
+		memcpy(lpBuff, (LPSTR)lpVarString + lpVarString->dwStringOffset, (size_t)lpVarString->dwStringSize);
+
+	FreeMem(lpVarString);
+	return lResult;
+
+} // CTapiLine::GetDevConfig
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetNewCalls
 //
-// This function returns all the active call handles for this line in an 
+// This function returns all the active call handles for this line in an
 // object list.
 //
-LONG CTapiLine::GetNewCalls (CObList& lstCalls)
-{                         
-    DWORD dwSize = sizeof (LINECALLLIST) + 1024;
-    LPLINECALLLIST lpCallList = NULL;
-    
-    while (TRUE)
-    {
-		lpCallList = (LPLINECALLLIST) AllocMem ( dwSize);
-        if (lpCallList == NULL)
+LONG CTapiLine::GetNewCalls(CObList& lstCalls)
+{
+	DWORD dwSize = sizeof(LINECALLLIST) + 1024;
+	LPLINECALLLIST lpCallList = NULL;
+
+	while (TRUE)
+	{
+		lpCallList = (LPLINECALLLIST)AllocMem(dwSize);
+		if (lpCallList == NULL)
 			return LINEERR_NOMEM;
 
 		lpCallList->dwTotalSize = dwSize;
-        LONG lResult = lineGetNewCalls (GetLineHandle(), 0, LINECALLSELECT_LINE, lpCallList);
+		LONG lResult = lineGetNewCalls(GetLineHandle(), 0, LINECALLSELECT_LINE, lpCallList);
 		if (lResult != 0)
-        {
-			FreeMem (lpCallList);
-            return lResult;
-        }
-        
-        // If we didn't get them all, then reallocate and try again.
-        if (lpCallList->dwNeededSize <= dwSize)
+		{
+			FreeMem(lpCallList);
+			return lResult;
+		}
+
+		// If we didn't get them all, then reallocate and try again.
+		if (lpCallList->dwNeededSize <= dwSize)
 			break;
 
-        dwSize = lpCallList->dwNeededSize;
-		FreeMem (lpCallList);
-        lpCallList = NULL;
-    }
-    
-    // Now go through the call list and create call handles for each.
-    LPHCALL lphCall = (LPHCALL) ((LPSTR)lpCallList + lpCallList->dwCallsOffset);
-    for (DWORD i = 0; i < lpCallList->dwCallsNumEntries; i++)
-    {
-        CTapiCall* pCall = CreateNewCall (*lphCall);
-        if (pCall)
-            lstCalls.AddTail(pCall);
-        lphCall++;
-    }        
+		dwSize = lpCallList->dwNeededSize;
+		FreeMem(lpCallList);
+		lpCallList = NULL;
+	}
 
-	FreeMem (lpCallList);
-    return 0;
-    
-}// CTapiLine::GetNewCalls
+	// Now go through the call list and create call handles for each.
+	LPHCALL lphCall = (LPHCALL)((LPSTR)lpCallList + lpCallList->dwCallsOffset);
+	for (DWORD i = 0; i < lpCallList->dwCallsNumEntries; i++)
+	{
+		CTapiCall* pCall = CreateNewCall(*lphCall);
+		if (pCall)
+			lstCalls.AddTail(pCall);
+		lphCall++;
+	}
+
+	FreeMem(lpCallList);
+	return 0;
+
+} // CTapiLine::GetNewCalls
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::SetMediaControl
 //
-// Enables and disables control actions on the media stream associated 
-// with the specified line. Media control actions can be triggered 
-// by the detection of specified digits, media modes, custom tones, 
+// Enables and disables control actions on the media stream associated
+// with the specified line. Media control actions can be triggered
+// by the detection of specified digits, media modes, custom tones,
 // and call states.
 //
-LONG CTapiLine::SetMediaControl (LPLINEMEDIACONTROLDIGIT const lpDigitList, 
-                                 DWORD dwDigitNumEntries, 
-                                 LPLINEMEDIACONTROLMEDIA const lpMediaList, 
-                                 DWORD dwMediaNumEntries, 
-                                 LPLINEMEDIACONTROLTONE const lpToneList, 
-                                 DWORD dwToneNumEntries, 
-                                 LPLINEMEDIACONTROLCALLSTATE const lpCallStateList,
-                                 DWORD dwCallStateNumEntries)
-{                             
-    return lineSetMediaControl (GetLineHandle(), 0, NULL, LINECALLSELECT_LINE,
-                               lpDigitList, dwDigitNumEntries,
-                               lpMediaList, dwMediaNumEntries,
-                               lpToneList, dwToneNumEntries,
-                               lpCallStateList, dwCallStateNumEntries);
-    
-}// CTapiLine::SetMediaControl
+LONG CTapiLine::SetMediaControl(LPLINEMEDIACONTROLDIGIT const lpDigitList, DWORD dwDigitNumEntries, LPLINEMEDIACONTROLMEDIA const lpMediaList, DWORD dwMediaNumEntries, LPLINEMEDIACONTROLTONE const lpToneList, DWORD dwToneNumEntries, LPLINEMEDIACONTROLCALLSTATE const lpCallStateList, DWORD dwCallStateNumEntries)
+{
+	return lineSetMediaControl(GetLineHandle(), 0, NULL, LINECALLSELECT_LINE, lpDigitList, dwDigitNumEntries, lpMediaList, dwMediaNumEntries, lpToneList, dwToneNumEntries, lpCallStateList, dwCallStateNumEntries);
+
+} // CTapiLine::SetMediaControl
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::SetTerminal
 //
-// Enables an application to specify which terminal information related to the 
-// specified line is to be routed. lineSetTerminal can be used while calls 
-// are in progress on the line to allow an application to route these events 
+// Enables an application to specify which terminal information related to the
+// specified line is to be routed. lineSetTerminal can be used while calls
+// are in progress on the line to allow an application to route these events
 // to different devices as required.
 //
-LONG CTapiLine::SetTerminal (DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEnable)
-{                         
-    return ManageAsynchRequest(lineSetTerminal (GetLineHandle(), 0, NULL, LINECALLSELECT_LINE,
-                            dwTerminalMode, dwTerminalID, (DWORD)fEnable));
+LONG CTapiLine::SetTerminal(DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEnable)
+{
+	return ManageAsynchRequest(lineSetTerminal(GetLineHandle(), 0, NULL, LINECALLSELECT_LINE, dwTerminalMode, dwTerminalID, (DWORD)fEnable));
 
-}// CTapiLine::SetTerminal
+} // CTapiLine::SetTerminal
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::SetTollList
 //
 // Manipulates the toll list.
 //
-LONG CTapiLine::SetTollList (LPCTSTR lpszAddressIn, DWORD dwTollListOption)
-{                            
-    return lineSetTollList (m_pConn->GetLineAppHandle(), GetDeviceID(), 
-                            lpszAddressIn, dwTollListOption);
+LONG CTapiLine::SetTollList(LPCTSTR lpszAddressIn, DWORD dwTollListOption)
+{
+	return lineSetTollList(m_pConn->GetLineAppHandle(), GetDeviceID(), lpszAddressIn, dwTollListOption);
 
-}// CTapiLine::SetTollList
+} // CTapiLine::SetTollList
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::TranslateAddress
 //
-// This operation translates the specified address into another format. 
+// This operation translates the specified address into another format.
 //
-LONG CTapiLine::TranslateAddress (LPCTSTR lpszAddressIn, DWORD dwCard, 
-                                  DWORD dwTranslateOptions, 
-                                  LPLINETRANSLATEOUTPUT lpTranslateOutput)
-{                              
-    return lineTranslateAddress (m_pConn->GetLineAppHandle(), GetDeviceID(),
-                                  GetNegotiatedAPIVersion(), lpszAddressIn,
-                                  dwCard, dwTranslateOptions, lpTranslateOutput);
+LONG CTapiLine::TranslateAddress(LPCTSTR lpszAddressIn, DWORD dwCard, DWORD dwTranslateOptions, LPLINETRANSLATEOUTPUT lpTranslateOutput)
+{
+	return lineTranslateAddress(m_pConn->GetLineAppHandle(), GetDeviceID(), GetNegotiatedAPIVersion(), lpszAddressIn, dwCard, dwTranslateOptions, lpTranslateOutput);
 
-}// CTapiLine::TranslateAddress
+} // CTapiLine::TranslateAddress
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::TranslateDialog
 //
-// Displays an application-modal dialog which allows the user to change 
-// the current location, adjust location and calling card parameters, and 
+// Displays an application-modal dialog which allows the user to change
+// the current location, adjust location and calling card parameters, and
 // see the effect on a phone number about to be dialed.
 //
-LONG CTapiLine::TranslateDialog (CWnd* pwndOwner, LPCTSTR lpszAddressIn)
-{                                       
-    return lineTranslateDialog (m_pConn->GetLineAppHandle(), GetDeviceID(),
-                                GetNegotiatedAPIVersion(), (pwndOwner) ? pwndOwner->GetSafeHwnd() : NULL, 
-								lpszAddressIn);
+LONG CTapiLine::TranslateDialog(CWnd* pwndOwner, LPCTSTR lpszAddressIn)
+{
+	return lineTranslateDialog(m_pConn->GetLineAppHandle(), GetDeviceID(), GetNegotiatedAPIVersion(), (pwndOwner) ? pwndOwner->GetSafeHwnd() : NULL, lpszAddressIn);
 
-}// CTapiLine::TranslateDialog
+} // CTapiLine::TranslateDialog
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::UncompleteCall
 //
-// Cancels the specified call competion request on the specified line. 
+// Cancels the specified call competion request on the specified line.
 //
-LONG CTapiLine::UncompleteCall (DWORD dwCompletionID)
-{                  
-    if (!IsOpen())
-        return LINEERR_INVALLINEHANDLE;
-    return ManageAsynchRequest(lineUncompleteCall (GetLineHandle(), dwCompletionID));
+LONG CTapiLine::UncompleteCall(DWORD dwCompletionID)
+{
+	if (!IsOpen())
+		return LINEERR_INVALLINEHANDLE;
+	return ManageAsynchRequest(lineUncompleteCall(GetLineHandle(), dwCompletionID));
 
-}// CTapiLine::UncompleteCall
-        
+} // CTapiLine::UncompleteCall
+
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::SetupConference
 //
 // Setup a call appearance to manage a conference
 //
-LONG CTapiLine::SetupConference (CTapiCall** pConfCall, CTapiCall** pConstCall,
-                                 DWORD dwNumParties, 
-                                 LPLINECALLPARAMS const lpCallParams)
-{                             
-    HCALL hCall1 = NULL;
-    HCALL hCall2 = NULL;
-    *pConfCall = NULL;  
-    *pConstCall = NULL;
-    
-    LONG lResult = ManageAsynchRequest(
-		lineSetupConference (NULL, m_hLine, &hCall1, &hCall2, dwNumParties, lpCallParams));
-    if (!GetTAPIConnection()->WaitForReply(lResult))
-    {
-        *pConfCall = GetCallFromHandle (hCall1);
-        *pConstCall = GetCallFromHandle (hCall2);
-    }
-    return lResult;
+LONG CTapiLine::SetupConference(CTapiCall** pConfCall, CTapiCall** pConstCall, DWORD dwNumParties, LPLINECALLPARAMS const lpCallParams)
+{
+	HCALL hCall1 = NULL;
+	HCALL hCall2 = NULL;
+	*pConfCall = NULL;
+	*pConstCall = NULL;
 
-}// CTapiLine::SetupConference
+	LONG lResult = ManageAsynchRequest(lineSetupConference(NULL, m_hLine, &hCall1, &hCall2, dwNumParties, lpCallParams));
+	if (!GetTAPIConnection()->WaitForReply(lResult))
+	{
+		*pConfCall = GetCallFromHandle(hCall1);
+		*pConstCall = GetCallFromHandle(hCall2);
+	}
+	return lResult;
+
+} // CTapiLine::SetupConference
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetProviderID
@@ -1296,46 +1231,43 @@ LONG CTapiLine::SetupConference (CTapiCall** pConfCall, CTapiCall** pConstCall,
 DWORD CTapiLine::GetProviderID() const
 {
 	DWORD dwProviderID = 0;
-	LPVARSTRING lpVS = (LPVARSTRING) AllocMem(sizeof(VARSTRING) + sizeof(DWORD));
+	LPVARSTRING lpVS = (LPVARSTRING)AllocMem(sizeof(VARSTRING) + sizeof(DWORD));
 	lpVS->dwTotalSize = sizeof(VARSTRING) + sizeof(DWORD);
-	if (((CTapiLine*)this)->GetID(lpVS, _T("tapi/providerid")) == 0 && 
-		lpVS->dwStringSize == sizeof(DWORD) &&
-		lpVS->dwStringFormat == STRINGFORMAT_BINARY)
+	if (((CTapiLine*)this)->GetID(lpVS, _T("tapi/providerid")) == 0 && lpVS->dwStringSize == sizeof(DWORD) && lpVS->dwStringFormat == STRINGFORMAT_BINARY)
 		dwProviderID = *((LPDWORD)((LPBYTE)lpVS + lpVS->dwStringOffset));
-	FreeMem (lpVS);
+	FreeMem(lpVS);
 
 	return dwProviderID;
 
-}// CTapiLine::GetProviderID
-        
+} // CTapiLine::GetProviderID
+
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetTSPProvider
 //
 // Return the provider information for the TSP which owns this line.
 //
-BOOL CTapiLine::GetTSPProvider (LPTAPIPROVIDER pProvider) const
-{   
+BOOL CTapiLine::GetTSPProvider(LPTAPIPROVIDER pProvider) const
+{
 	// First see if we can get the provider id from the line device.
 	// We use the new "tapi/providerid" key.
 	DWORD dwProviderID = GetProviderID();
 	if (dwProviderID > 0)
 	{
-		if (m_pConn->GetFirstProvider (pProvider))
-		{            
+		if (m_pConn->GetFirstProvider(pProvider))
+		{
 			do
 			{
 				if (pProvider->dwPermanentProviderID == dwProviderID)
-            		return TRUE;
-			}
-			while (m_pConn->GetNextProvider(pProvider));
+					return TRUE;
+			} while (m_pConn->GetNextProvider(pProvider));
 		}
 	}
-	
+
 	pProvider->dwPermanentProviderID = 0;
 	pProvider->strProviderName.Empty();
-    return FALSE;
-    
-}// CTapiLine::GetProviderInfo
+	return FALSE;
+
+} // CTapiLine::GetProviderInfo
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetValidIDs
@@ -1345,28 +1277,22 @@ BOOL CTapiLine::GetTSPProvider (LPTAPIPROVIDER pProvider) const
 void CTapiLine::GetValidIDs(CStringArray& arrKeys) const
 {
 	LPLINEDEVCAPS lpLineCaps = ((CTapiLine*)this)->GetLineCaps();
-	if (lpLineCaps && lpLineCaps->dwDeviceClassesSize > 0 &&
-		lpLineCaps->dwDeviceClassesSize < 4096)
+	if (lpLineCaps && lpLineCaps->dwDeviceClassesSize > 0 && lpLineCaps->dwDeviceClassesSize < 4096)
 	{
 		LPCTSTR pszKey = (LPCTSTR)(((BYTE*)lpLineCaps) + lpLineCaps->dwDeviceClassesOffset);
 		while (*pszKey)
 		{
 			arrKeys.Add(pszKey);
-			pszKey += lstrlen(pszKey)+1;
+			pszKey += lstrlen(pszKey) + 1;
 		}
 	}
 
-}// CTapiLine::GetValidIDs
+} // CTapiLine::GetValidIDs
 
 bool CTapiLine::IsTSP_ECSTA()
 {
-	if (m_lineExtID.dwExtensionID0 == ECSTA150_EXTID0 &&
-		m_lineExtID.dwExtensionID1 == ECSTA150_EXTID1 &&
-		m_lineExtID.dwExtensionID2 == ECSTA150_EXTID2 &&
-		(m_lineExtID.dwExtensionID3 == ECSTA150_EXTID3 || m_lineExtID.dwExtensionID3 == ECSTA150_EXTID3CONTROL))
-	{
+	if (m_lineExtID.dwExtensionID0 == ECSTA150_EXTID0 && m_lineExtID.dwExtensionID1 == ECSTA150_EXTID1 && m_lineExtID.dwExtensionID2 == ECSTA150_EXTID2 && (m_lineExtID.dwExtensionID3 == ECSTA150_EXTID3 || m_lineExtID.dwExtensionID3 == ECSTA150_EXTID3CONTROL))
 		return true;
-	}
 	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////////
@@ -1378,12 +1304,12 @@ int CTapiLine::GetCallCount()
 {
 	// Make sure we know about all the calls.
 	CObList lstCalls;
-	GetNewCalls (lstCalls);
+	GetNewCalls(lstCalls);
 
-	CSingleLock Lock (&m_semCalls, TRUE);
+	CSingleLock Lock(&m_semCalls, TRUE);
 	return (int)m_arrCalls.GetSize();
 
-}// CTapiLine::GetCallCount
+} // CTapiLine::GetCallCount
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetCall
@@ -1392,12 +1318,12 @@ int CTapiLine::GetCallCount()
 //
 CTapiCall* CTapiLine::GetCall(int iIndex)
 {
-	CSingleLock Lock (&m_semCalls, TRUE);
+	CSingleLock Lock(&m_semCalls, TRUE);
 	if (iIndex >= 0 && iIndex < m_arrCalls.GetSize())
-		return (CTapiCall*) m_arrCalls[iIndex];
+		return (CTapiCall*)m_arrCalls[iIndex];
 	return NULL;
 
-}// CTapiLine::GetCall
+} // CTapiLine::GetCall
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::IsValid
@@ -1408,7 +1334,7 @@ BOOL CTapiLine::IsValid() const
 {
 	return ((m_iFlags & Removed) == 0);
 
-}// CTapiLine::IsValid
+} // CTapiLine::IsValid
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnDynamicCreate
@@ -1417,7 +1343,7 @@ BOOL CTapiLine::IsValid() const
 //
 void CTapiLine::OnDynamicCreate()
 {
-}// CTapiLine::OnDynamicCreate
+} // CTapiLine::OnDynamicCreate
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnDynamicRemove
@@ -1426,7 +1352,7 @@ void CTapiLine::OnDynamicCreate()
 //
 void CTapiLine::OnDynamicRemove()
 {
-}// CTapiLine::OnDynamicRemove
+} // CTapiLine::OnDynamicRemove
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::OnForceClose
@@ -1438,7 +1364,7 @@ void CTapiLine::OnForceClose()
 	// Close the line
 	OnClose();
 
-}// CTapiLine::OnForceClose
+} // CTapiLine::OnForceClose
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiLine::GetRelatedPhoneID
@@ -1447,29 +1373,30 @@ void CTapiLine::OnForceClose()
 //
 DWORD CTapiLine::GetRelatedPhoneID()
 {
-    LPVARSTRING lpVarString = (LPVARSTRING) AllocMem( sizeof(VARSTRING)+1024);
-    if (lpVarString == NULL)
-        return NULL;
-    lpVarString->dwTotalSize = sizeof(VARSTRING)+10;
-    
-    DWORD dwID = 0xffffffff;
-    if (GetID (lpVarString, _T("tapi/phone")) == 0)
-        dwID = *((LPDWORD)((LPBYTE)lpVarString+lpVarString->dwStringOffset));
+	LPVARSTRING lpVarString = (LPVARSTRING)AllocMem(sizeof(VARSTRING) + 1024);
+	if (lpVarString == NULL)
+		return NULL;
+	lpVarString->dwTotalSize = sizeof(VARSTRING) + 10;
+
+	DWORD dwID = 0xffffffff;
+	if (GetID(lpVarString, _T("tapi/phone")) == 0)
+		dwID = *((LPDWORD)((LPBYTE)lpVarString + lpVarString->dwStringOffset));
 
 	FreeMem(lpVarString);
-    return dwID;
-	
-}// CTapiLine::GetRelatedPhoneID
+	return dwID;
 
-long CTapiLine::GetDevConfigStruct(LPCWSTR pszDeviceClass, ETSPVarStruct<VARSTRING> *pDevConfig)
+} // CTapiLine::GetRelatedPhoneID
+
+long CTapiLine::GetDevConfigStruct(LPCWSTR pszDeviceClass, ETSPVarStruct<VARSTRING>* pDevConfig)
 {
 	size_t iSize = sizeof(VARSTRING) + 0500;
 	long lReturn = 0;
 
-	for (int i = 0; i < 10; i++) 
+	for (int i = 0; i < 10; i++)
 	{
 		// Make sure the buffer exists, is valid and big enough.
-		if (!pDevConfig->ReAlloc(iSize)) {
+		if (!pDevConfig->ReAlloc(iSize))
+		{
 			lReturn = LINEERR_NOMEM;
 			break;
 		}
@@ -1477,13 +1404,12 @@ long CTapiLine::GetDevConfigStruct(LPCWSTR pszDeviceClass, ETSPVarStruct<VARSTRI
 		// Make the call to fill the structure.
 		lReturn = lineGetDevConfigW(m_dwDeviceID, pDevConfig->pData, pszDeviceClass);
 
-		//Wenn OK raushier
+		// Wenn OK raushier
 		if (lReturn == NO_ERROR && pDevConfig->pData->dwNeededSize <= pDevConfig->pData->dwTotalSize)
 			break;
 
-		if (lReturn != NO_ERROR && lReturn != LINEERR_STRUCTURETOOSMALL) {
+		if (lReturn != NO_ERROR && lReturn != LINEERR_STRUCTURETOOSMALL)
 			break;
-		}
 
 		// Buffer wasn't big enough.  Make it bigger and try again.
 		iSize = pDevConfig->pData->dwNeededSize;
@@ -1499,14 +1425,8 @@ LONG CTapiLine::GetECSTAInvalidPasswordState()
 	if (GetDevConfigStruct(L"ecsta/InvalidPasswordState", &invalidPasswordState) == NO_ERROR)
 	{
 		wchar_t szInvalidPasswordState[200] = {0};
-		if (VarInfoGetStringW(invalidPasswordState.pData, 
-			invalidPasswordState.pData->dwStringOffset,
-			invalidPasswordState.pData->dwStringSize,
-			szInvalidPasswordState,
-			_countof(szInvalidPasswordState)) == NO_ERROR)
-		{
+		if (VarInfoGetStringW(invalidPasswordState.pData, invalidPasswordState.pData->dwStringOffset, invalidPasswordState.pData->dwStringSize, szInvalidPasswordState, _countof(szInvalidPasswordState)) == NO_ERROR)
 			lInvalidPasswordState = _wtol(szInvalidPasswordState);
-		}
 	}
 	return lInvalidPasswordState;
 }

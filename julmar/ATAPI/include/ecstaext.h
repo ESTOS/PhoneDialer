@@ -1,7 +1,7 @@
 #ifndef _ECSTAEXT_H
 #define _ECSTAEXT_H
 
-// Nachdem in diesem Header immer mehr Informationen enthalten sind die zwischen einem ECSTA und dem 
+// Nachdem in diesem Header immer mehr Informationen enthalten sind die zwischen einem ECSTA und dem
 // UCServer ausgetauscht werden wurde der Inhalt komplett ins global umgezogen.
 
 // ÄNDERUNGEN MÜSSEN IMMER RÜCKWÄRTSKOMPATIBEL GEMACHT WERDEN

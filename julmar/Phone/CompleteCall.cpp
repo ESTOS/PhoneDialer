@@ -3,20 +3,20 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
-#include "phone.h"
 #include "CompleteCall.h"
+#include "phone.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -31,16 +31,11 @@ struct
 	DWORD dwCallFeature2;
 } g_Modes[] = {
 
-	{ _T("Camp On"),	LINECALLCOMPLMODE_CAMPON, LINECALLFEATURE2_COMPLCAMPON },
-	{ _T("Call back"),	LINECALLCOMPLMODE_CALLBACK, LINECALLFEATURE2_COMPLCALLBACK },
-	{ _T("Intrude"),    LINECALLCOMPLMODE_INTRUDE, LINECALLFEATURE2_COMPLINTRUDE },
-	{ _T("Message"),    LINECALLCOMPLMODE_MESSAGE, LINECALLFEATURE2_COMPLMESSAGE },
-	{ NULL, 0 },
+	{_T("Camp On"), LINECALLCOMPLMODE_CAMPON, LINECALLFEATURE2_COMPLCAMPON}, {_T("Call back"), LINECALLCOMPLMODE_CALLBACK, LINECALLFEATURE2_COMPLCALLBACK}, {_T("Intrude"), LINECALLCOMPLMODE_INTRUDE, LINECALLFEATURE2_COMPLINTRUDE}, {_T("Message"), LINECALLCOMPLMODE_MESSAGE, LINECALLFEATURE2_COMPLMESSAGE}, {NULL, 0},
 };
 
 /////////////////////////////////////////////////////////////////////////////
 // CCompleteCall dialog
-
 
 CCompleteCall::CCompleteCall(CWnd* pParent, CTapiCall* pCall)
 	: CDialog(CCompleteCall::IDD, pParent)
@@ -129,8 +124,7 @@ BOOL CCompleteCall::OnInitDialog()
 	LPLINEADDRESSCAPS lpCaps = pAddr->GetAddressCaps();
 	for (i = 0; g_Modes[i].pszText != NULL; i++)
 	{
-		if ((bCompareAddressCaps && (lpCaps->dwCallCompletionModes & g_Modes[i].dwMode)) ||
-			(!bCompareAddressCaps && (dwCallFeatures2 & g_Modes[i].dwCallFeature2)))
+		if ((bCompareAddressCaps && (lpCaps->dwCallCompletionModes & g_Modes[i].dwMode)) || (!bCompareAddressCaps && (dwCallFeatures2 & g_Modes[i].dwCallFeature2)))
 		{
 			int iPos = m_cbMode.AddString(g_Modes[i].pszText);
 			ASSERT(iPos != CB_ERR);

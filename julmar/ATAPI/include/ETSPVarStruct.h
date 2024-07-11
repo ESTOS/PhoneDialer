@@ -10,48 +10,44 @@
 #endif // _MSC_VER > 1000
 
 #include <malloc.h>
+#include <stdstring.h>
 
-template <class STRUCTTYPE>
-	long VarInfoGetStringA(STRUCTTYPE* pData, DWORD dwOffset, DWORD dwSize, LPSTR szString, DWORD dwNumStringBytes)
-	{
-		if (dwOffset + dwSize > pData->dwTotalSize)
-			return -1;
-	
-		if (!dwOffset || !dwSize || dwNumStringBytes < sizeof(CHAR))
-			return -1;
+template <class STRUCTTYPE> long VarInfoGetStringA(STRUCTTYPE* pData, DWORD dwOffset, DWORD dwSize, LPSTR szString, DWORD dwNumStringBytes)
+{
+	if (dwOffset + dwSize > pData->dwTotalSize)
+		return -1;
 
-		DWORD dwMaxSize = dwSize;
-		if (dwNumStringBytes - sizeof(CHAR) < dwSize) {
-			dwMaxSize = dwNumStringBytes - sizeof(CHAR);
-		}
+	if (!dwOffset || !dwSize || dwNumStringBytes < sizeof(CHAR))
+		return -1;
 
-		memcpy(szString, ((LPBYTE)pData) + dwOffset, dwMaxSize);
-		memset(((LPBYTE)szString) + dwMaxSize, 0x00, sizeof(CHAR));
-		return NO_ERROR;
-	}
+	DWORD dwMaxSize = dwSize;
+	if (dwNumStringBytes - sizeof(CHAR) < dwSize)
+		dwMaxSize = dwNumStringBytes - sizeof(CHAR);
 
-template <class STRUCTTYPE>
-	long VarInfoGetStringW(STRUCTTYPE* pData, DWORD dwOffset, DWORD dwSize, LPWSTR szString, DWORD dwNumStringChars)
-	{
-		DWORD dwNumStringBytes = dwNumStringChars * sizeof(WCHAR);
-		if (dwOffset + dwSize > pData->dwTotalSize)
-			return -1;
-	
-		if (!dwOffset || !dwSize || dwNumStringBytes < sizeof(WCHAR))
-			return -1;
+	memcpy(szString, ((LPBYTE)pData) + dwOffset, dwMaxSize);
+	memset(((LPBYTE)szString) + dwMaxSize, 0x00, sizeof(CHAR));
+	return NO_ERROR;
+}
 
-		DWORD dwMaxSize = dwSize;
-		if (dwNumStringBytes - sizeof(WCHAR) < dwSize) {
-			dwMaxSize = dwNumStringBytes - sizeof(WCHAR);
-		}
+template <class STRUCTTYPE> long VarInfoGetStringW(STRUCTTYPE* pData, DWORD dwOffset, DWORD dwSize, LPWSTR szString, DWORD dwNumStringChars)
+{
+	DWORD dwNumStringBytes = dwNumStringChars * sizeof(WCHAR);
+	if (dwOffset + dwSize > pData->dwTotalSize)
+		return -1;
 
-		memcpy(szString, ((LPBYTE)pData) + dwOffset, dwMaxSize);
-		memset(((LPBYTE)szString) + dwMaxSize, 0x00, sizeof(WCHAR));
-		return NO_ERROR;
-	}
+	if (!dwOffset || !dwSize || dwNumStringBytes < sizeof(WCHAR))
+		return -1;
 
-template <class STRUCTTYPE>
-CStdStringW VarInfoGetStdStringW(STRUCTTYPE* pData, DWORD dwOffset, DWORD dwSize, DWORD dwMaxChars)
+	DWORD dwMaxSize = dwSize;
+	if (dwNumStringBytes - sizeof(WCHAR) < dwSize)
+		dwMaxSize = dwNumStringBytes - sizeof(WCHAR);
+
+	memcpy(szString, ((LPBYTE)pData) + dwOffset, dwMaxSize);
+	memset(((LPBYTE)szString) + dwMaxSize, 0x00, sizeof(WCHAR));
+	return NO_ERROR;
+}
+
+template <class STRUCTTYPE> CStdStringW VarInfoGetStdStringW(STRUCTTYPE* pData, DWORD dwOffset, DWORD dwSize, DWORD dwMaxChars)
 {
 	CStdStringW wstrReturn;
 	DWORD dwNumStringBytes = dwMaxChars * sizeof(WCHAR);
@@ -63,16 +59,13 @@ CStdStringW VarInfoGetStdStringW(STRUCTTYPE* pData, DWORD dwOffset, DWORD dwSize
 
 	DWORD dwMaxSize = dwSize;
 	if (dwNumStringBytes - sizeof(WCHAR) < dwSize)
-	{
 		dwMaxSize = dwNumStringBytes - sizeof(WCHAR);
-	}
 	wstrReturn.assign((const wchar_t*)(((LPBYTE)pData) + dwOffset), dwMaxSize / sizeof(wchar_t));
 	wstrReturn.TrimRight((wchar_t)0);
 	return wstrReturn;
 }
 
-template <class STRUCTTYPE>
-CStdStringA VarInfoGetStdStringA(STRUCTTYPE* pData, DWORD dwOffset, DWORD dwSize, DWORD dwMaxChars)
+template <class STRUCTTYPE> CStdStringA VarInfoGetStdStringA(STRUCTTYPE* pData, DWORD dwOffset, DWORD dwSize, DWORD dwMaxChars)
 {
 	CStdStringA astrReturn;
 	DWORD dwNumStringBytes = dwMaxChars * sizeof(char);
@@ -84,23 +77,19 @@ CStdStringA VarInfoGetStdStringA(STRUCTTYPE* pData, DWORD dwOffset, DWORD dwSize
 
 	DWORD dwMaxSize = dwSize;
 	if (dwNumStringBytes - sizeof(char) < dwSize)
-	{
 		dwMaxSize = dwNumStringBytes - sizeof(char);
-	}
 	astrReturn.assign((const char*)(((LPBYTE)pData) + dwOffset), dwMaxSize / sizeof(char));
 	astrReturn.TrimRight((char)0);
 	return astrReturn;
 }
 
 #ifdef _UNICODE
-	#define VarInfoGetString VarInfoGetStringW
+#define VarInfoGetString VarInfoGetStringW
 #else
-	#define VarInfoGetString VarInfoGetStringA
+#define VarInfoGetString VarInfoGetStringA
 #endif
 
-
-template <class TYPE>
-class ETSPVarStruct  
+template <class TYPE> class ETSPVarStruct
 {
 public:
 	ETSPVarStruct()
@@ -125,17 +114,17 @@ public:
 			memcpy(pData, mVarStruct.pData, mVarStruct.pData->dwTotalSize);
 		return *this;
 	}
-	
+
 	TYPE* ReAlloc(size_t iSize)
 	{
 		ASSERT(iSize < 20000);
 
 		if (!pData)
 		{
-			//nocurrent data
+			// nocurrent data
 			if (!iSize)
 			{
-				//No size requested.
+				// No size requested.
 				return NULL;
 			}
 
@@ -150,7 +139,7 @@ public:
 			free(pData);
 			pData = NULL;
 
-			if (!iSize) //No size requested.
+			if (!iSize) // No size requested.
 				return NULL;
 
 			pData = (TYPE*)calloc(1, iSize);
@@ -158,7 +147,7 @@ public:
 				pData->dwTotalSize = (DWORD)iSize;
 			return pData;
 		}
-	
+
 		TYPE* pData2 = (TYPE*)realloc(pData, iSize);
 		if (pData2)
 		{
@@ -171,13 +160,11 @@ public:
 
 	DWORD GetSize()
 	{
-		if (pData) {
+		if (pData)
 			return (DWORD)_msize(pData);
-		}
 
 		return 0;
 	}
-
 };
 
 #endif // !defined(AFX_ETSPVARSTRUCT_H__14ED531F_4F32_4154_AC32_65B8328ED808__INCLUDED_)

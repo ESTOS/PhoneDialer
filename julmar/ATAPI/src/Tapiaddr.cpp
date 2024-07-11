@@ -5,23 +5,74 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
 #include "atapi.h"
-#include "tapistr.h"
 #include "ecstaext.h"
+#include "tapistr.h"
 
-IMPLEMENT_DYNCREATE (CTapiAddress, CTapiObject)
+IMPLEMENT_DYNCREATE(CTapiAddress, CTapiObject)
+
+bool ECSTAAddressCaps::valid() const
+{
+	if (m_dwAddressFlags)
+		return true;
+	if (!m_strDeviceID.IsEmpty())
+		return true;
+	if (!m_strDeviceType.IsEmpty())
+		return true;
+	if (!m_strDeviceName.IsEmpty())
+		return true;
+	return false;
+}
+
+CString ECSTAAddressCaps::getDisplayText() const
+{
+	CString strDisplayText;
+	if (!m_strDeviceName.IsEmpty())
+	{
+		strDisplayText += L" - ";
+		strDisplayText += m_strDeviceName;
+	}
+	if (!m_strDeviceID.IsEmpty())
+	{
+		strDisplayText += L" - ";
+		strDisplayText += m_strDeviceID;
+	}
+	if (!m_strDeviceType.IsEmpty())
+	{
+		strDisplayText += L" - ";
+		strDisplayText += m_strDeviceType;
+	}
+	if (m_dwAddressFlags & ECSTA_ADDRESSFLAG_IS_ACTIVEADDRESS)
+		strDisplayText += L" - active";
+	if (m_dwAddressFlags & (ECSTA_ADDRESSFLAG_IS_ACD_GROUP_ADDRESS | ECSTA_ADDRESSFLAG_SUPPORTS_FORWARDS_ONLY))
+	{
+		strDisplayText += L" (";
+		CString strAddon;
+		if (m_dwAddressFlags & ECSTA_ADDRESSFLAG_IS_ACD_GROUP_ADDRESS)
+			strAddon += L"ACD";
+		if (m_dwAddressFlags & ECSTA_ADDRESSFLAG_SUPPORTS_FORWARDS_ONLY)
+		{
+			if (!strAddon.IsEmpty())
+				strAddon += L" | ";
+			strAddon += L"FWD";
+		}
+		strDisplayText += strAddon;
+		strDisplayText += L")";
+	}
+	return strDisplayText;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::CTapiAddress
@@ -29,18 +80,18 @@ IMPLEMENT_DYNCREATE (CTapiAddress, CTapiObject)
 // Constructor for the TAPI address structure
 //
 CTapiAddress::CTapiAddress()
-{                             
-    m_pLine = NULL;
-    m_dwAddressID = 0L;
-    m_strAddress = "";
-    m_lpAddrCaps = NULL;
-    m_lpAddrStatus = NULL;
+{
+	m_pLine = NULL;
+	m_dwAddressID = 0L;
+	m_strAddress = "";
+	m_lpAddrCaps = NULL;
+	m_lpAddrStatus = NULL;
 	m_lpAgentCaps = NULL;
 	m_lpAgentStatus = NULL;
 	m_fAgentCapsReload = TRUE;
 	m_fAgentStatsReload = TRUE;
 
-}// CTapiAddress::CTapiAddress
+} // CTapiAddress::CTapiAddress
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::~CTapiAddress
@@ -48,29 +99,29 @@ CTapiAddress::CTapiAddress()
 // Destructor for the address structure
 //
 CTapiAddress::~CTapiAddress()
-{   
+{
 	if (m_lpAddrCaps)
-		FreeMem ( m_lpAddrCaps);
+		FreeMem(m_lpAddrCaps);
 	if (m_lpAddrStatus)
-		FreeMem ( m_lpAddrStatus);
+		FreeMem(m_lpAddrStatus);
 	if (m_lpAgentCaps)
-		FreeMem( m_lpAgentCaps);
+		FreeMem(m_lpAgentCaps);
 	if (m_lpAgentStatus)
-		FreeMem( m_lpAgentStatus);
+		FreeMem(m_lpAgentStatus);
 
-}// CTapiAddress::~CTapiAddress
+} // CTapiAddress::~CTapiAddress
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::Init
 //
 // Initialize the address object from a line object
 //
-void CTapiAddress::Init (CTapiLine* pLine, DWORD dwAddressID)
-{                     
-    m_pLine = pLine;
-    m_dwAddressID = dwAddressID;
-    
-}// CTapiAddress::Init
+void CTapiAddress::Init(CTapiLine* pLine, DWORD dwAddressID)
+{
+	m_pLine = pLine;
+	m_dwAddressID = dwAddressID;
+
+} // CTapiAddress::Init
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetLineOwner
@@ -78,12 +129,12 @@ void CTapiAddress::Init (CTapiLine* pLine, DWORD dwAddressID)
 // Return the line owner for this address
 //
 CTapiLine* CTapiAddress::GetLineOwner() const
-{                             
-    return m_pLine;
+{
+	return m_pLine;
 
-}// CTapiAddress::GetLineOwner
+} // CTapiAddress::GetLineOwner
 
-long CTapiAddress::GetECSTAAddressCaps(CString& strDeviceType, CString& strDeviceName, CString& strDeviceID, DWORD& dwAddressFlags)
+long CTapiAddress::GetECSTAAddressCaps(ECSTAAddressCaps& addressCaps)
 {
 	const LPLINEADDRESSCAPS caps = GetAddressCaps(0, 0, TRUE);
 	if (!caps)
@@ -98,24 +149,24 @@ long CTapiAddress::GetECSTAAddressCaps(CString& strDeviceType, CString& strDevic
 		{
 			if (pList->elements[iCount].dwElementID == ECSTADEVSPECIFICELEMENT_ADDRESSDEVICETYPE)
 			{
-				strDeviceType = VarInfoGetStdStringW(caps, pList->elements[iCount].dwOffset, pList->elements[iCount].dwSize, 200).c_str();
+				addressCaps.m_strDeviceType = VarInfoGetStdStringW(caps, pList->elements[iCount].dwOffset, pList->elements[iCount].dwSize, 200).c_str();
 			}
 			else if (pList->elements[iCount].dwElementID == ECSTADEVSPECIFICELEMENT_ADDRESSDEVICENAME)
 			{
-				strDeviceName = VarInfoGetStdStringW(caps, pList->elements[iCount].dwOffset, pList->elements[iCount].dwSize, 200).c_str();
+				addressCaps.m_strDeviceName = VarInfoGetStdStringW(caps, pList->elements[iCount].dwOffset, pList->elements[iCount].dwSize, 200).c_str();
 			}
 			else if (pList->elements[iCount].dwElementID == ECSTADEVSPECIFICELEMENT_ADDRESSDEVICEID)
 			{
-				strDeviceID = VarInfoGetStdStringW(caps, pList->elements[iCount].dwOffset, pList->elements[iCount].dwSize, 200).c_str();
+				addressCaps.m_strDeviceID = VarInfoGetStdStringW(caps, pList->elements[iCount].dwOffset, pList->elements[iCount].dwSize, 200).c_str();
 			}
-			else if (pList->elements[iCount].dwElementID == ECSTADEVSPECIFICELEMENT_ACTIVEADDRESSFLAGS)
+			else if (pList->elements[iCount].dwElementID == ECSTADEVSPECIFICELEMENT_ADDRESSFLAGS)
 			{
 				if (pList->elements[iCount].dwSize == sizeof(DWORD))
-					memcpy(&dwAddressFlags, ((BYTE*)caps) + pList->elements[iCount].dwOffset, sizeof(DWORD));
+					memcpy(&addressCaps.m_dwAddressFlags, ((BYTE*)caps) + pList->elements[iCount].dwOffset, sizeof(DWORD));
 			}
 		}
 	}
-	if (!strDeviceType.IsEmpty() && !strDeviceName.IsEmpty() && !strDeviceID.IsEmpty())
+	if (addressCaps.valid())
 		return NO_ERROR;
 
 	return -3;
@@ -127,10 +178,10 @@ long CTapiAddress::GetECSTAAddressCaps(CString& strDeviceType, CString& strDevic
 // Return the address id for this object
 //
 DWORD CTapiAddress::GetAddressID() const
-{                             
-    return m_dwAddressID;
+{
+	return m_dwAddressID;
 
-}// CTapiAddress::GetAddressID
+} // CTapiAddress::GetAddressID
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetAddressCaps
@@ -147,35 +198,33 @@ const LPLINEADDRESSCAPS CTapiAddress::GetAddressCaps(DWORD dwAPIVersion, DWORD d
 	if (dwAPIVersion == 0)
 		dwAPIVersion = m_pLine->GetNegotiatedAPIVersion();
 
-    // Allocate a buffer for the address information
-    DWORD dwSize = (m_lpAddrCaps) ? m_lpAddrCaps->dwTotalSize : sizeof (LINEADDRESSCAPS) + 1024;
-    while (TRUE)
-    {   
+	// Allocate a buffer for the address information
+	DWORD dwSize = (m_lpAddrCaps) ? m_lpAddrCaps->dwTotalSize : sizeof(LINEADDRESSCAPS) + 1024;
+	while (TRUE)
+	{
 		if (m_lpAddrCaps == NULL)
 		{
-			m_lpAddrCaps = (LPLINEADDRESSCAPS) AllocMem( dwSize);
+			m_lpAddrCaps = (LPLINEADDRESSCAPS)AllocMem(dwSize);
 			if (m_lpAddrCaps == NULL)
 				return NULL;
 		}
-        
-        // Mark the size we are sending.
-        ((LPVARSTRING)m_lpAddrCaps)->dwTotalSize = dwSize;
-        if (lineGetAddressCaps (m_pLine->GetTapiConnection()->GetLineAppHandle(),
-                                m_pLine->GetDeviceID(), GetAddressID(),
-                                dwAPIVersion, dwExtVersion, m_lpAddrCaps)  != 0)
-            return NULL;
 
-        // Return the structure if we got it all.
-        if (m_lpAddrCaps->dwNeededSize <= dwSize)
+		// Mark the size we are sending.
+		((LPVARSTRING)m_lpAddrCaps)->dwTotalSize = dwSize;
+		if (lineGetAddressCaps(m_pLine->GetTapiConnection()->GetLineAppHandle(), m_pLine->GetDeviceID(), GetAddressID(), dwAPIVersion, dwExtVersion, m_lpAddrCaps) != 0)
+			return NULL;
+
+		// Return the structure if we got it all.
+		if (m_lpAddrCaps->dwNeededSize <= dwSize)
 			return m_lpAddrCaps;
 
-        // If we didn't get it all, then reallocate the buffer and retry it.
-        dwSize = m_lpAddrCaps->dwNeededSize;
-		FreeMem ( m_lpAddrCaps);
-        m_lpAddrCaps = NULL;
-    }    
+		// If we didn't get it all, then reallocate the buffer and retry it.
+		dwSize = m_lpAddrCaps->dwNeededSize;
+		FreeMem(m_lpAddrCaps);
+		m_lpAddrCaps = NULL;
+	}
 
-}// CTapiAddress::GetAddressCaps
+} // CTapiAddress::GetAddressCaps
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetAddressStatus
@@ -183,44 +232,43 @@ const LPLINEADDRESSCAPS CTapiAddress::GetAddressCaps(DWORD dwAPIVersion, DWORD d
 // Return the address status for this object
 //
 const LPLINEADDRESSSTATUS CTapiAddress::GetAddressStatus(BOOL fForceRealloc)
-{   
-    // If the line hasn't been opened yet, then don't allow this call to
-    // continue - it requires an hLine.
-    if (!m_pLine->IsOpen())
-        return NULL;
-    
-    // re-retrieve our status record.
+{
+	// If the line hasn't been opened yet, then don't allow this call to
+	// continue - it requires an hLine.
+	if (!m_pLine->IsOpen())
+		return NULL;
+
+	// re-retrieve our status record.
 	if (m_lpAddrStatus && !fForceRealloc)
 		return m_lpAddrStatus;
-    
-    // Allocate a buffer for the call information
-    DWORD dwSize = (m_lpAddrStatus) ? m_lpAddrStatus->dwTotalSize : sizeof (LINEADDRESSSTATUS) + 1024;
-    while (TRUE)
-    {   
+
+	// Allocate a buffer for the call information
+	DWORD dwSize = (m_lpAddrStatus) ? m_lpAddrStatus->dwTotalSize : sizeof(LINEADDRESSSTATUS) + 1024;
+	while (TRUE)
+	{
 		if (m_lpAddrStatus == NULL)
 		{
-			m_lpAddrStatus = (LPLINEADDRESSSTATUS) AllocMem( dwSize);
+			m_lpAddrStatus = (LPLINEADDRESSSTATUS)AllocMem(dwSize);
 			if (m_lpAddrStatus == NULL)
 				return NULL;
 		}
-        
-        // Mark the size we are sending.
-        ((LPVARSTRING)m_lpAddrStatus)->dwTotalSize = dwSize;
-        if (lineGetAddressStatus (m_pLine->GetLineHandle(), 
-                                  GetAddressID(), m_lpAddrStatus) != 0)
-            return NULL;
 
-        // Return the structure if we got it all.
-        if (m_lpAddrStatus->dwNeededSize <= dwSize)
+		// Mark the size we are sending.
+		((LPVARSTRING)m_lpAddrStatus)->dwTotalSize = dwSize;
+		if (lineGetAddressStatus(m_pLine->GetLineHandle(), GetAddressID(), m_lpAddrStatus) != 0)
+			return NULL;
+
+		// Return the structure if we got it all.
+		if (m_lpAddrStatus->dwNeededSize <= dwSize)
 			return m_lpAddrStatus;
 
-        // If we didn't get it all, then reallocate the buffer and retry it.
-        dwSize = m_lpAddrStatus->dwNeededSize;
-		FreeMem ( m_lpAddrStatus);
-        m_lpAddrStatus = NULL;
-    }    
+		// If we didn't get it all, then reallocate the buffer and retry it.
+		dwSize = m_lpAddrStatus->dwNeededSize;
+		FreeMem(m_lpAddrStatus);
+		m_lpAddrStatus = NULL;
+	}
 
-}// CTapiAddress::GetAddressStatus
+} // CTapiAddress::GetAddressStatus
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetID
@@ -229,19 +277,18 @@ const LPLINEADDRESSSTATUS CTapiAddress::GetAddressStatus(BOOL fForceRealloc)
 //
 DWORD CTapiAddress::GetID(LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass)
 {
-    if (!m_pLine->IsOpen())
-        return LINEERR_NODEVICE;
-    return lineGetID (m_pLine->GetLineHandle(), GetAddressID(), NULL, 
-					  LINECALLSELECT_ADDRESS, lpDeviceID, lpszDeviceClass);
+	if (!m_pLine->IsOpen())
+		return LINEERR_NODEVICE;
+	return lineGetID(m_pLine->GetLineHandle(), GetAddressID(), NULL, LINECALLSELECT_ADDRESS, lpDeviceID, lpszDeviceClass);
 
-}// CTapiAddress::GetID
+} // CTapiAddress::GetID
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::OnStateChange
 //
 // This is invoked when the status of the address has changed.
 //
-void CTapiAddress::OnStateChange (DWORD dwState)
+void CTapiAddress::OnStateChange(DWORD dwState)
 {
 	if (dwState & LINEADDRESSSTATE_CAPSCHANGE)
 	{
@@ -249,14 +296,14 @@ void CTapiAddress::OnStateChange (DWORD dwState)
 			GetAddressCaps(0, 0, TRUE);
 		dwState &= ~LINEADDRESSSTATE_CAPSCHANGE;
 	}
-	
+
 	if (dwState)
 	{
 		if (m_lpAddrStatus)
 			GetAddressStatus(TRUE);
 	}
 
-}// CTapiAddress::OnStateChange
+} // CTapiAddress::OnStateChange
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetDialableAddress
@@ -265,196 +312,175 @@ void CTapiAddress::OnStateChange (DWORD dwState)
 //
 CString CTapiAddress::GetDialableAddress()
 {
-    LPLINEADDRESSCAPS lpAddrCaps = GetAddressCaps();
-    CString strAddress = TAPISTR_NOADDRNAME;
-    if (lpAddrCaps)
-    {
-        if (lpAddrCaps->dwAddressSize && lpAddrCaps->dwAddressOffset)
-        {
-            LPCTSTR lpszAddress = (LPCTSTR)(((LPBYTE)lpAddrCaps)+lpAddrCaps->dwAddressOffset);
-            strAddress = lpszAddress;
-        }
-    }
-    
-    return strAddress;
+	LPLINEADDRESSCAPS lpAddrCaps = GetAddressCaps();
+	CString strAddress = TAPISTR_NOADDRNAME;
+	if (lpAddrCaps)
+	{
+		if (lpAddrCaps->dwAddressSize && lpAddrCaps->dwAddressOffset)
+		{
+			LPCTSTR lpszAddress = (LPCTSTR)(((LPBYTE)lpAddrCaps) + lpAddrCaps->dwAddressOffset);
+			strAddress = lpszAddress;
+		}
+	}
 
-}// CTapiAddress::GetDialableAddress
+	return strAddress;
+
+} // CTapiAddress::GetDialableAddress
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::DevSpecific
 //
-// Enables service providers to provide access to features not offered 
-// by other TAPI functions. The meaning of the extensions are device specific, 
-// and taking advantage of these extensions requires the application to be 
+// Enables service providers to provide access to features not offered
+// by other TAPI functions. The meaning of the extensions are device specific,
+// and taking advantage of these extensions requires the application to be
 // fully aware of them.
 //
-LONG CTapiAddress::DevSpecific (LPVOID lpParams, DWORD dwSize)
-{                            
-    return ManageAsynchRequest(lineDevSpecific (m_pLine->GetLineHandle(), GetAddressID(), 
-                                    NULL, lpParams, dwSize));
+LONG CTapiAddress::DevSpecific(LPVOID lpParams, DWORD dwSize)
+{
+	return ManageAsynchRequest(lineDevSpecific(m_pLine->GetLineHandle(), GetAddressID(), NULL, lpParams, dwSize));
 
-}// CTapiAddress::DevSpecific
+} // CTapiAddress::DevSpecific
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetNewCalls
 //
-// This function returns all the active call handles for this address in an 
+// This function returns all the active call handles for this address in an
 // object list.
 //
-LONG CTapiAddress::GetNewCalls (CObList& lstCalls)
-{                         
-    DWORD dwSize = sizeof (LINECALLLIST) + 1024;
-    LPLINECALLLIST lpCallList = NULL;
-    
-    while (TRUE)
-    {
-		lpCallList = (LPLINECALLLIST) AllocMem ( dwSize);
-        if (lpCallList == NULL)
+LONG CTapiAddress::GetNewCalls(CObList& lstCalls)
+{
+	DWORD dwSize = sizeof(LINECALLLIST) + 1024;
+	LPLINECALLLIST lpCallList = NULL;
+
+	while (TRUE)
+	{
+		lpCallList = (LPLINECALLLIST)AllocMem(dwSize);
+		if (lpCallList == NULL)
 			return LINEERR_NOMEM;
-            
-		LONG lResult = lineGetNewCalls (m_pLine->GetLineHandle(), GetAddressID(), 
-                             LINECALLSELECT_LINE, lpCallList);
+
+		LONG lResult = lineGetNewCalls(m_pLine->GetLineHandle(), GetAddressID(), LINECALLSELECT_LINE, lpCallList);
 		if (lResult != 0)
-        {
+		{
 			FreeMem(lpCallList);
-            return lResult;
-        }                        
-        
-        // If we didn't get them all, then reallocate and try again.
-        if (lpCallList->dwNeededSize <= dwSize)
+			return lResult;
+		}
+
+		// If we didn't get them all, then reallocate and try again.
+		if (lpCallList->dwNeededSize <= dwSize)
 			break;
-        dwSize = lpCallList->dwNeededSize;
+		dwSize = lpCallList->dwNeededSize;
 		FreeMem(lpCallList);
-        lpCallList = NULL;
-    }
-    
-    // Now go through the call list and create call handles for each.
-    LPHCALL lphCall = (LPHCALL) ((LPSTR)lpCallList + lpCallList->dwCallsOffset);
-    for (DWORD i = 0; i < lpCallList->dwCallsNumEntries; i++)
-    {
-        CTapiCall* pCall = m_pLine->CreateNewCall(*lphCall);
-        if (pCall)
-            lstCalls.AddTail(pCall);
-        lphCall++;
-    }        
-    
+		lpCallList = NULL;
+	}
+
+	// Now go through the call list and create call handles for each.
+	LPHCALL lphCall = (LPHCALL)((LPSTR)lpCallList + lpCallList->dwCallsOffset);
+	for (DWORD i = 0; i < lpCallList->dwCallsNumEntries; i++)
+	{
+		CTapiCall* pCall = m_pLine->CreateNewCall(*lphCall);
+		if (pCall)
+			lstCalls.AddTail(pCall);
+		lphCall++;
+	}
+
 	FreeMem(lpCallList);
-    return 0;
-    
-}// CTapiAddress::GetNewCalls
+	return 0;
+
+} // CTapiAddress::GetNewCalls
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress:SetNumRings
 //
-// Sets the number of rings that must occur before an incoming call is answered. 
-// This function can be used to implement a toll-saver-style function. 
-// It allows multiple independent applications to each register the number 
-// of rings. The function GetNumRings returns the minimum number of all 
-// number of rings requested.  It can be used by the application that answers 
-// inbound calls to determine the number of rings it should wait before 
+// Sets the number of rings that must occur before an incoming call is answered.
+// This function can be used to implement a toll-saver-style function.
+// It allows multiple independent applications to each register the number
+// of rings. The function GetNumRings returns the minimum number of all
+// number of rings requested.  It can be used by the application that answers
+// inbound calls to determine the number of rings it should wait before
 // answering the call.
 //
-LONG CTapiAddress::SetNumRings (DWORD dwRings)
-{                           
-    return lineSetNumRings (m_pLine->GetLineHandle(), GetAddressID(), dwRings);
+LONG CTapiAddress::SetNumRings(DWORD dwRings)
+{
+	return lineSetNumRings(m_pLine->GetLineHandle(), GetAddressID(), dwRings);
 
-}// CTapiAddress:SetNumRings
+} // CTapiAddress:SetNumRings
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetNumRings
 //
-// Determines the number of rings an inbound call on the given address 
-// should ring prior to answering the call. 
+// Determines the number of rings an inbound call on the given address
+// should ring prior to answering the call.
 //
-LONG CTapiAddress::GetNumRings (LPDWORD lpdwNumRings)
-{                            
-    return lineGetNumRings (m_pLine->GetLineHandle(), GetAddressID(), lpdwNumRings);
+LONG CTapiAddress::GetNumRings(LPDWORD lpdwNumRings)
+{
+	return lineGetNumRings(m_pLine->GetLineHandle(), GetAddressID(), lpdwNumRings);
 
-}// CTapiAddress::GetNumRings
-    
+} // CTapiAddress::GetNumRings
+
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::Pickup
 //
-// Picks up a call alerting at the specified destination address and returns a 
-// call handle for the picked-up call.  If invoked with NULL for the 
-// lpszDestAddress parameter, a group pickup is performed. If required 
-// by the device, lpszGroupID specifies the group ID to which the 
+// Picks up a call alerting at the specified destination address and returns a
+// call handle for the picked-up call.  If invoked with NULL for the
+// lpszDestAddress parameter, a group pickup is performed. If required
+// by the device, lpszGroupID specifies the group ID to which the
 // alerting station belongs.
-//    
-LONG CTapiAddress::Pickup (CTapiCall** pCall, LPCTSTR lpszDestAddr, LPCTSTR lpszGroupID)
-{                       
-    HCALL hCall = NULL;
-    *pCall = NULL;
-    LONG lResult = ManageAsynchRequest(
-		linePickup (m_pLine->GetLineHandle(), GetAddressID(),
-                               &hCall, lpszDestAddr, lpszGroupID));
-    if (!GetTAPIConnection()->WaitForReply(lResult))
+//
+LONG CTapiAddress::Pickup(CTapiCall** pCall, LPCTSTR lpszDestAddr, LPCTSTR lpszGroupID)
+{
+	HCALL hCall = NULL;
+	*pCall = NULL;
+	LONG lResult = ManageAsynchRequest(linePickup(m_pLine->GetLineHandle(), GetAddressID(), &hCall, lpszDestAddr, lpszGroupID));
+	if (!GetTAPIConnection()->WaitForReply(lResult))
 		*pCall = m_pLine->CreateNewCall(hCall);
-    return lResult;
-    
-}// CTapiAddress::Pickup
+	return lResult;
+
+} // CTapiAddress::Pickup
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::SetMediaControl
 //
-// Enables and disables control actions on the media stream associated 
-// with the specified address. Media control actions can be triggered 
-// by the detection of specified digits, media modes, custom tones, 
+// Enables and disables control actions on the media stream associated
+// with the specified address. Media control actions can be triggered
+// by the detection of specified digits, media modes, custom tones,
 // and call states.
 //
-LONG CTapiAddress::SetMediaControl (LPLINEMEDIACONTROLDIGIT const lpDigitList, 
-                                 DWORD dwDigitNumEntries, 
-                                 LPLINEMEDIACONTROLMEDIA const lpMediaList, 
-                                 DWORD dwMediaNumEntries, 
-                                 LPLINEMEDIACONTROLTONE const lpToneList, 
-                                 DWORD dwToneNumEntries, 
-                                 LPLINEMEDIACONTROLCALLSTATE const lpCallStateList,
-                                 DWORD dwCallStateNumEntries)
-{                             
-    return lineSetMediaControl (m_pLine->GetLineHandle(), GetAddressID(),
-                               NULL, LINECALLSELECT_ADDRESS,
-                               lpDigitList, dwDigitNumEntries,
-                               lpMediaList, dwMediaNumEntries,
-                               lpToneList, dwToneNumEntries,
-                               lpCallStateList, dwCallStateNumEntries);
-    
-}// CTapiAddress::SetMediaControl
+LONG CTapiAddress::SetMediaControl(LPLINEMEDIACONTROLDIGIT const lpDigitList, DWORD dwDigitNumEntries, LPLINEMEDIACONTROLMEDIA const lpMediaList, DWORD dwMediaNumEntries, LPLINEMEDIACONTROLTONE const lpToneList, DWORD dwToneNumEntries, LPLINEMEDIACONTROLCALLSTATE const lpCallStateList, DWORD dwCallStateNumEntries)
+{
+	return lineSetMediaControl(m_pLine->GetLineHandle(), GetAddressID(), NULL, LINECALLSELECT_ADDRESS, lpDigitList, dwDigitNumEntries, lpMediaList, dwMediaNumEntries, lpToneList, dwToneNumEntries, lpCallStateList, dwCallStateNumEntries);
+
+} // CTapiAddress::SetMediaControl
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::SetTerminal
 //
-// Enables an application to specify which terminal information related to the 
-// specified address is to be routed. lineSetTerminal can be used while calls 
-// are in progress on the line to allow an application to route these events 
+// Enables an application to specify which terminal information related to the
+// specified address is to be routed. lineSetTerminal can be used while calls
+// are in progress on the line to allow an application to route these events
 // to different devices as required.
 //
-LONG CTapiAddress::SetTerminal (DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEnable)
-{                         
-    return ManageAsynchRequest(
-		lineSetTerminal (m_pLine->GetLineHandle(), GetAddressID(), 
-                                    NULL, LINECALLSELECT_ADDRESS,
-                                    dwTerminalMode, dwTerminalID, (DWORD)fEnable));
-}// CTapiAddress::SetTerminal
+LONG CTapiAddress::SetTerminal(DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEnable)
+{
+	return ManageAsynchRequest(lineSetTerminal(m_pLine->GetLineHandle(), GetAddressID(), NULL, LINECALLSELECT_ADDRESS, dwTerminalMode, dwTerminalID, (DWORD)fEnable));
+} // CTapiAddress::SetTerminal
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::Unpark
 //
-// Retrieves the call parked at the specified address and returns a call 
+// Retrieves the call parked at the specified address and returns a call
 // handle for it.
 //
-LONG CTapiAddress::Unpark (CTapiCall** pCall, LPCTSTR lpszDestAddr)
-{                       
-    HCALL hCall = NULL;
-    *pCall = NULL;
-    
-    LONG lResult = ManageAsynchRequest(
-		lineUnpark (m_pLine->GetLineHandle(), GetAddressID(), 
-                               &hCall, lpszDestAddr));
-    if (!GetTAPIConnection()->WaitForReply(lResult))
-        *pCall = m_pLine->CreateNewCall(hCall);
-    return lResult;                                
+LONG CTapiAddress::Unpark(CTapiCall** pCall, LPCTSTR lpszDestAddr)
+{
+	HCALL hCall = NULL;
+	*pCall = NULL;
 
-}// CTapiAddress::Unpark
+	LONG lResult = ManageAsynchRequest(lineUnpark(m_pLine->GetLineHandle(), GetAddressID(), &hCall, lpszDestAddr));
+	if (!GetTAPIConnection()->WaitForReply(lResult))
+		*pCall = m_pLine->CreateNewCall(hCall);
+	return lResult;
+
+} // CTapiAddress::Unpark
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetAgentCaps
@@ -471,40 +497,37 @@ const LPLINEAGENTCAPS CTapiAddress::GetAgentCaps(DWORD dwAPIVersion)
 	if (dwAPIVersion == 0)
 		dwAPIVersion = m_pLine->GetNegotiatedAPIVersion();
 
-    // Allocate a buffer for the address information
-    DWORD dwSize = (m_lpAgentCaps) ? m_lpAgentCaps->dwTotalSize : sizeof (LINEAGENTCAPS) + 1024;
-    while (TRUE)
-    {   
+	// Allocate a buffer for the address information
+	DWORD dwSize = (m_lpAgentCaps) ? m_lpAgentCaps->dwTotalSize : sizeof(LINEAGENTCAPS) + 1024;
+	while (TRUE)
+	{
 		if (m_lpAgentCaps == NULL)
 		{
-			m_lpAgentCaps = (LPLINEAGENTCAPS) AllocMem( dwSize);
+			m_lpAgentCaps = (LPLINEAGENTCAPS)AllocMem(dwSize);
 			if (m_lpAgentCaps == NULL)
 				return NULL;
 		}
-        
-        // Mark the size we are sending.
-        ((LPVARSTRING)m_lpAgentCaps)->dwTotalSize = dwSize;
-		LONG lResult = ManageAsynchRequest(
-			lineGetAgentCaps (m_pLine->GetTapiConnection()->GetLineAppHandle(),
-                                m_pLine->GetDeviceID(), GetAddressID(),
-                                dwAPIVersion, m_lpAgentCaps));
-		if (GetTAPIConnection()->WaitForReply(lResult) != 0)
-            return NULL;
 
-        // Return the structure if we got it all.
-        if (m_lpAgentCaps->dwNeededSize <= dwSize)
+		// Mark the size we are sending.
+		((LPVARSTRING)m_lpAgentCaps)->dwTotalSize = dwSize;
+		LONG lResult = ManageAsynchRequest(lineGetAgentCaps(m_pLine->GetTapiConnection()->GetLineAppHandle(), m_pLine->GetDeviceID(), GetAddressID(), dwAPIVersion, m_lpAgentCaps));
+		if (GetTAPIConnection()->WaitForReply(lResult) != 0)
+			return NULL;
+
+		// Return the structure if we got it all.
+		if (m_lpAgentCaps->dwNeededSize <= dwSize)
 		{
 			m_fAgentCapsReload = FALSE;
 			return m_lpAgentCaps;
 		}
 
-        // If we didn't get it all, then reallocate the buffer and retry it.
-        dwSize = m_lpAgentCaps->dwNeededSize;
-		FreeMem ( m_lpAgentCaps);
-        m_lpAgentCaps = NULL;
-    }    
+		// If we didn't get it all, then reallocate the buffer and retry it.
+		dwSize = m_lpAgentCaps->dwNeededSize;
+		FreeMem(m_lpAgentCaps);
+		m_lpAgentCaps = NULL;
+	}
 
-}// CTapiAddress::GetAgentCaps
+} // CTapiAddress::GetAgentCaps
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetAgentStatus
@@ -512,57 +535,55 @@ const LPLINEAGENTCAPS CTapiAddress::GetAgentCaps(DWORD dwAPIVersion)
 // Return the agent status for this object
 //
 const LPLINEAGENTSTATUS CTapiAddress::GetAgentStatus()
-{   
-    // If the line hasn't been opened yet, then don't allow this call to
-    // continue - it requires an hLine.
-    if (!m_pLine->IsOpen())
-        return NULL;
-    
-    // re-retrieve our status record.
-// Disabled due to TAPI bug..
-//	if (m_lpAgentStatus != NULL && !m_fAgentStatsReload)
-//		return m_lpAgentStatus;
+{
+	// If the line hasn't been opened yet, then don't allow this call to
+	// continue - it requires an hLine.
+	if (!m_pLine->IsOpen())
+		return NULL;
 
-    // Allocate a buffer for the call information
-    DWORD dwSize = (m_lpAgentStatus) ? m_lpAgentStatus->dwTotalSize : sizeof (LINEAGENTSTATUS) + 1024;
-    while (TRUE)
-    {   
+	// re-retrieve our status record.
+	// Disabled due to TAPI bug..
+	//	if (m_lpAgentStatus != NULL && !m_fAgentStatsReload)
+	//		return m_lpAgentStatus;
+
+	// Allocate a buffer for the call information
+	DWORD dwSize = (m_lpAgentStatus) ? m_lpAgentStatus->dwTotalSize : sizeof(LINEAGENTSTATUS) + 1024;
+	while (TRUE)
+	{
 		if (m_lpAgentStatus == NULL)
 		{
-			m_lpAgentStatus = (LPLINEAGENTSTATUS) AllocMem( dwSize);
+			m_lpAgentStatus = (LPLINEAGENTSTATUS)AllocMem(dwSize);
 			if (m_lpAgentStatus == NULL)
 				return NULL;
 		}
-        
-        // Mark the size we are sending.
-        ((LPVARSTRING)m_lpAgentStatus)->dwTotalSize = dwSize;
-		LONG lResult = ManageAsynchRequest(
-			lineGetAgentStatus (m_pLine->GetLineHandle(), 
-                                  GetAddressID(), m_lpAgentStatus));
-		if (GetTAPIConnection()->WaitForReply(lResult) != 0)
-            return NULL;
 
-        // Return the structure if we got it all.
-        if (m_lpAgentStatus->dwNeededSize <= dwSize)
+		// Mark the size we are sending.
+		((LPVARSTRING)m_lpAgentStatus)->dwTotalSize = dwSize;
+		LONG lResult = ManageAsynchRequest(lineGetAgentStatus(m_pLine->GetLineHandle(), GetAddressID(), m_lpAgentStatus));
+		if (GetTAPIConnection()->WaitForReply(lResult) != 0)
+			return NULL;
+
+		// Return the structure if we got it all.
+		if (m_lpAgentStatus->dwNeededSize <= dwSize)
 		{
 			m_fAgentStatsReload = FALSE;
 			return m_lpAgentStatus;
 		}
 
-        // If we didn't get it all, then reallocate the buffer and retry it.
-        dwSize = m_lpAgentStatus->dwNeededSize;
-		FreeMem ( m_lpAgentStatus);
-        m_lpAgentStatus = NULL;
-    }    
+		// If we didn't get it all, then reallocate the buffer and retry it.
+		dwSize = m_lpAgentStatus->dwNeededSize;
+		FreeMem(m_lpAgentStatus);
+		m_lpAgentStatus = NULL;
+	}
 
-}// CTapiAddress::GetAgentStatus
+} // CTapiAddress::GetAgentStatus
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::OnAgentStateChange
 //
 // This is invoked when the agent status of the address has changed.
 //
-void CTapiAddress::OnAgentStateChange (DWORD dwFields, DWORD /*dwState*/)
+void CTapiAddress::OnAgentStateChange(DWORD dwFields, DWORD /*dwState*/)
 {
 	if (dwFields & LINEAGENTSTATUS_CAPSCHANGE)
 	{
@@ -572,11 +593,9 @@ void CTapiAddress::OnAgentStateChange (DWORD dwFields, DWORD /*dwState*/)
 
 	// Delete our agent status structure.
 	if (dwFields != 0)
-	{
 		m_fAgentStatsReload = TRUE;
-	}
 
-}// CTapiAddress::OnAgentStateChange
+} // CTapiAddress::OnAgentStateChange
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetAgentGroupList
@@ -588,37 +607,36 @@ LONG CTapiAddress::GetAgentGroupList(CPtrArray& arrGroups)
 	LPLINEAGENTGROUPLIST lpGroupList = NULL;
 
 	// Retrieve the agent group entries from TAPI.
-    DWORD dwSize = (sizeof(LINEAGENTGROUPENTRY) * 100) + 1024;
-    while (TRUE)
-    {   
-        lpGroupList = (LPLINEAGENTGROUPLIST) AllocMem( dwSize);
-        if (lpGroupList == NULL)
-            return LINEERR_NOMEM;
-        
-        // Mark the size we are sending.
-        ((LPVARSTRING)lpGroupList)->dwTotalSize = dwSize;
-        
-        LONG lResult = ManageAsynchRequest(
-			lineGetAgentGroupList (m_pLine->GetLineHandle(), GetAddressID(), lpGroupList));
+	DWORD dwSize = (sizeof(LINEAGENTGROUPENTRY) * 100) + 1024;
+	while (TRUE)
+	{
+		lpGroupList = (LPLINEAGENTGROUPLIST)AllocMem(dwSize);
+		if (lpGroupList == NULL)
+			return LINEERR_NOMEM;
+
+		// Mark the size we are sending.
+		((LPVARSTRING)lpGroupList)->dwTotalSize = dwSize;
+
+		LONG lResult = ManageAsynchRequest(lineGetAgentGroupList(m_pLine->GetLineHandle(), GetAddressID(), lpGroupList));
 		if (GetTAPIConnection()->WaitForReply(lResult) != 0)
 		{
-			FreeMem ( lpGroupList);
-            lpGroupList = NULL;
-            return lResult;
-        }
+			FreeMem(lpGroupList);
+			lpGroupList = NULL;
+			return lResult;
+		}
 
-        // Return the structure if we got it all.
-        if (lpGroupList->dwNeededSize <= dwSize)
+		// Return the structure if we got it all.
+		if (lpGroupList->dwNeededSize <= dwSize)
 			break;
 
-        // If we didn't get it all, then reallocate the buffer and retry it.
-        dwSize = lpGroupList->dwNeededSize;
-		FreeMem ( lpGroupList);
-        lpGroupList = NULL;
-    }    
+		// If we didn't get it all, then reallocate the buffer and retry it.
+		dwSize = lpGroupList->dwNeededSize;
+		FreeMem(lpGroupList);
+		lpGroupList = NULL;
+	}
 
 	// Now break all the data out of the structure.
-	LPLINEAGENTGROUPENTRY lpge = (LPLINEAGENTGROUPENTRY) ((LPBYTE)lpGroupList + lpGroupList->dwListOffset);
+	LPLINEAGENTGROUPENTRY lpge = (LPLINEAGENTGROUPENTRY)((LPBYTE)lpGroupList + lpGroupList->dwListOffset);
 	for (DWORD dwCount = 0; dwCount < lpGroupList->dwNumEntries; dwCount++)
 	{
 		LPAGENTGROUP pAG = new AGENTGROUP;
@@ -631,11 +649,11 @@ LONG CTapiAddress::GetAgentGroupList(CPtrArray& arrGroups)
 		lpge++;
 	}
 
-	FreeMem( lpGroupList);
+	FreeMem(lpGroupList);
 
 	return 0;
 
-}// CTapiAddress::GetAgentGroupList
+} // CTapiAddress::GetAgentGroupList
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetAgentActivityList
@@ -647,37 +665,36 @@ LONG CTapiAddress::GetAgentActivityList(CPtrArray& arrActivities)
 	LPLINEAGENTACTIVITYLIST lpActivityList = NULL;
 
 	// Retrieve the agent group entries from TAPI.
-    DWORD dwSize = (sizeof(LINEAGENTACTIVITYENTRY) * 100) + 1024;
-    while (TRUE)
-    {   
-        lpActivityList = (LPLINEAGENTACTIVITYLIST) AllocMem( dwSize);
-        if (lpActivityList == NULL)
-            return LINEERR_NOMEM;
-        
-        // Mark the size we are sending.
-        ((LPVARSTRING)lpActivityList)->dwTotalSize = dwSize;
-        
-        LONG lResult = ManageAsynchRequest(
-			lineGetAgentActivityList (m_pLine->GetLineHandle(), GetAddressID(), lpActivityList));
+	DWORD dwSize = (sizeof(LINEAGENTACTIVITYENTRY) * 100) + 1024;
+	while (TRUE)
+	{
+		lpActivityList = (LPLINEAGENTACTIVITYLIST)AllocMem(dwSize);
+		if (lpActivityList == NULL)
+			return LINEERR_NOMEM;
+
+		// Mark the size we are sending.
+		((LPVARSTRING)lpActivityList)->dwTotalSize = dwSize;
+
+		LONG lResult = ManageAsynchRequest(lineGetAgentActivityList(m_pLine->GetLineHandle(), GetAddressID(), lpActivityList));
 		if (GetTAPIConnection()->WaitForReply(lResult) != 0)
 		{
-			FreeMem ( lpActivityList);
-            lpActivityList = NULL;
-            return lResult;
-        }
+			FreeMem(lpActivityList);
+			lpActivityList = NULL;
+			return lResult;
+		}
 
-        // Return the structure if we got it all.
-        if (lpActivityList->dwNeededSize <= dwSize)
+		// Return the structure if we got it all.
+		if (lpActivityList->dwNeededSize <= dwSize)
 			break;
 
-        // If we didn't get it all, then reallocate the buffer and retry it.
-        dwSize = lpActivityList->dwNeededSize;
-		FreeMem ( lpActivityList);
-        lpActivityList = NULL;
-    }    
+		// If we didn't get it all, then reallocate the buffer and retry it.
+		dwSize = lpActivityList->dwNeededSize;
+		FreeMem(lpActivityList);
+		lpActivityList = NULL;
+	}
 
 	// Now break all the data out of the structure.
-	LPLINEAGENTACTIVITYENTRY lpae = (LPLINEAGENTACTIVITYENTRY) ((LPBYTE)lpActivityList + lpActivityList->dwListOffset);
+	LPLINEAGENTACTIVITYENTRY lpae = (LPLINEAGENTACTIVITYENTRY)((LPBYTE)lpActivityList + lpActivityList->dwListOffset);
 	for (DWORD dwCount = 0; dwCount < lpActivityList->dwNumEntries; dwCount++)
 	{
 		LPAGENTACTIVITY pAE = new AGENTACTIVITY;
@@ -687,23 +704,22 @@ LONG CTapiAddress::GetAgentActivityList(CPtrArray& arrActivities)
 		lpae++;
 	}
 
-	FreeMem( lpActivityList);
+	FreeMem(lpActivityList);
 
 	return 0;
 
-}// CTapiAddress::GetAgentActivityList
+} // CTapiAddress::GetAgentActivityList
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::SetAgentActivity
-// 
-// Change the agent activity 
+//
+// Change the agent activity
 //
 LONG CTapiAddress::SetAgentActivity(DWORD dwActivityID)
 {
-    return ManageAsynchRequest(
-		lineSetAgentActivity (m_pLine->GetLineHandle(), GetAddressID(), dwActivityID));
+	return ManageAsynchRequest(lineSetAgentActivity(m_pLine->GetLineHandle(), GetAddressID(), dwActivityID));
 
-}// CTapiAddress::SetAgentActivity
+} // CTapiAddress::SetAgentActivity
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetAgentState
@@ -717,7 +733,7 @@ DWORD CTapiAddress::GetAgentState()
 		return lpAgentStatus->dwState;
 	return LINEAGENTSTATE_UNKNOWN;
 
-}// CTapiAddress::GetAgentState
+} // CTapiAddress::GetAgentState
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::SetAgentState
@@ -726,10 +742,9 @@ DWORD CTapiAddress::GetAgentState()
 //
 LONG CTapiAddress::SetAgentState(DWORD dwState, DWORD dwNextState)
 {
-    return ManageAsynchRequest(
-		lineSetAgentState(m_pLine->GetLineHandle(), GetAddressID(), dwState, dwNextState));
+	return ManageAsynchRequest(lineSetAgentState(m_pLine->GetLineHandle(), GetAddressID(), dwState, dwNextState));
 
-}// CTapiAddress::SetAgentState
+} // CTapiAddress::SetAgentState
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::SetAgentGroup
@@ -743,47 +758,43 @@ LONG CTapiAddress::SetAgentGroup(CPtrArray& arrGroups)
 	// Create our group list.
 	if (arrGroups.GetSize() > 0)
 	{
-		DWORD dwSize = (DWORD)sizeof (LINEAGENTGROUPLIST) + 
-				((DWORD)arrGroups.GetSize() * (sizeof(LINEAGENTGROUPENTRY) + 512));
-		lpgl = (LPLINEAGENTGROUPLIST) AllocMem ( dwSize);
+		DWORD dwSize = (DWORD)sizeof(LINEAGENTGROUPLIST) + ((DWORD)arrGroups.GetSize() * (sizeof(LINEAGENTGROUPENTRY) + 512));
+		lpgl = (LPLINEAGENTGROUPLIST)AllocMem(dwSize);
 		if (lpgl == NULL)
 			return LINEERR_NOMEM;
 
-		lpgl->dwTotalSize = 
-		lpgl->dwNeededSize =
-		lpgl->dwUsedSize = dwSize;
+		lpgl->dwTotalSize = lpgl->dwNeededSize = lpgl->dwUsedSize = dwSize;
 		lpgl->dwNumEntries = (DWORD)arrGroups.GetSize();
 		lpgl->dwListSize = sizeof(LINEAGENTGROUPENTRY) * lpgl->dwNumEntries;
 		lpgl->dwListOffset = sizeof(LINEAGENTGROUPLIST);
 
 		// Fill in the group entry structures.
-		LPLINEAGENTGROUPENTRY lpge = (LPLINEAGENTGROUPENTRY) ((LPBYTE)lpgl + lpgl->dwListOffset);
+		LPLINEAGENTGROUPENTRY lpge = (LPLINEAGENTGROUPENTRY)((LPBYTE)lpgl + lpgl->dwListOffset);
 		LPTSTR pszName = (LPTSTR)((LPBYTE)lpge + lpgl->dwListSize);
 		for (int i = 0; i < arrGroups.GetSize(); i++)
 		{
-			LPAGENTGROUP lpGroup = (LPAGENTGROUP) arrGroups[i];
+			LPAGENTGROUP lpGroup = (LPAGENTGROUP)arrGroups[i];
 			lpge->GroupID.dwGroupID1 = lpGroup->GroupID.dwGroupID1;
 			lpge->GroupID.dwGroupID2 = lpGroup->GroupID.dwGroupID2;
 			lpge->GroupID.dwGroupID3 = lpGroup->GroupID.dwGroupID3;
 			lpge->GroupID.dwGroupID4 = lpGroup->GroupID.dwGroupID4;
-			lpge->dwNameSize = (lpGroup->strName.GetLength()+1) * sizeof(TCHAR);
-			lpge->dwNameOffset = (DWORD)((char*)pszName - (char*)lpgl); 
+			lpge->dwNameSize = (lpGroup->strName.GetLength() + 1) * sizeof(TCHAR);
+			lpge->dwNameOffset = (DWORD)((char*)pszName - (char*)lpgl);
 			lstrcpy(pszName, lpGroup->strName);
-			pszName += (lpGroup->strName.GetLength()+1);
+			pszName += (lpGroup->strName.GetLength() + 1);
 			lpge++;
 		}
 	}
 
 	// Set the agent group to the group list.
-	LONG lResult = GetTAPIConnection()->WaitForReply(ManageAsynchRequest(
-		lineSetAgentGroup (m_pLine->GetLineHandle(), GetAddressID(), lpgl)));
-	
+	LONG lResult = GetTAPIConnection()->WaitForReply(ManageAsynchRequest(lineSetAgentGroup(m_pLine->GetLineHandle(), GetAddressID(), lpgl)));
+
 	if (lpgl != NULL)
 		FreeMem(lpgl);
 
 	return lResult;
 
-}// CTapiAddress::SetAgentGroup
+} // CTapiAddress::SetAgentGroup
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::SupportsAgents
@@ -800,11 +811,7 @@ BOOL CTapiAddress::SupportsAgents() const
 	if (!GetLineOwner()->IsOpen())
 	{
 		HLINE hLine;
-		if (lineOpen(GetTAPIConnection()->GetLineAppHandle(), 
-				GetLineOwner()->GetDeviceID(),
-                             &hLine, TAPIVER_20, 0,
-                             (DWORD)NULL, LINECALLPRIVILEGE_NONE,
-							 LINEMEDIAMODE_UNKNOWN, NULL) == 0)
+		if (lineOpen(GetTAPIConnection()->GetLineAppHandle(), GetLineOwner()->GetDeviceID(), &hLine, TAPIVER_20, 0, (DWORD)NULL, LINECALLPRIVILEGE_NONE, LINEMEDIAMODE_UNKNOWN, NULL) == 0)
 		{
 			lResult = GetTAPIConnection()->WaitForReply(lineGetAgentStatus(hLine, GetAddressID(), &las));
 			lineClose(hLine);
@@ -816,7 +823,7 @@ BOOL CTapiAddress::SupportsAgents() const
 	}
 
 	return lResult == NO_ERROR;
-}// CTapiAddress::SupportsAgents
+} // CTapiAddress::SupportsAgents
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetCurrentAgentGroupList
@@ -830,11 +837,9 @@ LONG CTapiAddress::GetCurrentAgentGroupList(CPtrArray& arrGroups)
 		return LINEERR_INVALAGENTGROUP;
 
 	// Retrieve the agent group entries from TAPI.
-	if (lpStatus != NULL &&
-		lpStatus->dwGroupListSize > 0 &&
-		lpStatus->dwGroupListOffset > 0)
+	if (lpStatus != NULL && lpStatus->dwGroupListSize > 0 && lpStatus->dwGroupListOffset > 0)
 	{
-		LPLINEAGENTGROUPENTRY lpge = (LPLINEAGENTGROUPENTRY) ((LPBYTE)lpStatus + lpStatus->dwGroupListOffset);
+		LPLINEAGENTGROUPENTRY lpge = (LPLINEAGENTGROUPENTRY)((LPBYTE)lpStatus + lpStatus->dwGroupListOffset);
 		for (DWORD dwCount = 0; dwCount < lpStatus->dwNumEntries; dwCount++)
 		{
 			LPAGENTGROUP pAG = new AGENTGROUP;
@@ -850,7 +855,7 @@ LONG CTapiAddress::GetCurrentAgentGroupList(CPtrArray& arrGroups)
 
 	return 0;
 
-}// CTapiAddress::GetCurrentAgentGroupList
+} // CTapiAddress::GetCurrentAgentGroupList
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiAddress::GetValidIDs
@@ -866,8 +871,8 @@ void CTapiAddress::GetValidIDs(CStringArray& arrKeys) const
 		while (*pszKey)
 		{
 			arrKeys.Add(pszKey);
-			pszKey += lstrlen(pszKey)+1;
+			pszKey += lstrlen(pszKey) + 1;
 		}
 	}
 
-}// CTapiAddress::GetValidIDs
+} // CTapiAddress::GetValidIDs

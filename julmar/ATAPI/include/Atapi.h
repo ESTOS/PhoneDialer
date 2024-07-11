@@ -3,15 +3,15 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #ifndef __ATAPI_INC__
@@ -30,19 +30,19 @@ class CTapiAddress;
 class CTapiConnection;
 class CTapiRequest;
 
-#include "StdString.h"
-#include "ETSPVarStruct.h"
 #include "ecstaext.h"
+#include "ETSPVarStruct.h"
+#include "StdString.h"
 ////////////////////////////////////////////////////////////////////////////////////
 // Globals and constants
 
-#define TAPIVER_13 (0x00010003)     // First released version of TAPI (Win3.1)
-#define TAPIVER_14 (0x00010004)     // Latest 16-bit version (Chicago)
-#define TAPIVER_20 (0x00020000)     // Initial 32-bit version (NT)
-#define TAPIVER_21 (0x00020001)     // NT/Win98
-#define TAPIVER_22 (0x00020002)     // SP2
-#define TAPIVER_30 (0x00030000)     // Win2K
-#define TAPIVER_31 (0x00030001)     // WinXP
+#define TAPIVER_13 (0x00010003) // First released version of TAPI (Win3.1)
+#define TAPIVER_14 (0x00010004) // Latest 16-bit version (Chicago)
+#define TAPIVER_20 (0x00020000) // Initial 32-bit version (NT)
+#define TAPIVER_21 (0x00020001) // NT/Win98
+#define TAPIVER_22 (0x00020002) // SP2
+#define TAPIVER_30 (0x00030000) // Win2K
+#define TAPIVER_31 (0x00030001) // WinXP
 
 /////////////////////////////////////////////////////////////////////////////////
 // TAPIPROVIDER
@@ -52,11 +52,11 @@ class CTapiRequest;
 //
 
 typedef struct _tagTAPIPROVIDER
-{                                    
-	DWORD   dwPermanentProviderID;      // Unique provider ID from TAPI
-	CString strProviderName;            // Name of service provider
+{
+	DWORD dwPermanentProviderID; // Unique provider ID from TAPI
+	CString strProviderName;	 // Name of service provider
 
-} TAPIPROVIDER, FAR * LPTAPIPROVIDER;
+} TAPIPROVIDER, FAR* LPTAPIPROVIDER;
 
 //////////////////////////////////////////////////////////////////////////////////
 // ButtonInfo
@@ -67,11 +67,11 @@ typedef struct _tagTAPIPROVIDER
 typedef struct _tagButtonInfo
 {
 	DWORD dwButtonMode;
-    DWORD dwButtonFunction;
-    DWORD dwButtonState;
+	DWORD dwButtonFunction;
+	DWORD dwButtonState;
 	CString strButtonText;
 
-} BUTTONINFO, FAR * LPBUTTONINFO;
+} BUTTONINFO, FAR* LPBUTTONINFO;
 
 //////////////////////////////////////////////////////////////////////////////////
 // AgentGroup
@@ -81,17 +81,17 @@ typedef struct _tagButtonInfo
 
 typedef struct _tagAgentGroup
 {
-    struct
-    {
-        DWORD dwGroupID1;
-        DWORD dwGroupID2;
-        DWORD dwGroupID3;
-        DWORD dwGroupID4;
-    } GroupID;
+	struct
+	{
+		DWORD dwGroupID1;
+		DWORD dwGroupID2;
+		DWORD dwGroupID3;
+		DWORD dwGroupID4;
+	} GroupID;
 
 	CString strName;
 
-} AGENTGROUP, FAR * LPAGENTGROUP;
+} AGENTGROUP, FAR* LPAGENTGROUP;
 
 //////////////////////////////////////////////////////////////////////////////////
 // AgentActivity
@@ -104,12 +104,23 @@ typedef struct _tagAgentActivity
 	DWORD dwActivityID;
 	CString strName;
 
-} AGENTACTIVITY, FAR * LPAGENTACTIVITY;
+} AGENTACTIVITY, FAR* LPAGENTACTIVITY;
+
+class ECSTAAddressCaps
+{
+public:
+	bool valid() const;
+	CString getDisplayText() const;
+	DWORD m_dwAddressFlags = 0;
+	CString m_strDeviceID;
+	CString m_strDeviceType;
+	CString m_strDeviceName;
+};
 
 //////////////////////////////////////////////////////////////////////////////////
 // Global functions
 
-LONG ManageRequest (LONG lRequestID);
+LONG ManageRequest(LONG lRequestID);
 CTapiConnection* GetTAPIConnection();
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -119,23 +130,23 @@ CTapiConnection* GetTAPIConnection();
 //
 class CTapiObject : public CObject
 {
-    DECLARE_DYNCREATE (CTapiObject)
+	DECLARE_DYNCREATE(CTapiObject)
 
-// Class data
+	// Class data
 protected:
-    DWORD_PTR m_dwUserData;     // User data value
+	DWORD_PTR m_dwUserData; // User data value
 
-// Constructor
+	// Constructor
 public:
-    CTapiObject();
-    virtual ~CTapiObject();
+	CTapiObject();
+	virtual ~CTapiObject();
 
-// Access methods
+	// Access methods
 public:
-    DWORD_PTR GetUserData() const;
-    void* GetUserDataPtr() const;
-    void SetUserData(DWORD_PTR dwData);
-    void SetUserDataPtr (void* ptrValue);
+	DWORD_PTR GetUserData() const;
+	void* GetUserDataPtr() const;
+	void SetUserData(DWORD_PTR dwData);
+	void SetUserDataPtr(void* ptrValue);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -146,23 +157,23 @@ public:
 
 class CTapiRequest : public CObject
 {
-// Class data
+	// Class data
 public:
-    DWORD m_dwRequestID;            // Request ID assigned by TAPI
-    DWORD m_dwCompleteTime;         // Completion time
-    volatile LONG m_lResult;        // Final result code
-    CEvent m_evtComplete;           // Signalled when request complete.
-  
-// Constructor
-public:
-    CTapiRequest(DWORD dwRequestID);
-    virtual ~CTapiRequest();
+	DWORD m_dwRequestID;	 // Request ID assigned by TAPI
+	DWORD m_dwCompleteTime;	 // Completion time
+	volatile LONG m_lResult; // Final result code
+	CEvent m_evtComplete;	 // Signalled when request complete.
 
-// Methods
+	// Constructor
 public:
-    BOOL IsPending();
-    void OnRequestComplete (LONG lResult);
-    LONG GetResult (LONG lTimeout=0);
+	CTapiRequest(DWORD dwRequestID);
+	virtual ~CTapiRequest();
+
+	// Methods
+public:
+	BOOL IsPending();
+	void OnRequestComplete(LONG lResult);
+	LONG GetResult(LONG lTimeout = 0);
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -174,88 +185,88 @@ public:
 //
 
 class CTapiConnection
-{ 
-// Class data
+{
+	// Class data
 protected:
-    HLINEAPP        m_hLineApp;             // Line connection
-	HPHONEAPP		m_hPhoneApp;			// Phone connection
-    DWORD           m_dwNumLines;           // Number of line devices in system.
-	DWORD           m_dwNumPhones;			// Number of phone devices in system.
-    CCriticalSection m_semLines;            // Synch access to lines
-    CObArray        m_arrLines;             // Array of CTapiLine objects found
-	CCriticalSection m_semPhones;			// Synch access to phones
-	CObArray		m_arrPhones;			// Array of CTapiPhone objects found
-    // These allow dynamic creation of new object types
-    CRuntimeClass*  m_pLineClass;           // Runtime class for CTapiLine
-    CRuntimeClass*  m_pCallClass;           // Runtime class for CTapiCall
-    CRuntimeClass*  m_pAddrClass;           // Runtime class for CTapiAddress
-	CRuntimeClass*  m_pPhoneClass;			// Runtime class for CTapiPhone
-    CCriticalSection m_semProviders;        // Synch access to provider list
-    int             m_iProviderPos;         // Position in below array
-    CPtrArray       m_arrProviders;         // Temp array used for provider enum.
-    CCriticalSection m_semRequest;			// Synch access to request list
-    CObList m_arrWaitingRequests;			// Pending requests
-	CWinThread* m_pMonitorThread_L;			// TAPI line event processor thread
-	CWinThread* m_pMonitorThread_P;			// TAPI phone event processor thread
-	HANDLE m_hTapiEvent_L;					// TAPI line event handle
-	HANDLE m_hTapiEvent_P;					// TAPI phone event handle
-    
-// Constructor
-public:
-    CTapiConnection();
-    virtual ~CTapiConnection();
+	HLINEAPP m_hLineApp;		  // Line connection
+	HPHONEAPP m_hPhoneApp;		  // Phone connection
+	DWORD m_dwNumLines;			  // Number of line devices in system.
+	DWORD m_dwNumPhones;		  // Number of phone devices in system.
+	CCriticalSection m_semLines;  // Synch access to lines
+	CObArray m_arrLines;		  // Array of CTapiLine objects found
+	CCriticalSection m_semPhones; // Synch access to phones
+	CObArray m_arrPhones;		  // Array of CTapiPhone objects found
+	// These allow dynamic creation of new object types
+	CRuntimeClass* m_pLineClass;	 // Runtime class for CTapiLine
+	CRuntimeClass* m_pCallClass;	 // Runtime class for CTapiCall
+	CRuntimeClass* m_pAddrClass;	 // Runtime class for CTapiAddress
+	CRuntimeClass* m_pPhoneClass;	 // Runtime class for CTapiPhone
+	CCriticalSection m_semProviders; // Synch access to provider list
+	int m_iProviderPos;				 // Position in below array
+	CPtrArray m_arrProviders;		 // Temp array used for provider enum.
+	CCriticalSection m_semRequest;	 // Synch access to request list
+	CObList m_arrWaitingRequests;	 // Pending requests
+	CWinThread* m_pMonitorThread_L;	 // TAPI line event processor thread
+	CWinThread* m_pMonitorThread_P;	 // TAPI phone event processor thread
+	HANDLE m_hTapiEvent_L;			 // TAPI line event handle
+	HANDLE m_hTapiEvent_P;			 // TAPI phone event handle
 
-// Access functions
+	// Constructor
 public:
-    LONG Init(LPCTSTR pszAppName, CRuntimeClass* prtLine=NULL, CRuntimeClass* prtAddr=NULL, CRuntimeClass* prtCall=NULL, CRuntimeClass* prtPhone=NULL, DWORD dwAPIVersion=TAPI_CURRENT_VERSION);
-    LONG Shutdown();
+	CTapiConnection();
+	virtual ~CTapiConnection();
 
-    HLINEAPP GetLineAppHandle() const;
+	// Access functions
+public:
+	LONG Init(LPCTSTR pszAppName, CRuntimeClass* prtLine = NULL, CRuntimeClass* prtAddr = NULL, CRuntimeClass* prtCall = NULL, CRuntimeClass* prtPhone = NULL, DWORD dwAPIVersion = TAPI_CURRENT_VERSION);
+	LONG Shutdown();
+
+	HLINEAPP GetLineAppHandle() const;
 	HPHONEAPP GetPhoneAppHandle() const;
 
 	// Line access
-    unsigned int GetLineDeviceCount() const;
-    CTapiLine* GetLineFromDeviceID(DWORD dwDeviceID) const;
-    LONG OpenLine (CTapiLine** pLine, DWORD dwPrivileges, DWORD dwMediaModes, DWORD dwAPIVersion, DWORD dwExtVersion, LPLINECALLPARAMS const lpCallParams);
+	unsigned int GetLineDeviceCount() const;
+	CTapiLine* GetLineFromDeviceID(DWORD dwDeviceID) const;
+	LONG OpenLine(CTapiLine** pLine, DWORD dwPrivileges, DWORD dwMediaModes, DWORD dwAPIVersion, DWORD dwExtVersion, LPLINECALLPARAMS const lpCallParams);
 
 	// Phone access
 	unsigned int GetPhoneDeviceCount() const;
 	CTapiPhone* GetPhoneFromDeviceID(DWORD dwDeviceID) const;
 
-    // Provider enumeration functions
-    BOOL GetFirstProvider (LPTAPIPROVIDER lpProvider);
-    BOOL GetNextProvider (LPTAPIPROVIDER lpProvider);
+	// Provider enumeration functions
+	BOOL GetFirstProvider(LPTAPIPROVIDER lpProvider);
+	BOOL GetNextProvider(LPTAPIPROVIDER lpProvider);
 
-    // Misc. functions.
-    LONG GetTranslateCaps (LPLINETRANSLATECAPS lpTranslateCaps, DWORD dwTapiVersion=TAPIVER_14);
-    LONG SetCurrentLocation (DWORD dwLocation);
+	// Misc. functions.
+	LONG GetTranslateCaps(LPLINETRANSLATECAPS lpTranslateCaps, DWORD dwTapiVersion = TAPIVER_14);
+	LONG SetCurrentLocation(DWORD dwLocation);
 
 	unsigned int GetPendingRequestCount();
 	void StopWaitingForAllRequests();
-    CTapiRequest* LocateRequest (DWORD dwRequestID);
-    CTapiRequest* AddRequest (DWORD dwRequestID);
-	LONG WaitForReply(DWORD dwRequestID, LONG lTimeout=60000);
-	void PurgeRequests (LONG lmSec);
+	CTapiRequest* LocateRequest(DWORD dwRequestID);
+	CTapiRequest* AddRequest(DWORD dwRequestID);
+	LONG WaitForReply(DWORD dwRequestID, LONG lTimeout = 60000);
+	void PurgeRequests(LONG lmSec);
 
 	// Internal event procs
 	void LineEventProc();
 	void PhoneEventProc();
 
-// Internal functions
+	// Internal functions
 public:
-    void OnLineCreate (DWORD dwDeviceID);
-    void OnLineRemove (DWORD dwDeviceID);
-	void OnLineClose (DWORD dwDeviceID);
-    void OnPhoneCreate (DWORD dwDeviceID);
-    void OnPhoneRemove (DWORD dwDeviceID);
-	void OnPhoneClose (DWORD dwDeviceID);
-    void OnRequestComplete (DWORD dwRequestID, LONG lResult);
+	void OnLineCreate(DWORD dwDeviceID);
+	void OnLineRemove(DWORD dwDeviceID);
+	void OnLineClose(DWORD dwDeviceID);
+	void OnPhoneCreate(DWORD dwDeviceID);
+	void OnPhoneRemove(DWORD dwDeviceID);
+	void OnPhoneClose(DWORD dwDeviceID);
+	void OnRequestComplete(DWORD dwRequestID, LONG lResult);
 
-    friend class CTapiLine;
+	friend class CTapiLine;
 	friend class CTapiPhone;
-    friend class CTapiRequest;
+	friend class CTapiRequest;
 
-// Internal functions
+	// Internal functions
 protected:
 	LONG InitLines(LPCTSTR pszAppName, DWORD dwAPIVersion);
 	LONG InitPhones(LPCTSTR pszAppName, DWORD dwAPIVersion);
@@ -269,148 +280,150 @@ protected:
 //
 
 class CTapiLine : public CTapiObject
-{ 
-    DECLARE_DYNCREATE (CTapiLine)
-// Class data
+{
+	DECLARE_DYNCREATE(CTapiLine)
+	// Class data
 protected:
-	enum {
-		Removed = 0x01					// Line is not valid and has been removed.
+	enum
+	{
+		Removed = 0x01 // Line is not valid and has been removed.
 	};
 
-	int					m_iFlags;		// Flags for this line.
-    CTapiConnection*    m_pConn;        // TAPI connection owner
-    CCriticalSection    m_semAddress;   // Synch. access to array
-    CObArray            m_arrAddress;   // Addresses on this line
-    CCriticalSection    m_semCalls;     // Synch access to array
-    CObArray            m_arrCalls;     // List of known CTapiCall objects
-    HLINE               m_hLine;        // Opaque Line handle
-    DWORD               m_dwDeviceID;   // Device ID (0-num Devices)
-    DWORD               m_dwAPIVersion; // API version negotiated with TAPI
-    DWORD               m_dwExtVersion; //Ext Version negotiated with ECSTA
+	int m_iFlags;				   // Flags for this line.
+	CTapiConnection* m_pConn;	   // TAPI connection owner
+	CCriticalSection m_semAddress; // Synch. access to array
+	CObArray m_arrAddress;		   // Addresses on this line
+	CCriticalSection m_semCalls;   // Synch access to array
+	CObArray m_arrCalls;		   // List of known CTapiCall objects
+	HLINE m_hLine;				   // Opaque Line handle
+	DWORD m_dwDeviceID;			   // Device ID (0-num Devices)
+	DWORD m_dwAPIVersion;		   // API version negotiated with TAPI
+	DWORD m_dwExtVersion;		   // Ext Version negotiated with ECSTA
 
-    LPLINEDEVCAPS       m_lpLineCaps;   // Cached line capabilities
-    LPLINEDEVSTATUS     m_lpLineStatus; // Last read line status
-    
-// Constructor
+	LPLINEDEVCAPS m_lpLineCaps;		// Cached line capabilities
+	LPLINEDEVSTATUS m_lpLineStatus; // Last read line status
+
+	// Constructor
 public:
-    CTapiLine();
-    virtual ~CTapiLine();
-    
-// Access methods
+	CTapiLine();
+	virtual ~CTapiLine();
+
+	// Access methods
 public:
-    const LPLINEDEVCAPS GetLineCaps(DWORD dwAPIVersion=0, DWORD dwExtVersion=0, BOOL fForceRealloc=FALSE);
-    const LPLINEDEVSTATUS GetLineStatus();
+	const LPLINEDEVCAPS GetLineCaps(DWORD dwAPIVersion = 0, DWORD dwExtVersion = 0, BOOL fForceRealloc = FALSE);
+	const LPLINEDEVSTATUS GetLineStatus();
 	const ECSTALINEDEVCAPS4* GetECSTALineCaps4();
 
-    DWORD GetDeviceID() const;
-    DWORD GetNegotiatedAPIVersion() const;
-    CString GetLineName() const;
-    CString GetProviderInfo() const;
-    CString GetSwitchInfo() const;
-    CTapiConnection* GetTapiConnection() const;
+	DWORD GetDeviceID() const;
+	DWORD GetNegotiatedAPIVersion() const;
+	CString GetLineName() const;
+	CString GetProviderInfo() const;
+	CString GetSwitchInfo() const;
+	CTapiConnection* GetTapiConnection() const;
 
-    // Methods to query the currently known calls
-    int GetCallCount();
-    CTapiCall* GetCall (int iIndex);
-	CTapiCall* FindCall(DWORD dwState, DWORD dwFeature=0xffffffff);
+	// Methods to query the currently known calls
+	int GetCallCount();
+	CTapiCall* GetCall(int iIndex);
+	CTapiCall* FindCall(DWORD dwState, DWORD dwFeature = 0xffffffff);
 
-    // Open the line device
-    LONG Open(DWORD dwPriv, DWORD dwMediaMode, DWORD dwAPIVersion=0, DWORD dwExtVersion=0, LPLINECALLPARAMS const lpCallParams=NULL);
-    BOOL IsOpen() const;
+	// Open the line device
+	LONG Open(DWORD dwPriv, DWORD dwMediaMode, DWORD dwAPIVersion = 0, DWORD dwExtVersion = 0, LPLINECALLPARAMS const lpCallParams = NULL);
+	BOOL IsOpen() const;
 	BOOL IsValid() const;
-    HLINE GetLineHandle() const;
-    LONG Close();
+	HLINE GetLineHandle() const;
+	LONG Close();
 
-    // Place a call
-    LONG MakeCall (CTapiCall** pCall, LPCTSTR lpszDestAddr, DWORD dwCountry=0, LPLINECALLPARAMS const lpCallParams=NULL);
-    void DeallocateCall (CTapiCall* pCall);
-    CTapiCall* CreateNewCall (HCALL hCall);
-    
-	//ECSTA Agent States
+	// Place a call
+	LONG MakeCall(CTapiCall** pCall, LPCTSTR lpszDestAddr, DWORD dwCountry = 0, LPLINECALLPARAMS const lpCallParams = NULL);
+	void DeallocateCall(CTapiCall* pCall);
+	CTapiCall* CreateNewCall(HCALL hCall);
+
+	// ECSTA Agent States
 	LONG SetECSTAAgentState(ECSTA150AGENTSTATEREQUEST21* pAgentStateRequest);
 
-    // Status message notifications
-    LONG GetStatusMessages (LPDWORD dwLineStatus, LPDWORD lpdwAddressStates);
-    LONG SetStatusMessages (DWORD dwLineStates, DWORD dwAddressStates);
-    
-    // Retrieve line handle information
-    LONG GetID (DWORD dwAddressID, LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass);
-    LONG GetID (LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass);
+	// Status message notifications
+	LONG GetStatusMessages(LPDWORD dwLineStatus, LPDWORD lpdwAddressStates);
+	LONG SetStatusMessages(DWORD dwLineStates, DWORD dwAddressStates);
 
-    // Manage configuration
-    LONG Config (CWnd* pwndOwner, LPCTSTR lpszDeviceClass);
-    LONG ConfigEdit (CWnd* pwndOwner, LPCTSTR lpszDeviceClass, LPVOID const lpDeviceConfigIn, DWORD dwSize, LPVARSTRING lpDeviceConfigOut);
-    LONG DevSpecificFeature (DWORD dwFeature, LPVOID lpParams=NULL, DWORD dwSize=0L);
+	// Retrieve line handle information
+	LONG GetID(DWORD dwAddressID, LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass);
+	LONG GetID(LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass);
+
+	// Manage configuration
+	LONG Config(CWnd* pwndOwner, LPCTSTR lpszDeviceClass);
+	LONG ConfigEdit(CWnd* pwndOwner, LPCTSTR lpszDeviceClass, LPVOID const lpDeviceConfigIn, DWORD dwSize, LPVARSTRING lpDeviceConfigOut);
+	LONG DevSpecificFeature(DWORD dwFeature, LPVOID lpParams = NULL, DWORD dwSize = 0L);
 	LONG DevSpecific(DWORD dwAddressID, HCALL hCall, LPVOID lpParams, DWORD dwSize);
-    LONG GetDevConfig (LPVOID lpBuff, DWORD dwSize, LPCTSTR lpszDeviceClass);
-    LONG SetDevConfig (LPVOID const lpBuff, DWORD dwSize, LPCTSTR lpszDeviceClass);
-	LONG SetDeviceStatus (DWORD dwDevStatus, BOOL fSet=TRUE);
-    LONG GetNewCalls (CObList& lstCalls);
+	LONG GetDevConfig(LPVOID lpBuff, DWORD dwSize, LPCTSTR lpszDeviceClass);
+	LONG SetDevConfig(LPVOID const lpBuff, DWORD dwSize, LPCTSTR lpszDeviceClass);
+	LONG SetDeviceStatus(DWORD dwDevStatus, BOOL fSet = TRUE);
+	LONG GetNewCalls(CObList& lstCalls);
 
-	//ECSTA Specific Functions
-	long GetDevConfigStruct(LPCWSTR pszDeviceClass, ETSPVarStruct<VARSTRING> *pDevConfig);
+	// ECSTA Specific Functions
+	long GetDevConfigStruct(LPCWSTR pszDeviceClass, ETSPVarStruct<VARSTRING>* pDevConfig);
 	LONG GetECSTAInvalidPasswordState();
 	bool IsTSP_ECSTA();
 
-    // Misc. functions
-    BOOL GetTSPProvider (LPTAPIPROVIDER pProvider) const;
+	// Misc. functions
+	BOOL GetTSPProvider(LPTAPIPROVIDER pProvider) const;
 	DWORD GetProviderID() const;
 	void GetValidIDs(CStringArray& arrKeys) const;
-    HICON GetIcon(LPCTSTR lpszDeviceClass = NULL);
-    LONG SwapHold (CTapiCall* pCall, CTapiCall* pCall2);
-    LONG Forward (DWORD dwAddress, LPLINEFORWARDLIST const lpForwardList, DWORD dwNumRingsNoAnswer, CTapiCall** pConsCall, LPLINECALLPARAMS const lpCallParams=NULL);
-    LONG CancelForward (DWORD dwAddress);
-    LONG SetMediaControl (LPLINEMEDIACONTROLDIGIT const lpDigitList=NULL, DWORD dwDigitNumEntries=0, LPLINEMEDIACONTROLMEDIA const lpMediaList=NULL, DWORD dwMediaNumEntries=0, 
-                          LPLINEMEDIACONTROLTONE const lpToneList=NULL, DWORD dwToneNumEntries=0, LPLINEMEDIACONTROLCALLSTATE const lpCallStateList=NULL, DWORD dwCallStateNumEntries=0);
-    LONG SetTerminal (DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEnable);
-    LONG SetTollList (LPCTSTR lpszAddressIn, DWORD dwTollListOption);
-    LONG UncompleteCall (DWORD dwCompletionID);
-    LONG SetupConference (CTapiCall** pConfCall, CTapiCall** pConstCall, DWORD dwNumParties, LPLINECALLPARAMS const lpCallParams = NULL);
-	DWORD GetRelatedPhoneID();    
+	HICON GetIcon(LPCTSTR lpszDeviceClass = NULL);
+	LONG SwapHold(CTapiCall* pCall, CTapiCall* pCall2);
+	LONG Forward(DWORD dwAddress, LPLINEFORWARDLIST const lpForwardList, DWORD dwNumRingsNoAnswer, CTapiCall** pConsCall, LPLINECALLPARAMS const lpCallParams = NULL);
+	LONG CancelForward(DWORD dwAddress);
+	LONG SetMediaControl(LPLINEMEDIACONTROLDIGIT const lpDigitList = NULL, DWORD dwDigitNumEntries = 0, LPLINEMEDIACONTROLMEDIA const lpMediaList = NULL, DWORD dwMediaNumEntries = 0, LPLINEMEDIACONTROLTONE const lpToneList = NULL, DWORD dwToneNumEntries = 0, LPLINEMEDIACONTROLCALLSTATE const lpCallStateList = NULL, DWORD dwCallStateNumEntries = 0);
+	LONG SetTerminal(DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEnable);
+	LONG SetTollList(LPCTSTR lpszAddressIn, DWORD dwTollListOption);
+	LONG UncompleteCall(DWORD dwCompletionID);
+	LONG SetupConference(CTapiCall** pConfCall, CTapiCall** pConstCall, DWORD dwNumParties, LPLINECALLPARAMS const lpCallParams = NULL);
+	DWORD GetRelatedPhoneID();
 
-    // Address manipulation
-    CTapiAddress* GetAddress(DWORD dwAddr);
-    CTapiAddress* GetAddress(LPCTSTR lpszAddr, DWORD dwSize=0, DWORD dwMode=LINEADDRESSMODE_DIALABLEADDR);
-    DWORD GetAddressCount() const;
-    LONG TranslateAddress (LPCTSTR lpszAddressIn, DWORD dwCard, DWORD dwTranslateOptions, LPLINETRANSLATEOUTPUT lpTranslateOutput);
-    LONG TranslateDialog (CWnd* pwndOwner, LPCTSTR lpszAddressIn=NULL);
+	// Address manipulation
+	CTapiAddress* GetAddress(DWORD dwAddr);
+	CTapiAddress* GetAddress(LPCTSTR lpszAddr, DWORD dwSize = 0, DWORD dwMode = LINEADDRESSMODE_DIALABLEADDR);
+	DWORD GetAddressCount() const;
+	LONG TranslateAddress(LPCTSTR lpszAddressIn, DWORD dwCard, DWORD dwTranslateOptions, LPLINETRANSLATEOUTPUT lpTranslateOutput);
+	LONG TranslateDialog(CWnd* pwndOwner, LPCTSTR lpszAddressIn = NULL);
 
 	LINEEXTENSIONID m_lineExtID;
+
 public:
-    void LineCallback (DWORD hDevice, DWORD dwMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2, DWORD_PTR dwParam3);
-    CTapiCall* GetCallFromHandle(HCALL hCall);
+	void LineCallback(DWORD hDevice, DWORD dwMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2, DWORD_PTR dwParam3);
+	CTapiCall* GetCallFromHandle(HCALL hCall);
 
 	void GatherAddressInformation();
-protected:    
-    void Init (CTapiConnection* pConn, DWORD dwDeviceID);
-    void GatherLineCapabilities();
-    void DeleteCallAppearances();
-    void RemoveCall(CTapiCall* pCall);
-    
-// Overriable methods for notifications
+
 protected:
-    virtual void OnAddressStateChange (DWORD dwAddressID, DWORD dwState);
-	virtual void OnAgentStateChange (DWORD dwAddressID, DWORD dwFields, DWORD dwState);
-    virtual void OnCallInfoChange (HCALL hCall, DWORD dwCallInfoState);
-    virtual void OnCallStateChange (HCALL hCall, DWORD dwState, DWORD dwStateDetail, DWORD dwPrivilage);
-    virtual void OnClose();
-    virtual void OnDevSpecific (DWORD dwHandle, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3);
-    virtual void OnDevSpecificFeature (DWORD dwHandle, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3);
-    virtual void OnGatherDigitsComplete (HCALL hCall, DWORD dwReason);
-    virtual void OnGenerateComplete (HCALL hCall, DWORD dwReason);
-    virtual void OnDeviceStateChange (DWORD dwDeviceState, DWORD dwStateDetail1, DWORD dwStateDetail2);
-    virtual void OnDigitDetected (HCALL hCall, DWORD dwDigit, DWORD dwDigitMode);
-    virtual void OnCallMediaModeChange (HCALL hCall, DWORD dwMediaMode);
-    virtual void OnToneDetected (HCALL hCall, DWORD dwAppSpecific);
-    virtual void OnNewCall (CTapiCall* pCall);
+	void Init(CTapiConnection* pConn, DWORD dwDeviceID);
+	void GatherLineCapabilities();
+	void DeleteCallAppearances();
+	void RemoveCall(CTapiCall* pCall);
+
+	// Overriable methods for notifications
+protected:
+	virtual void OnAddressStateChange(DWORD dwAddressID, DWORD dwState);
+	virtual void OnAgentStateChange(DWORD dwAddressID, DWORD dwFields, DWORD dwState);
+	virtual void OnCallInfoChange(HCALL hCall, DWORD dwCallInfoState);
+	virtual void OnCallStateChange(HCALL hCall, DWORD dwState, DWORD dwStateDetail, DWORD dwPrivilage);
+	virtual void OnClose();
+	virtual void OnDevSpecific(DWORD dwHandle, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3);
+	virtual void OnDevSpecificFeature(DWORD dwHandle, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3);
+	virtual void OnGatherDigitsComplete(HCALL hCall, DWORD dwReason);
+	virtual void OnGenerateComplete(HCALL hCall, DWORD dwReason);
+	virtual void OnDeviceStateChange(DWORD dwDeviceState, DWORD dwStateDetail1, DWORD dwStateDetail2);
+	virtual void OnDigitDetected(HCALL hCall, DWORD dwDigit, DWORD dwDigitMode);
+	virtual void OnCallMediaModeChange(HCALL hCall, DWORD dwMediaMode);
+	virtual void OnToneDetected(HCALL hCall, DWORD dwAppSpecific);
+	virtual void OnNewCall(CTapiCall* pCall);
 	virtual void OnDynamicCreate();
 	virtual void OnDynamicRemove();
 	virtual void OnForceClose();
 
-// Friend definitions
-    friend class CTapiConnection;
-    friend class CTapiCall;    
-    friend class CTapiAddress;
+	// Friend definitions
+	friend class CTapiConnection;
+	friend class CTapiCall;
+	friend class CTapiAddress;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -422,50 +435,49 @@ protected:
 //
 
 class CTapiAddress : public CTapiObject
-{   
-    DECLARE_DYNCREATE (CTapiAddress)
+{
+	DECLARE_DYNCREATE(CTapiAddress)
 
-// Class data
-private:                                         
-    CTapiLine* m_pLine;         // Line owner
-    DWORD   m_dwAddressID;      // Address id assigned by TAPI
-    CString m_strAddress;       // Printable address (phone #).
-    LPLINEADDRESSCAPS m_lpAddrCaps;		// Last read address caps
-    LPLINEADDRESSSTATUS m_lpAddrStatus; // Last read address status
+	// Class data
+private:
+	CTapiLine* m_pLine;					// Line owner
+	DWORD m_dwAddressID;				// Address id assigned by TAPI
+	CString m_strAddress;				// Printable address (phone #).
+	LPLINEADDRESSCAPS m_lpAddrCaps;		// Last read address caps
+	LPLINEADDRESSSTATUS m_lpAddrStatus; // Last read address status
 	LPLINEAGENTCAPS m_lpAgentCaps;		// Last read agent caps
 	LPLINEAGENTSTATUS m_lpAgentStatus;	// Last read agent status
-	BOOL m_fAgentStatsReload;	// Reload AgentStatus on next interval
-	BOOL m_fAgentCapsReload;	// Reload AgentCaps on next interval
-    
-// Constructor
+	BOOL m_fAgentStatsReload;			// Reload AgentStatus on next interval
+	BOOL m_fAgentCapsReload;			// Reload AgentCaps on next interval
+
+	// Constructor
 public:
-    CTapiAddress();
-    virtual ~CTapiAddress();
-    
-// Access methods
+	CTapiAddress();
+	virtual ~CTapiAddress();
+
+	// Access methods
 public:
-    const LPLINEADDRESSCAPS GetAddressCaps(DWORD dwAPIVersion=0, DWORD dwExtVersion=0, BOOL fForceRealloc=FALSE);
-    const LPLINEADDRESSSTATUS GetAddressStatus(BOOL fForceRealloc=FALSE);
-	const LPLINEAGENTCAPS GetAgentCaps(DWORD dwAPIVersion=0);
+	const LPLINEADDRESSCAPS GetAddressCaps(DWORD dwAPIVersion = 0, DWORD dwExtVersion = 0, BOOL fForceRealloc = FALSE);
+	const LPLINEADDRESSSTATUS GetAddressStatus(BOOL fForceRealloc = FALSE);
+	const LPLINEAGENTCAPS GetAgentCaps(DWORD dwAPIVersion = 0);
 	const LPLINEAGENTSTATUS GetAgentStatus();
 
-	//Get the Devspecific Address Caps for ECSTA MX-oNE and NSX
-	long GetECSTAAddressCaps(CString& strDeviceType, CString& strDeviceName, CString& strDeviceID, DWORD& dwAddressFlags);
+	// Get the Devspecific Address Caps for ECSTA MX-oNE and NSX
+	long GetECSTAAddressCaps(ECSTAAddressCaps& addressCaps);
 
-    CTapiLine* GetLineOwner() const;
-    DWORD GetAddressID() const;
-    DWORD GetID(LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass);
+	CTapiLine* GetLineOwner() const;
+	DWORD GetAddressID() const;
+	DWORD GetID(LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass);
 	void GetValidIDs(CStringArray& arrKeys) const;
-    CString GetDialableAddress();
-    LONG DevSpecific (LPVOID lpParams, DWORD dwSize);
-    LONG GetNewCalls (CObList& lstCalls);
-    LONG GetNumRings (LPDWORD lpdwNumRings);
-    LONG SetNumRings (DWORD dwNumRings);
-    LONG Pickup (CTapiCall** pCall, LPCTSTR lpszDestAddr=NULL, LPCTSTR lpszGroupID=NULL);
-    LONG SetMediaControl (LPLINEMEDIACONTROLDIGIT const lpDigitList=NULL, DWORD dwDigitNumEntries=0, LPLINEMEDIACONTROLMEDIA const lpMediaList=NULL, DWORD dwMediaNumEntries=0, 
-                          LPLINEMEDIACONTROLTONE const lpToneList=NULL, DWORD dwToneNumEntries=0, LPLINEMEDIACONTROLCALLSTATE const lpCallStateList=NULL, DWORD dwCallStateNumEntries=0);
-    LONG SetTerminal (DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEnable);
-    LONG Unpark (CTapiCall** pCall, LPCTSTR lpszDestAddr);
+	CString GetDialableAddress();
+	LONG DevSpecific(LPVOID lpParams, DWORD dwSize);
+	LONG GetNewCalls(CObList& lstCalls);
+	LONG GetNumRings(LPDWORD lpdwNumRings);
+	LONG SetNumRings(DWORD dwNumRings);
+	LONG Pickup(CTapiCall** pCall, LPCTSTR lpszDestAddr = NULL, LPCTSTR lpszGroupID = NULL);
+	LONG SetMediaControl(LPLINEMEDIACONTROLDIGIT const lpDigitList = NULL, DWORD dwDigitNumEntries = 0, LPLINEMEDIACONTROLMEDIA const lpMediaList = NULL, DWORD dwMediaNumEntries = 0, LPLINEMEDIACONTROLTONE const lpToneList = NULL, DWORD dwToneNumEntries = 0, LPLINEMEDIACONTROLCALLSTATE const lpCallStateList = NULL, DWORD dwCallStateNumEntries = 0);
+	LONG SetTerminal(DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEnable);
+	LONG Unpark(CTapiCall** pCall, LPCTSTR lpszDestAddr);
 
 	// Agent functions
 	BOOL SupportsAgents() const;
@@ -477,14 +489,14 @@ public:
 	LONG SetAgentGroup(CPtrArray& arrGroups);
 	LONG GetCurrentAgentGroupList(CPtrArray& arrGroups);
 
-// Virtual methods for notifications from line
+	// Virtual methods for notifications from line
 public:
-    virtual void OnStateChange (DWORD dwState);
-	virtual void OnAgentStateChange (DWORD dwFields, DWORD dwState);
+	virtual void OnStateChange(DWORD dwState);
+	virtual void OnAgentStateChange(DWORD dwFields, DWORD dwState);
 
 protected:
-    void Init (CTapiLine* pLine, DWORD dwAddrId);
-    friend CTapiLine;
+	void Init(CTapiLine* pLine, DWORD dwAddrId);
+	friend CTapiLine;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -495,80 +507,79 @@ protected:
 //
 
 class CTapiCall : public CTapiObject
-{   
-    DECLARE_DYNCREATE (CTapiCall)
-// Class data
-private:           
-    CTapiLine*  m_pLine;        // Line owner for this call
-    HCALL       m_hCall;        // Opaque TAPI call handle
-    DWORD       m_dwState;      // Internal state
-	DWORD		m_dwWasNonIdle; // Set if the call ever had a different call state than idle
-    LPLINECALLINFO m_lpCallInfo;        // Call information (as of last call to GetCallInfo).
-    LPLINECALLSTATUS m_lpCallStatus;    // Call status (as of last call to GetCallStatus).
-    
-// Constructor
-public:
-    CTapiCall();
-    virtual ~CTapiCall();
-                                              
-// Access functions
-public:
-    const LPLINECALLINFO GetCallInfo(BOOL fForceRealloc=FALSE);
-    const LPLINECALLSTATUS GetCallStatus();
+{
+	DECLARE_DYNCREATE(CTapiCall)
+	// Class data
+private:
+	CTapiLine* m_pLine;				 // Line owner for this call
+	HCALL m_hCall;					 // Opaque TAPI call handle
+	DWORD m_dwState;				 // Internal state
+	DWORD m_dwWasNonIdle;			 // Set if the call ever had a different call state than idle
+	LPLINECALLINFO m_lpCallInfo;	 // Call information (as of last call to GetCallInfo).
+	LPLINECALLSTATUS m_lpCallStatus; // Call status (as of last call to GetCallStatus).
 
-    LONG Accept(LPCSTR lpszUserToUser=NULL, DWORD dwSize=0);
-    LONG AddToConference (CTapiCall* pCall);
-    LONG Answer(LPCSTR lpszUserToUser=NULL, DWORD dwSize=0);
-    LONG BlindTransfer (LPCTSTR lpszDestAddr, DWORD dwCountryCode=0);
-    LONG CompleteCall (LPDWORD lpdwCompletionID, DWORD dwCompletionMode, DWORD dwMessageID);
-    LONG CompleteTransfer(CTapiCall* pDestCall, CTapiCall** pConfCall, DWORD dwTransferMode);
-    LONG Deallocate();
-    LONG DevSpecific (LPVOID lpParams, DWORD dwSize);
-    LONG Dial (LPCTSTR lpszDestAddr, DWORD dwCountryCode=0);
-    LONG Drop (LPCSTR lpszUserToUser=NULL, DWORD dwSize=0);
-    LONG GatherDigits(DWORD dwDigitModes, LPTSTR lpsDigits, DWORD dwNumDigits, LPCTSTR lpszTerminationDigits, DWORD dwFirstDigitTimeout, DWORD dwInterDigitTimeout);
-    LONG CancelGatherDigits();
-    LONG GenerateDigits (DWORD dwDigitMode, LPCTSTR lpszDigits, DWORD dwDuration=0);
-    LONG CancelGenerateDigits();
-    LONG GenerateTone (DWORD dwToneMode, DWORD dwDuration=0, DWORD dwNumTones=0, LPLINEGENERATETONE const lpTones=NULL);
-    LONG CancelGenerateTone();
-    LONG GetConferenceRelatedCalls (CObList& lstCalls);
-    LONG GetID (LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass);
-    LONG Handoff (LPCTSTR lpszFilename, DWORD dwMediaMode=0);
-    LONG Hold();
-    LONG MonitorDigits (DWORD dwDigitModes);
-    LONG CancelMonitorDigits();
-    LONG MonitorMedia (DWORD dwMediaModes);
-    LONG CancelMonitorMedia();
-    LONG MonitorTones (LPLINEMONITORTONE const lpToneList, DWORD dwNumEntries);
-    LONG CancelMonitorTones();
-    LONG Park (DWORD dwParkMode, LPCTSTR lpszDestAddr, LPTSTR lpszReturnBuff, DWORD dwSize);
-    LONG PrepareAddToConference (CTapiCall** pCall, LPLINECALLPARAMS const lpCallParams = NULL);
-    LONG Redirect (LPCTSTR lpszDialableAddr, DWORD dwCountryCode=0);
-    LONG ReleaseUserUserInfo();
-    LONG RemoveFromConference();
-    LONG SecureCall();
+	// Constructor
+public:
+	CTapiCall();
+	virtual ~CTapiCall();
+
+	// Access functions
+public:
+	const LPLINECALLINFO GetCallInfo(BOOL fForceRealloc = FALSE);
+	const LPLINECALLSTATUS GetCallStatus();
+
+	LONG Accept(LPCSTR lpszUserToUser = NULL, DWORD dwSize = 0);
+	LONG AddToConference(CTapiCall* pCall);
+	LONG Answer(LPCSTR lpszUserToUser = NULL, DWORD dwSize = 0);
+	LONG BlindTransfer(LPCTSTR lpszDestAddr, DWORD dwCountryCode = 0);
+	LONG CompleteCall(LPDWORD lpdwCompletionID, DWORD dwCompletionMode, DWORD dwMessageID);
+	LONG CompleteTransfer(CTapiCall* pDestCall, CTapiCall** pConfCall, DWORD dwTransferMode);
+	LONG Deallocate();
+	LONG DevSpecific(LPVOID lpParams, DWORD dwSize);
+	LONG Dial(LPCTSTR lpszDestAddr, DWORD dwCountryCode = 0);
+	LONG Drop(LPCSTR lpszUserToUser = NULL, DWORD dwSize = 0);
+	LONG GatherDigits(DWORD dwDigitModes, LPTSTR lpsDigits, DWORD dwNumDigits, LPCTSTR lpszTerminationDigits, DWORD dwFirstDigitTimeout, DWORD dwInterDigitTimeout);
+	LONG CancelGatherDigits();
+	LONG GenerateDigits(DWORD dwDigitMode, LPCTSTR lpszDigits, DWORD dwDuration = 0);
+	LONG CancelGenerateDigits();
+	LONG GenerateTone(DWORD dwToneMode, DWORD dwDuration = 0, DWORD dwNumTones = 0, LPLINEGENERATETONE const lpTones = NULL);
+	LONG CancelGenerateTone();
+	LONG GetConferenceRelatedCalls(CObList& lstCalls);
+	LONG GetID(LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass);
+	LONG Handoff(LPCTSTR lpszFilename, DWORD dwMediaMode = 0);
+	LONG Hold();
+	LONG MonitorDigits(DWORD dwDigitModes);
+	LONG CancelMonitorDigits();
+	LONG MonitorMedia(DWORD dwMediaModes);
+	LONG CancelMonitorMedia();
+	LONG MonitorTones(LPLINEMONITORTONE const lpToneList, DWORD dwNumEntries);
+	LONG CancelMonitorTones();
+	LONG Park(DWORD dwParkMode, LPCTSTR lpszDestAddr, LPTSTR lpszReturnBuff, DWORD dwSize);
+	LONG PrepareAddToConference(CTapiCall** pCall, LPLINECALLPARAMS const lpCallParams = NULL);
+	LONG Redirect(LPCTSTR lpszDialableAddr, DWORD dwCountryCode = 0);
+	LONG ReleaseUserUserInfo();
+	LONG RemoveFromConference();
+	LONG SecureCall();
 	LONG SetCallData(LPVOID lpBuff, DWORD dwSize);
 	LONG SetQualityOfService(LPVOID lpBuff, DWORD dwSize, LPVOID lpBuff2, DWORD dwSize2);
-    LONG SendUserUserInfo (LPCSTR lpszUserToUser, DWORD dwSize);
-    LONG SetAppSpecificData (DWORD dwData);
-    LONG SetCallParams (DWORD dwBearerMode, DWORD dwMinRate, DWORD dwMaxRate, LPLINEDIALPARAMS const lpDialParams = NULL);
-    LONG SetPrivilege (DWORD dwCallPrivilege);
-    LONG SetMediaControl (LPLINEMEDIACONTROLDIGIT const lpDigitList=NULL, DWORD dwDigitNumEntries=0, LPLINEMEDIACONTROLMEDIA const lpMediaList=NULL, DWORD dwMediaNumEntries=0, 
-                          LPLINEMEDIACONTROLTONE const lpToneList=NULL, DWORD dwToneNumEntries=0, LPLINEMEDIACONTROLCALLSTATE const lpCallStateList=NULL, DWORD dwCallStateNumEntries=0);
-    LONG SetMediaMode (DWORD dwMediaMode);
-    LONG SetTerminal (DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEnable);
-    LONG SetupConference (CTapiCall** pConfCall, CTapiCall** pConstCall, DWORD dwNumParties, LPLINECALLPARAMS const lpCallParams = NULL);
-    LONG SetupTransfer (CTapiCall** pXferCall, LPLINECALLPARAMS const lpCallParams = NULL);
-    LONG Unhold();
+	LONG SendUserUserInfo(LPCSTR lpszUserToUser, DWORD dwSize);
+	LONG SetAppSpecificData(DWORD dwData);
+	LONG SetCallParams(DWORD dwBearerMode, DWORD dwMinRate, DWORD dwMaxRate, LPLINEDIALPARAMS const lpDialParams = NULL);
+	LONG SetPrivilege(DWORD dwCallPrivilege);
+	LONG SetMediaControl(LPLINEMEDIACONTROLDIGIT const lpDigitList = NULL, DWORD dwDigitNumEntries = 0, LPLINEMEDIACONTROLMEDIA const lpMediaList = NULL, DWORD dwMediaNumEntries = 0, LPLINEMEDIACONTROLTONE const lpToneList = NULL, DWORD dwToneNumEntries = 0, LPLINEMEDIACONTROLCALLSTATE const lpCallStateList = NULL, DWORD dwCallStateNumEntries = 0);
+	LONG SetMediaMode(DWORD dwMediaMode);
+	LONG SetTerminal(DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEnable);
+	LONG SetupConference(CTapiCall** pConfCall, CTapiCall** pConstCall, DWORD dwNumParties, LPLINECALLPARAMS const lpCallParams = NULL);
+	LONG SetupTransfer(CTapiCall** pXferCall, LPLINECALLPARAMS const lpCallParams = NULL);
+	LONG Unhold();
 
-    // Other functions of use    
-    CTapiLine* GetLineOwner() const;
-    HCALL GetCallHandle() const;
-    DWORD GetCallState();
+	// Other functions of use
+	CTapiLine* GetLineOwner() const;
+	HCALL GetCallHandle() const;
+	DWORD GetCallState();
 	DWORD GetCallWasNonIdle() const;
-    CTapiAddress* GetAddressInfo();
-    CString GetCallStateString();
+	CTapiAddress* GetAddressInfo();
+	CString GetCallStateString();
 	CString GetCallFeaturesString();
 	CString GetCallStateModeString();
 	bool WaitForFeature(DWORD dwFeature, DWORD dwTimeout);
@@ -586,48 +597,49 @@ public:
 	CString GetRedirectingIDName();
 	CString GetRedirectedFromIDNumber();
 	CString GetRedirectedFromIDName();
-    
-    // These functions return the known GetID handles
-    DWORD GetWaveInDeviceID();
-    DWORD GetWaveOutDeviceID();
-    DWORD GetMidiInDeviceID();
-    DWORD GetMidiOutDeviceID();
-    HANDLE GetCommHandle();
-    CString GetCommDevice();
-    
-	//ECSTA Specific
+
+	// These functions return the known GetID handles
+	DWORD GetWaveInDeviceID();
+	DWORD GetWaveOutDeviceID();
+	DWORD GetMidiInDeviceID();
+	DWORD GetMidiOutDeviceID();
+	HANDLE GetCommHandle();
+	CString GetCommDevice();
+
+	// ECSTA Specific
 	DWORD GetECSTACallFeatures();
+
 protected:
-    void Init (CTapiLine* pLine, HCALL hCall);
-    
-// Overriable methods for notifications
+	void Init(CTapiLine* pLine, HCALL hCall);
+
+	// Overriable methods for notifications
 public:
-    virtual void OnInfoChange (DWORD dwInfoState);
-    virtual void OnStateChange (DWORD dwState, DWORD dwStateDetail, DWORD dwPrivilage);
-    virtual void OnGatherDigitsComplete (DWORD dwReason);
-    virtual void OnGenerateComplete (DWORD dwReason);
-    virtual void OnDigitDetected (DWORD dwDigit, DWORD dwDigitMode);
-    virtual void OnMediaModeChange (DWORD dwMediaMode);
-    virtual void OnToneDetected (DWORD dwAppSpecific);
-    
-    // These are called on state changes from the OnStateChange() member.
-    virtual void OnCallStateIdle();
-    virtual void OnCallStateOffering(DWORD dwOfferingMode);
-    virtual void OnCallStateAccepted();
-    virtual void OnCallStateDialtone(DWORD dwDialToneMode);
-    virtual void OnCallStateDialing();
-    virtual void OnCallStateRingback();
-    virtual void OnCallStateBusy(DWORD dwBusyMode);
-    virtual void OnCallStateConnected(DWORD dwConnectMode);
-    virtual void OnCallStateProceeding();
-    virtual void OnCallStateHold();
-    virtual void OnCallStateHoldPendingConference();
-    virtual void OnCallStateHoldPendingTransfer();
-    virtual void OnCallStateSpecialInfo(DWORD dwInfo);
-    virtual void OnCallStateDisconnected(DWORD dwDisconnectMode);
-    virtual void OnCallStateConferenced();
-    
-    friend class CTapiLine;    
+	virtual void OnInfoChange(DWORD dwInfoState);
+	virtual void OnStateChange(DWORD dwState, DWORD dwStateDetail, DWORD dwPrivilage);
+	virtual void OnGatherDigitsComplete(DWORD dwReason);
+	virtual void OnGenerateComplete(DWORD dwReason);
+	virtual void OnDigitDetected(DWORD dwDigit, DWORD dwDigitMode);
+	virtual void OnMediaModeChange(DWORD dwMediaMode);
+	virtual void OnToneDetected(DWORD dwAppSpecific);
+
+	// These are called on state changes from the OnStateChange() member.
+	virtual void OnCallStateIdle();
+	virtual void OnCallStateOffering(DWORD dwOfferingMode);
+	virtual void OnCallStateAccepted();
+	virtual void OnCallStateDialtone(DWORD dwDialToneMode);
+	virtual void OnCallStateDialing();
+	virtual void OnCallStateRingback();
+	virtual void OnCallStateBusy(DWORD dwBusyMode);
+	virtual void OnCallStateConnected(DWORD dwConnectMode);
+	virtual void OnCallStateProceeding();
+	virtual void OnCallStateHold();
+	virtual void OnCallStateHoldPendingConference();
+	virtual void OnCallStateHoldPendingTransfer();
+	virtual void OnCallStateSpecialInfo(DWORD dwInfo);
+	virtual void OnCallStateDisconnected(DWORD dwDisconnectMode);
+	virtual void OnCallStateConferenced();
+
+	friend class CTapiLine;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -638,101 +650,129 @@ public:
 //
 
 class CTapiPhone : public CTapiObject
-{ 
-    DECLARE_DYNCREATE (CTapiPhone)
-// Class data
+{
+	DECLARE_DYNCREATE(CTapiPhone)
+	// Class data
 protected:
-	enum {
-		Removed = 0x01					// Line is not valid and has been removed.
+	enum
+	{
+		Removed = 0x01 // Line is not valid and has been removed.
 	};
 
-	int					m_iFlags;		// Flags for this phone.
-    CTapiConnection*    m_pConn;        // TAPI connection owner
-    HPHONE              m_hPhone;       // Opaque Phone handle
-    DWORD               m_dwDeviceID;   // Device ID (0-num Devices)
-    DWORD               m_dwAPIVersion; // API version negotiated with TAPI
-	LPPHONECAPS			m_lpPhoneCaps;	// Phone capabilities
-	LPPHONESTATUS		m_lpPhoneStatus; // Phone status
-    
-// Constructor
-public:
-    CTapiPhone();
-    virtual ~CTapiPhone();
-    
-// Access methods
-public:
-    const LPPHONECAPS GetPhoneCaps(DWORD dwAPIVersion=0, DWORD dwExtVersion=0, BOOL fForceRealloc=FALSE);
-    const LPPHONESTATUS GetPhoneStatus(BOOL fForceRealloc=FALSE);
+	int m_iFlags;				   // Flags for this phone.
+	CTapiConnection* m_pConn;	   // TAPI connection owner
+	HPHONE m_hPhone;			   // Opaque Phone handle
+	DWORD m_dwDeviceID;			   // Device ID (0-num Devices)
+	DWORD m_dwAPIVersion;		   // API version negotiated with TAPI
+	LPPHONECAPS m_lpPhoneCaps;	   // Phone capabilities
+	LPPHONESTATUS m_lpPhoneStatus; // Phone status
 
-    DWORD GetDeviceID() const;
-    DWORD GetNegotiatedAPIVersion() const;
-    CString GetPhoneName() const;
-    CString GetProviderInfo() const;
-    CTapiConnection* GetTapiConnection() const;
+	// Constructor
+public:
+	CTapiPhone();
+	virtual ~CTapiPhone();
 
-    // Open the phone device
-    LONG Open(DWORD dwPriv, DWORD dwAPIVersion=0, DWORD dwExtVersion=0);
-    BOOL IsOpen() const;
+	// Access methods
+public:
+	const LPPHONECAPS GetPhoneCaps(DWORD dwAPIVersion = 0, DWORD dwExtVersion = 0, BOOL fForceRealloc = FALSE);
+	const LPPHONESTATUS GetPhoneStatus(BOOL fForceRealloc = FALSE);
+
+	DWORD GetDeviceID() const;
+	DWORD GetNegotiatedAPIVersion() const;
+	CString GetPhoneName() const;
+	CString GetProviderInfo() const;
+	CTapiConnection* GetTapiConnection() const;
+
+	// Open the phone device
+	LONG Open(DWORD dwPriv, DWORD dwAPIVersion = 0, DWORD dwExtVersion = 0);
+	BOOL IsOpen() const;
 	BOOL IsValid() const;
-    HPHONE GetPhoneHandle() const;
-    LONG Close();
+	HPHONE GetPhoneHandle() const;
+	LONG Close();
 
-    // Status message notifications
-    LONG GetStatusMessages (LPDWORD lpdwPhoneStatus, LPDWORD lpdwButtonModes, LPDWORD lpdwButtonStates);
-    LONG SetStatusMessages (DWORD dwPhoneStates, DWORD dwButtonModes, DWORD dwButtonStates);
-    
-    // Retrieve line handle information
-    LONG GetID (LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass);
+	// Status message notifications
+	LONG GetStatusMessages(LPDWORD lpdwPhoneStatus, LPDWORD lpdwButtonModes, LPDWORD lpdwButtonStates);
+	LONG SetStatusMessages(DWORD dwPhoneStates, DWORD dwButtonModes, DWORD dwButtonStates);
+
+	// Retrieve line handle information
+	LONG GetID(LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass);
 	LONG GetButtonInfo(int iButtonID, LPBUTTONINFO lpButton);
 
-    // Manage configuration
-    LONG Config (CWnd* pwndOwner, LPCTSTR lpszDeviceClass);
-    LONG DevSpecific (LPVOID lpParams, DWORD dwSize);
-    
+	// Manage configuration
+	LONG Config(CWnd* pwndOwner, LPCTSTR lpszDeviceClass);
+	LONG DevSpecific(LPVOID lpParams, DWORD dwSize);
+
 	// TAPI Functions
 	LONG SetVolume(DWORD dwDevice, DWORD dwVolume);
 	LONG SetGain(DWORD dwDevice, DWORD dwGain);
 	LONG SetHookswitch(DWORD dwDevice, DWORD dwMode);
 	LONG SetRing(DWORD dwRingMode, DWORD dwRingVolume);
 	LONG SetDisplay(LPCSTR pszDisplay);
-	LONG SetHandsetVolume(DWORD dwVolume) { return SetVolume(PHONEHOOKSWITCHDEV_HANDSET, dwVolume); }
-	LONG SetHeadsetVolume(DWORD dwVolume) { return SetVolume(PHONEHOOKSWITCHDEV_HEADSET, dwVolume); }
-	LONG SetSpeakerVolume(DWORD dwVolume) { return SetVolume(PHONEHOOKSWITCHDEV_SPEAKER, dwVolume); }
-	LONG SetHandsetGain(DWORD dwGain) { return SetGain(PHONEHOOKSWITCHDEV_HANDSET, dwGain); }
-	LONG SetHeadsetGain(DWORD dwGain) { return SetGain(PHONEHOOKSWITCHDEV_HEADSET, dwGain); }
-	LONG SetSpeakerGain(DWORD dwGain) { return SetGain(PHONEHOOKSWITCHDEV_SPEAKER, dwGain); }
-	LONG SetHandsetHookswitch(DWORD dwMode) { return SetHookswitch(PHONEHOOKSWITCHDEV_HANDSET, dwMode); }
-	LONG SetHeadsetHookswitch(DWORD dwMode) { return SetHookswitch(PHONEHOOKSWITCHDEV_HEADSET, dwMode); }
-	LONG SetSpeakerHookswitch(DWORD dwMode) { return SetHookswitch(PHONEHOOKSWITCHDEV_SPEAKER, dwMode); }
+	LONG SetHandsetVolume(DWORD dwVolume)
+	{
+		return SetVolume(PHONEHOOKSWITCHDEV_HANDSET, dwVolume);
+	}
+	LONG SetHeadsetVolume(DWORD dwVolume)
+	{
+		return SetVolume(PHONEHOOKSWITCHDEV_HEADSET, dwVolume);
+	}
+	LONG SetSpeakerVolume(DWORD dwVolume)
+	{
+		return SetVolume(PHONEHOOKSWITCHDEV_SPEAKER, dwVolume);
+	}
+	LONG SetHandsetGain(DWORD dwGain)
+	{
+		return SetGain(PHONEHOOKSWITCHDEV_HANDSET, dwGain);
+	}
+	LONG SetHeadsetGain(DWORD dwGain)
+	{
+		return SetGain(PHONEHOOKSWITCHDEV_HEADSET, dwGain);
+	}
+	LONG SetSpeakerGain(DWORD dwGain)
+	{
+		return SetGain(PHONEHOOKSWITCHDEV_SPEAKER, dwGain);
+	}
+	LONG SetHandsetHookswitch(DWORD dwMode)
+	{
+		return SetHookswitch(PHONEHOOKSWITCHDEV_HANDSET, dwMode);
+	}
+	LONG SetHeadsetHookswitch(DWORD dwMode)
+	{
+		return SetHookswitch(PHONEHOOKSWITCHDEV_HEADSET, dwMode);
+	}
+	LONG SetSpeakerHookswitch(DWORD dwMode)
+	{
+		return SetHookswitch(PHONEHOOKSWITCHDEV_SPEAKER, dwMode);
+	}
 
-    // Misc. functions
-    BOOL GetTSPProvider (LPTAPIPROVIDER pProvider) const;
+	// Misc. functions
+	BOOL GetTSPProvider(LPTAPIPROVIDER pProvider) const;
 	DWORD GetProviderID() const;
 	void GetValidIDs(CStringArray& arrKeys) const;
-    HICON GetIcon(LPCTSTR lpszDeviceClass = NULL);
-	DWORD GetRelatedLineID();    
+	HICON GetIcon(LPCTSTR lpszDeviceClass = NULL);
+	DWORD GetRelatedLineID();
 	DWORD GetLampMode(int iLampID);
 	CString GetDisplay() const;
 
 public:
-    void PhoneCallback (DWORD hDevice, DWORD dwMsg, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3);
+	void PhoneCallback(DWORD hDevice, DWORD dwMsg, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3);
 
-protected:    
-    void Init (CTapiConnection* pConn, DWORD dwDeviceID);
-    void GatherPhoneCapabilities();
-    
-// Overriable methods for notifications
 protected:
-    virtual void OnClose();
-    virtual void OnDevSpecific (DWORD dwHandle, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3);
+	void Init(CTapiConnection* pConn, DWORD dwDeviceID);
+	void GatherPhoneCapabilities();
+
+	// Overriable methods for notifications
+protected:
+	virtual void OnClose();
+	virtual void OnDevSpecific(DWORD dwHandle, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3);
 	virtual void OnButton(DWORD dwButtonLampID, DWORD dwButtonMode, DWORD dwButtonState);
 	virtual void OnDeviceStateChange(DWORD dwPhoneState, DWORD dwDetail);
 	virtual void OnDynamicCreate();
 	virtual void OnDynamicRemove();
 	virtual void OnForceClose();
 
-// Friend definitions
-    friend class CTapiConnection;
+	// Friend definitions
+	friend class CTapiConnection;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -744,7 +784,7 @@ inline BOOL IsTapiError(LONG lResult)
 {
 	return (lResult > 0x80000000);
 
-}// IsTapiError
+} // IsTapiError
 
 ////////////////////////////////////////////////////////////////////////////////////
 // AllocMem
@@ -755,7 +795,7 @@ inline LPVOID AllocMem(DWORD dwSize)
 {
 	return calloc(1, dwSize);
 
-}// AllocMem
+} // AllocMem
 
 ////////////////////////////////////////////////////////////////////////////////////
 // FreeMem
@@ -764,21 +804,21 @@ inline LPVOID AllocMem(DWORD dwSize)
 //
 inline void FreeMem(LPVOID lpMem)
 {
-	free (lpMem);
+	free(lpMem);
 
-}// FreeMem
+} // FreeMem
 
 ////////////////////////////////////////////////////////////////////////////////////
 // ManageAsynchRequest
 //
 // Add a request (if necessary) to the asynch list
 //
-inline LONG ManageAsynchRequest (LONG lRequestID)
+inline LONG ManageAsynchRequest(LONG lRequestID)
 {
 	CTapiConnection* pConn = GetTAPIConnection();
 	pConn->AddRequest(lRequestID);
 	return lRequestID;
 
-}// ManageAsynchRequest
-                          
-#endif // __ATAPI_INC__   
+} // ManageAsynchRequest
+
+#endif // __ATAPI_INC__

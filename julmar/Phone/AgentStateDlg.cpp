@@ -3,20 +3,20 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
-#include "phone.h"
 #include "AgentStateDlg.h"
+#include "phone.h"
 #include "PhoneDlg.h"
 
 #ifdef _DEBUG
@@ -63,7 +63,6 @@ void CAgentStateDlg::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-
 BEGIN_MESSAGE_MAP(CAgentStateDlg, CDialog)
 	//{{AFX_MSG_MAP(CAgentStateDlg)
 	ON_BN_CLICKED(IDC_LOGOUT, OnLogout)
@@ -71,7 +70,7 @@ BEGIN_MESSAGE_MAP(CAgentStateDlg, CDialog)
 	ON_BN_CLICKED(IDC_READY, OnReady)
 	ON_BN_CLICKED(IDC_SETGROUP, OnSetGroup)
 	ON_BN_CLICKED(IDC_WORKINGAFTERCALL, OnCallWork)
-	ON_MESSAGE(UM_AGENTCHANGE, 	i_OnAgentChange)
+	ON_MESSAGE(UM_AGENTCHANGE, i_OnAgentChange)
 	ON_WM_CLOSE()
 	ON_BN_CLICKED(IDC_UPDATE, OnUpdateS)
 	ON_CBN_SELCHANGE(IDC_ACTIVITY, OnSelchangeActivity)
@@ -93,18 +92,14 @@ void CAgentStateDlg::OnAvailableGroupsChange()
 	{
 		while (arrGroups.GetSize() > 0)
 		{
-			LPAGENTGROUP pGroup = (LPAGENTGROUP) arrGroups[0];
+			LPAGENTGROUP pGroup = (LPAGENTGROUP)arrGroups[0];
 			arrGroups.RemoveAt(0);
 
 			CString strName(pGroup->strName);
 			if (strName.IsEmpty())
-				strName.Format(_T("0x%lx 0x%lx 0x%lx 0x%lx"), 
-						pGroup->GroupID.dwGroupID1,
-						pGroup->GroupID.dwGroupID2,
-						pGroup->GroupID.dwGroupID3,
-						pGroup->GroupID.dwGroupID4);
+				strName.Format(_T("0x%lx 0x%lx 0x%lx 0x%lx"), pGroup->GroupID.dwGroupID1, pGroup->GroupID.dwGroupID2, pGroup->GroupID.dwGroupID3, pGroup->GroupID.dwGroupID4);
 			int iPos = m_lbGroups.AddString(strName);
-			ASSERT (iPos != LB_ERR);
+			ASSERT(iPos != LB_ERR);
 			m_lbGroups.SetItemDataPtr(iPos, pGroup);
 		}
 	}
@@ -113,8 +108,8 @@ void CAgentStateDlg::OnAvailableGroupsChange()
 		m_lbGroups.EnableWindow(FALSE);
 
 	UpdateData(FALSE);
-		
-}// CAgentStateDlg::OnAvailableGroupsChange
+
+} // CAgentStateDlg::OnAvailableGroupsChange
 
 void CAgentStateDlg::OnAgentStateChange()
 {
@@ -124,38 +119,30 @@ void CAgentStateDlg::OnAgentStateChange()
 	{
 		if (m_lbGroups.GetCount() == 0)
 		{
-			LPAGENTGROUP pGroup = (LPAGENTGROUP) arrGroups[0];
+			LPAGENTGROUP pGroup = (LPAGENTGROUP)arrGroups[0];
 			m_strGroup = pGroup->strName;
 			if (m_strGroup.IsEmpty())
-				m_strGroup.Format(_T("0x%lx 0x%lx 0x%lx 0x%lx"), 
-						pGroup->GroupID.dwGroupID1,
-						pGroup->GroupID.dwGroupID2,
-						pGroup->GroupID.dwGroupID3,
-						pGroup->GroupID.dwGroupID4);
+				m_strGroup.Format(_T("0x%lx 0x%lx 0x%lx 0x%lx"), pGroup->GroupID.dwGroupID1, pGroup->GroupID.dwGroupID2, pGroup->GroupID.dwGroupID3, pGroup->GroupID.dwGroupID4);
 
 			m_strGroup2 = _T("");
 			if (arrGroups.GetSize() > 1)
 			{
-				pGroup = (LPAGENTGROUP) arrGroups[1];
+				pGroup = (LPAGENTGROUP)arrGroups[1];
 				m_strGroup2 = pGroup->strName;
 				if (m_strGroup2.IsEmpty())
-					m_strGroup2.Format(_T("0x%lx 0x%lx 0x%lx 0x%lx"), 
-							pGroup->GroupID.dwGroupID1,
-							pGroup->GroupID.dwGroupID2,
-							pGroup->GroupID.dwGroupID3,
-							pGroup->GroupID.dwGroupID4);
+					m_strGroup2.Format(_T("0x%lx 0x%lx 0x%lx 0x%lx"), pGroup->GroupID.dwGroupID1, pGroup->GroupID.dwGroupID2, pGroup->GroupID.dwGroupID3, pGroup->GroupID.dwGroupID4);
 			}
 		}
 
 		int iEditUsed = 0;
 		while (arrGroups.GetSize() > 0)
 		{
-			LPAGENTGROUP pGroup = (LPAGENTGROUP) arrGroups[0];
+			LPAGENTGROUP pGroup = (LPAGENTGROUP)arrGroups[0];
 			arrGroups.RemoveAt(0);
 			int i = 0;
 			for (i = 0; i < m_lbGroups.GetCount(); i++)
 			{
-				LPAGENTGROUP pGroup2 = (LPAGENTGROUP) m_lbGroups.GetItemData(i);
+				LPAGENTGROUP pGroup2 = (LPAGENTGROUP)m_lbGroups.GetItemData(i);
 				if (!memcmp(&pGroup->GroupID, &pGroup2->GroupID, sizeof(pGroup->GroupID)))
 					m_lbGroups.SetSel(i, TRUE);
 			}
@@ -166,21 +153,13 @@ void CAgentStateDlg::OnAgentStateChange()
 				{
 					m_strGroup = pGroup->strName;
 					if (m_strGroup.IsEmpty())
-						m_strGroup.Format(_T("0x%lx 0x%lx 0x%lx 0x%lx"), 
-								pGroup->GroupID.dwGroupID1,
-								pGroup->GroupID.dwGroupID2,
-								pGroup->GroupID.dwGroupID3,
-								pGroup->GroupID.dwGroupID4);
+						m_strGroup.Format(_T("0x%lx 0x%lx 0x%lx 0x%lx"), pGroup->GroupID.dwGroupID1, pGroup->GroupID.dwGroupID2, pGroup->GroupID.dwGroupID3, pGroup->GroupID.dwGroupID4);
 				}
 				else if (iEditUsed == 1)
 				{
 					m_strGroup2 = pGroup->strName;
 					if (m_strGroup2.IsEmpty())
-						m_strGroup2.Format(_T("0x%lx 0x%lx 0x%lx 0x%lx"), 
-								pGroup->GroupID.dwGroupID1,
-								pGroup->GroupID.dwGroupID2,
-								pGroup->GroupID.dwGroupID3,
-								pGroup->GroupID.dwGroupID4);
+						m_strGroup2.Format(_T("0x%lx 0x%lx 0x%lx 0x%lx"), pGroup->GroupID.dwGroupID1, pGroup->GroupID.dwGroupID2, pGroup->GroupID.dwGroupID3, pGroup->GroupID.dwGroupID4);
 				}
 				iEditUsed++;
 			}
@@ -208,28 +187,28 @@ void CAgentStateDlg::OnAgentStateChange()
 	UpdateData(FALSE);
 	RecalcFeatures();
 
-}// CAgentStateDlg::OnAgentStateChange
+} // CAgentStateDlg::OnAgentStateChange
 
 /////////////////////////////////////////////////////////////////////////////
 // CAgentStateDlg message handlers
 
-BOOL CAgentStateDlg::OnInitDialog() 
+BOOL CAgentStateDlg::OnInitDialog()
 {
 	// Change our title.
 	CString strTitle, strBuff;
 	GetWindowText(strTitle);
 	strBuff.Format(_T("%s - %s %s"), (const wchar_t*)strTitle, (const wchar_t*)m_pAddr->GetLineOwner()->GetLineName(), (const wchar_t*)m_pAddr->GetDialableAddress());
-	SetWindowText(strBuff);	
+	SetWindowText(strBuff);
 
-    // Reset the font to all be ANSI var.
-    CFont fntAnsi;
-    fntAnsi.CreateStockObject (ANSI_VAR_FONT);
-    CWnd* pwndChild = GetWindow (GW_CHILD);
-    while (pwndChild != NULL && IsChild(pwndChild))
-    {
-        pwndChild->SetFont(&fntAnsi);
-        pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
-    }
+	// Reset the font to all be ANSI var.
+	CFont fntAnsi;
+	fntAnsi.CreateStockObject(ANSI_VAR_FONT);
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild != NULL && IsChild(pwndChild))
+	{
+		pwndChild->SetFont(&fntAnsi);
+		pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
+	}
 
 	// Connect all the controls via DDX
 	CDialog::OnInitDialog();
@@ -279,10 +258,10 @@ void CAgentStateDlg::RecalcFeatures()
 	}
 	else
 	{
-			m_btnReady.EnableWindow(FALSE);
-			m_btnNotReady.EnableWindow(FALSE);
-			m_btnLogout.EnableWindow(FALSE);
-			m_btnCallWork.EnableWindow(FALSE);
+		m_btnReady.EnableWindow(FALSE);
+		m_btnNotReady.EnableWindow(FALSE);
+		m_btnLogout.EnableWindow(FALSE);
+		m_btnCallWork.EnableWindow(FALSE);
 	}
 
 	m_btnSetGroup.EnableWindow((lpStatus->dwAgentFeatures & LINEAGENTFEATURE_SETAGENTGROUP) > 0);
@@ -302,19 +281,14 @@ void CAgentStateDlg::RecalcFeatures()
 			m_lbGroups.EnableWindow(FALSE);
 	}
 
-	if ((lpStatus->dwAgentFeatures & LINEAGENTFEATURE_SETAGENTACTIVITY) == 0 ||
-		m_cbActivity.GetCount() == 0)
-	{
+	if ((lpStatus->dwAgentFeatures & LINEAGENTFEATURE_SETAGENTACTIVITY) == 0 || m_cbActivity.GetCount() == 0)
 		m_cbActivity.EnableWindow(FALSE);
-	}
 	else
-	{
 		m_cbActivity.EnableWindow(TRUE);
-	}
 
-}// CAgentStateDlg::RecalcFeatures
+} // CAgentStateDlg::RecalcFeatures
 
-void CAgentStateDlg::OnSetGroup() 
+void CAgentStateDlg::OnSetGroup()
 {
 	ClearErrors();
 
@@ -326,20 +300,14 @@ void CAgentStateDlg::OnSetGroup()
 
 	if (m_strGroup.IsEmpty() == FALSE)
 	{
-		ag1.GroupID.dwGroupID1 = 
-		ag1.GroupID.dwGroupID2 = 
-		ag1.GroupID.dwGroupID3 = 
-		ag1.GroupID.dwGroupID4 = 0;
+		ag1.GroupID.dwGroupID1 = ag1.GroupID.dwGroupID2 = ag1.GroupID.dwGroupID3 = ag1.GroupID.dwGroupID4 = 0;
 		ag1.strName = m_strGroup;
 		arrGroups.Add(&ag1);
 	}
 
 	if (m_strGroup2.IsEmpty() == FALSE)
 	{
-		ag2.GroupID.dwGroupID1 = 
-		ag2.GroupID.dwGroupID2 = 
-		ag2.GroupID.dwGroupID3 = 
-		ag2.GroupID.dwGroupID4 = 0;
+		ag2.GroupID.dwGroupID1 = ag2.GroupID.dwGroupID2 = ag2.GroupID.dwGroupID3 = ag2.GroupID.dwGroupID4 = 0;
 		ag2.strName = m_strGroup2;
 		ag2.strName.TrimRight();
 		arrGroups.Add(&ag2);
@@ -349,7 +317,7 @@ void CAgentStateDlg::OnSetGroup()
 	{
 		for (int i = 0; i < m_lbGroups.GetCount(); i++)
 		{
-			LPAGENTGROUP pGroup = (LPAGENTGROUP) m_lbGroups.GetItemData(i);
+			LPAGENTGROUP pGroup = (LPAGENTGROUP)m_lbGroups.GetItemData(i);
 			if (m_lbGroups.GetSel(i))
 				arrGroups.Add(pGroup);
 		}
@@ -361,7 +329,7 @@ void CAgentStateDlg::OnSetGroup()
 	OnAgentStateChange();
 }
 
-void CAgentStateDlg::OnLogout() 
+void CAgentStateDlg::OnLogout()
 {
 	ClearErrors();
 
@@ -379,14 +347,13 @@ void CAgentStateDlg::OnLogout()
 		}
 	}
 
-	LONG lResult = GetTAPIConnection()->WaitForReply(
-		m_pAddr->SetAgentState(dwState, dwNextState));
+	LONG lResult = GetTAPIConnection()->WaitForReply(m_pAddr->SetAgentState(dwState, dwNextState));
 	if (lResult != 0)
 		ShowError("lineSetAgentState", lResult);
 	OnAgentStateChange();
 }
 
-void CAgentStateDlg::OnNotready() 
+void CAgentStateDlg::OnNotready()
 {
 	ClearErrors();
 
@@ -404,14 +371,13 @@ void CAgentStateDlg::OnNotready()
 		}
 	}
 
-	LONG lResult = GetTAPIConnection()->WaitForReply(
-		m_pAddr->SetAgentState(dwState, dwNextState));
+	LONG lResult = GetTAPIConnection()->WaitForReply(m_pAddr->SetAgentState(dwState, dwNextState));
 	if (lResult != 0)
 		ShowError("lineSetAgentState", lResult);
 	OnAgentStateChange();
 }
 
-void CAgentStateDlg::OnReady() 
+void CAgentStateDlg::OnReady()
 {
 	ClearErrors();
 
@@ -429,14 +395,13 @@ void CAgentStateDlg::OnReady()
 		}
 	}
 
-	LONG lResult = GetTAPIConnection()->WaitForReply(
-		m_pAddr->SetAgentState(dwState, dwNextState));
+	LONG lResult = GetTAPIConnection()->WaitForReply(m_pAddr->SetAgentState(dwState, dwNextState));
 	if (lResult != 0)
 		ShowError("lineSetAgentState", lResult);
 	OnAgentStateChange();
 }
 
-void CAgentStateDlg::OnCallWork() 
+void CAgentStateDlg::OnCallWork()
 {
 	ClearErrors();
 
@@ -454,8 +419,7 @@ void CAgentStateDlg::OnCallWork()
 		}
 	}
 
-	LONG lResult = GetTAPIConnection()->WaitForReply(
-		m_pAddr->SetAgentState(dwState, dwNextState));
+	LONG lResult = GetTAPIConnection()->WaitForReply(m_pAddr->SetAgentState(dwState, dwNextState));
 	if (lResult != 0)
 		ShowError("lineSetAgentState", lResult);
 	OnAgentStateChange();
@@ -465,19 +429,28 @@ LPCSTR CAgentStateDlg::GetAgentStateString(DWORD dwAgentState)
 {
 	switch (dwAgentState)
 	{
-		case LINEAGENTSTATE_LOGGEDOFF:	return "Logged Off";
-		case LINEAGENTSTATE_NOTREADY:	return "Not Ready"; 
-		case LINEAGENTSTATE_READY:		return "Ready";
-		case LINEAGENTSTATE_BUSYACD:	return "Busy ACD";
-		case LINEAGENTSTATE_BUSYINCOMING: return "Busy Incoming"; 
-		case LINEAGENTSTATE_BUSYOUTBOUND: return "Busy Outbound";
-		case LINEAGENTSTATE_BUSYOTHER:	return "Busy Other";
-		case LINEAGENTSTATE_WORKINGAFTERCALL: return "Call Work";
-		case LINEAGENTSTATE_UNAVAIL: return "Unavailable";
+		case LINEAGENTSTATE_LOGGEDOFF:
+			return "Logged Off";
+		case LINEAGENTSTATE_NOTREADY:
+			return "Not Ready";
+		case LINEAGENTSTATE_READY:
+			return "Ready";
+		case LINEAGENTSTATE_BUSYACD:
+			return "Busy ACD";
+		case LINEAGENTSTATE_BUSYINCOMING:
+			return "Busy Incoming";
+		case LINEAGENTSTATE_BUSYOUTBOUND:
+			return "Busy Outbound";
+		case LINEAGENTSTATE_BUSYOTHER:
+			return "Busy Other";
+		case LINEAGENTSTATE_WORKINGAFTERCALL:
+			return "Call Work";
+		case LINEAGENTSTATE_UNAVAIL:
+			return "Unavailable";
 	}
 	return "Unknown";
 
-}// CAgentStateDlg::GetAgentStateString
+} // CAgentStateDlg::GetAgentStateString
 
 LRESULT CAgentStateDlg::i_OnAgentChange(WPARAM wParam, LPARAM lParam)
 {
@@ -490,13 +463,12 @@ LRESULT CAgentStateDlg::i_OnAgentChange(WPARAM wParam, LPARAM lParam)
 			OnAvailableActivitiesChange();
 		if (lParam & LINEAGENTSTATUS_GROUPLIST)
 			OnAvailableGroupsChange();
-		if (lParam & (LINEAGENTSTATUS_GROUP | LINEAGENTSTATUS_STATE | 
-				LINEAGENTSTATUS_NEXTSTATE | LINEAGENTSTATUS_ACTIVITY))
+		if (lParam & (LINEAGENTSTATUS_GROUP | LINEAGENTSTATUS_STATE | LINEAGENTSTATUS_NEXTSTATE | LINEAGENTSTATUS_ACTIVITY))
 			OnAgentStateChange();
 	}
 	return 0L;
 
-}// CAgentStateDlg::i_OnAgentChange
+} // CAgentStateDlg::i_OnAgentChange
 
 void CAgentStateDlg::OnClose()
 {
@@ -505,21 +477,20 @@ void CAgentStateDlg::OnClose()
 	DestroyWindow();
 	delete this;
 
-}// CAgentStateDlg::OnClose
+} // CAgentStateDlg::OnClose
 
-void CAgentStateDlg::OnUpdateS() 
+void CAgentStateDlg::OnUpdateS()
 {
-	i_OnAgentChange((WPARAM)m_pAddr, 0xffffffff);	
+	i_OnAgentChange((WPARAM)m_pAddr, 0xffffffff);
 }
 
-void CAgentStateDlg::OnSelchangeActivity() 
+void CAgentStateDlg::OnSelchangeActivity()
 {
 	int nCurSel = m_cbActivity.GetCurSel();
 	if (nCurSel != CB_ERR)
 	{
 		DWORD_PTR dwActivity = m_cbActivity.GetItemData(nCurSel);
-		LONG lResult = GetTAPIConnection()->WaitForReply(
-			m_pAddr->SetAgentActivity((DWORD)dwActivity));
+		LONG lResult = GetTAPIConnection()->WaitForReply(m_pAddr->SetAgentActivity((DWORD)dwActivity));
 		if (lResult != 0)
 			ShowError("lineSetAgentActivity", lResult);
 		OnAgentStateChange();
@@ -537,14 +508,14 @@ void CAgentStateDlg::OnAvailableActivitiesChange()
 	{
 		while (arrActivities.GetSize() > 0)
 		{
-			LPAGENTACTIVITY pActivity = (LPAGENTACTIVITY) arrActivities[0];
+			LPAGENTACTIVITY pActivity = (LPAGENTACTIVITY)arrActivities[0];
 			arrActivities.RemoveAt(0);
 
 			CString strName(pActivity->strName);
 			if (strName.IsEmpty())
 				strName.Format(_T("Activity 0x%lx"), pActivity->dwActivityID);
 			int iPos = m_cbActivity.AddString(strName);
-			ASSERT (iPos != CB_ERR);
+			ASSERT(iPos != CB_ERR);
 			m_cbActivity.SetItemData(iPos, pActivity->dwActivityID);
 			delete pActivity;
 		}

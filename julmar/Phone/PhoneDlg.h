@@ -4,6 +4,8 @@
 #if !defined(AFX_PHONEDLG_H__FD6DFFAB_C258_11D1_BB9C_006097D5EC19__INCLUDED_)
 #define AFX_PHONEDLG_H__FD6DFFAB_C258_11D1_BB9C_006097D5EC19__INCLUDED_
 
+#include "resource.h"
+
 class ECallFeatures;
 class CCallDataDlg;
 
@@ -19,99 +21,102 @@ class CForwardList;
 class CPhoneDlg : public CDialog
 {
 	friend class CCallDataDlg;
-// Construction
+	// Construction
 public:
-	CPhoneDlg(CWnd* pParent = NULL);	// standard constructor
+	CPhoneDlg(CWnd* pParent = NULL); // standard constructor
 	void OnAgentClose(CTapiAddress* pAddr);
 
-// Dialog Data
+	// Dialog Data
 	//{{AFX_DATA(CPhoneDlg)
-	enum { IDD = IDD_PHONE_DIALOG };
-	CButton	m_btnQOS;
-	CButton	m_btnISDN;
-	CButton	m_btnFeatures;
-	CButton	m_btnConfig;
+	enum
+	{
+		IDD = IDD_PHONE_DIALOG
+	};
+	CButton m_btnQOS;
+	CButton m_btnISDN;
+	CButton m_btnFeatures;
+	CButton m_btnConfig;
 	CButton m_btnForward;
-	CEdit	m_edtNumber;
-	CButton	m_btnConfList;
-	CButton	m_btnPark;
-	CButton	m_btnCompleteCall;
+	CEdit m_edtNumber;
+	CButton m_btnConfList;
+	CButton m_btnPark;
+	CButton m_btnCompleteCall;
 	CButton m_btnCompleteAsConference;
-	CButton	m_btnSwapHold;
-	CButton	m_btnAccept;
-	CComboBox	m_cbAddress;
-	CButton	m_btnUserUserInfo;
-	CButton	m_btnUnpark;
-	CButton	m_btnTransfer;
-	CButton	m_btnStartSession;
-	CButton	m_btnSetupConf;
-	CSpinButtonCtrl	m_ctlSession;
-	CButton	m_btnRemoveFromConf;
-	CButton	m_btnRedirect;
-	CButton	m_btnPickup;
-	CButton	m_btnPhoneInfo;
-	CButton	m_btnMakeCall;
-	CComboBox	m_cbLines;
-	CButton	m_btnHold;
-	CButton	m_btnAppspecific;
-	CButton	m_btnCallRecording;
-	CButton	m_btnDrop;
-	CButton	m_btnDial;
-	CButton	m_btnComplete;
-	CSpinButtonCtrl	m_ctlCalls;
-	CButton	m_btnCallData;
-	CButton	m_btnAnswer;
-	CButton	m_btnAgentInfo;
-	CButton	m_btnActiveAddress;
-	
-	CButton	m_btnAddToConf;
-	CString	m_strOrigin;
-	CString	m_strCallerID;
-	CString	m_strCallerIDName;
-	CString	m_strCallID;
+	CButton m_btnSwapHold;
+	CButton m_btnAccept;
+	CComboBox m_cbAddress;
+	CButton m_btnUserUserInfo;
+	CButton m_btnUnpark;
+	CButton m_btnTransfer;
+	CButton m_btnStartSession;
+	CButton m_btnSetupConf;
+	CSpinButtonCtrl m_ctlSession;
+	CButton m_btnRemoveFromConf;
+	CButton m_btnRedirect;
+	CButton m_btnPickup;
+	CButton m_btnPhoneInfo;
+	CButton m_btnMakeCall;
+	CComboBox m_cbLines;
+	CButton m_btnHold;
+	CButton m_btnAppspecific;
+	CButton m_btnCallRecording;
+	CButton m_btnDrop;
+	CButton m_btnDial;
+	CButton m_btnComplete;
+	CSpinButtonCtrl m_ctlCalls;
+	CButton m_btnCallData;
+	CButton m_btnAnswer;
+	CButton m_btnAgentInfo;
+	CButton m_btnActiveAddress;
+
+	CButton m_btnAddToConf;
+	CString m_strOrigin;
+	CString m_strCallerID;
+	CString m_strCallerIDName;
+	CString m_strCallID;
 	CString m_strAppspecific;
 	CString m_strAddressID;
 	CString m_strConnectedID;
 	CString m_strConnectedIDName;
-	CString	m_strCallNumber;
-	CString	m_strCallState;
-	CString	m_strCallFeaturesList;
-	CString	m_strCallFeatures;
-	CString	m_strReason;
-	CString	m_strMaxCalls;
-	CString	m_strMediaMode;
-	BOOL	m_fMsgWaiting;
-	CString	m_strNumber;
-	CString	m_strRedirectedNumber;
-	CString	m_strRedirectedName;
-	CString	m_strSessionNum;
-	CString	m_strLastStateChangeTime;
-	CString	m_strTrunkID;
-	BOOL	m_fLocked;
+	CString m_strCallNumber;
+	CString m_strCallState;
+	CString m_strCallFeaturesList;
+	CString m_strCallFeatures;
+	CString m_strReason;
+	CString m_strMaxCalls;
+	CString m_strMediaMode;
+	BOOL m_fMsgWaiting;
+	CString m_strNumber;
+	CString m_strRedirectedNumber;
+	CString m_strRedirectedName;
+	CString m_strSessionNum;
+	CString m_strLastStateChangeTime;
+	CString m_strTrunkID;
+	BOOL m_fLocked;
 	CPtrArray m_arrSessions;
 	int m_iSession;
 	CPtrArray m_arrCalls;
 	int m_iCall;
-	CString	m_strCalledID;
-	CString	m_strCalledIDName;
-	BOOL	m_fConnected;
-	BOOL	m_fInService;
-	BOOL	m_fPasswordFailed;
+	CString m_strCalledID;
+	CString m_strCalledIDName;
+	BOOL m_fConnected;
+	BOOL m_fInService;
+	BOOL m_fPasswordFailed;
 	CMapPtrToPtr m_mapAgentDlg;
-	CString	m_strRelatedCallID;
-	CString	m_strRedirectingNumber;
-	CString	m_strRedirectingName;
+	CString m_strRelatedCallID;
+	CString m_strRedirectingNumber;
+	CString m_strRedirectingName;
 	CFont m_fntBold;
 	CString m_strCurrentTime;
-	
+
 	CString m_strCommandLine;
 
 	UINT_PTR m_uiTimerRefresh;
 	UINT_PTR m_uiTimerReposition;
 
-	//calls pending for delete
+	// calls pending for delete
 	CPtrArray m_arrCallsPendingDelete;
-	//Delay call delete, move to m_arrCallsPendingDelete
+	// Delay call delete, move to m_arrCallsPendingDelete
 	bool m_bDelayDeleteCalls;
 	void InitPendingDeleteCalls();
 	void FinishPendingDeleteCalls();
@@ -119,16 +124,16 @@ public:
 
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CPhoneDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
-	//}}AFX_VIRTUAL
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
+													 //}}AFX_VIRTUAL
 
-// Implementation
+	// Implementation
 protected:
 	HICON m_hIcon;
-	ECallFeatures *m_pDlgCallFeatures;
+	ECallFeatures* m_pDlgCallFeatures;
 	CCallDataDlg* m_pDlgCallData;
-	class CECSTAAgentGroupStateDlg *m_pDlgECSTAAgentState;
+	class CECSTAAgentGroupStateDlg* m_pDlgECSTAAgentState;
 
 	void FillLineList();
 	void OnLoadLineInfo(CTapiLine* pLine);

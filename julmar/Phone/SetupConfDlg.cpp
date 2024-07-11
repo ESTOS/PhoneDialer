@@ -3,20 +3,20 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
-#include "phone.h"
 #include "SetupConfDlg.h"
+#include "phone.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -26,7 +26,6 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CSetupConfDlg dialog
-
 
 CSetupConfDlg::CSetupConfDlg(CWnd* pParent, CTapiCall* pCall, BOOL fAllowMerge)
 	: CDialog(CSetupConfDlg::IDD, pParent)
@@ -40,7 +39,6 @@ CSetupConfDlg::CSetupConfDlg(CWnd* pParent, CTapiCall* pCall, BOOL fAllowMerge)
 	m_fAllowMerge = fAllowMerge;
 	//}}AFX_DATA_INIT
 }
-
 
 void CSetupConfDlg::DoDataExchange(CDataExchange* pDX)
 {
@@ -56,7 +54,6 @@ void CSetupConfDlg::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-
 BEGIN_MESSAGE_MAP(CSetupConfDlg, CDialog)
 	//{{AFX_MSG_MAP(CSetupConfDlg)
 	ON_EN_CHANGE(IDC_NUMBER, OnChangeNumber)
@@ -67,23 +64,23 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CSetupConfDlg message handlers
 
-void CSetupConfDlg::OnChangeNumber() 
+void CSetupConfDlg::OnChangeNumber()
 {
 	UpdateData(TRUE);
 	m_btnOK.EnableWindow(!m_strNumber.IsEmpty());
 }
 
-BOOL CSetupConfDlg::OnInitDialog() 
+BOOL CSetupConfDlg::OnInitDialog()
 {
-    // Reset the font to all be ANSI var.
-    CFont fntAnsi;
-    fntAnsi.CreateStockObject (ANSI_VAR_FONT);
-    CWnd* pwndChild = GetWindow (GW_CHILD);
-    while (pwndChild != NULL && IsChild(pwndChild))
-    {
-        pwndChild->SetFont(&fntAnsi);
-        pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
-    }
+	// Reset the font to all be ANSI var.
+	CFont fntAnsi;
+	fntAnsi.CreateStockObject(ANSI_VAR_FONT);
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild != NULL && IsChild(pwndChild))
+	{
+		pwndChild->SetFont(&fntAnsi);
+		pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
+	}
 
 	// Fill in the caller id information
 	if (m_pCall->GetCallInfo()->dwOrigin & LINECALLORIGIN_OUTBOUND)
@@ -111,7 +108,7 @@ BOOL CSetupConfDlg::OnInitDialog()
 	return TRUE;
 }
 
-void CSetupConfDlg::OnMergeChange() 
+void CSetupConfDlg::OnMergeChange()
 {
 	UpdateData(TRUE);
 	m_edtNumber.EnableWindow(!m_fMerge);

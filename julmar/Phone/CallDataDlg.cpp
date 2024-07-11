@@ -3,21 +3,21 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
+#include "CallDataDlg.h"
 #include "Phone.h"
 #include "PhoneDlg.h"
-#include "CallDataDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -29,7 +29,6 @@ const UINT IDT_TIMER_CALLDATA = 101;
 
 /////////////////////////////////////////////////////////////////////////////
 // CCallDataDlg dialog
-
 
 CCallDataDlg::CCallDataDlg(CPhoneDlg* pParent)
 	: CDialog(CCallDataDlg::IDD, pParent)
@@ -60,14 +59,14 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CCallDataDlg message handlers
 
-void CCallDataDlg::OnChangeCalldata() 
+void CCallDataDlg::OnChangeCalldata()
 {
 	UpdateData(TRUE);
 	CTapiCall* pCall = m_pPhoneDlg->GetActiveCall();
 	GetDlgItem(IDOK)->EnableWindow(pCall && !m_strCallData.IsEmpty() ? TRUE : FALSE);
 }
 
-void CCallDataDlg::OnSetCallData() 
+void CCallDataDlg::OnSetCallData()
 {
 	UpdateData(TRUE);
 
@@ -104,15 +103,15 @@ void CCallDataDlg::OnSetCallData()
 
 BOOL CCallDataDlg::OnInitDialog()
 {
-    // Reset the font to all be ANSI var.
-    CFont fntAnsi;
-    fntAnsi.CreateStockObject (ANSI_VAR_FONT);
-    CWnd* pwndChild = GetWindow (GW_CHILD);
-    while (pwndChild != NULL && IsChild(pwndChild))
-    {
-        pwndChild->SetFont(&fntAnsi);
-        pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
-    }
+	// Reset the font to all be ANSI var.
+	CFont fntAnsi;
+	fntAnsi.CreateStockObject(ANSI_VAR_FONT);
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild != NULL && IsChild(pwndChild))
+	{
+		pwndChild->SetFont(&fntAnsi);
+		pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
+	}
 
 	m_edtHex.Init(GetDlgItem(IDC_HEXDATA)->GetSafeHwnd());
 
@@ -211,7 +210,7 @@ void CCallDataDlg::OnCallChanged()
 
 	if (bIsNoECSTA)
 		m_strCallLinkageData = L"No Call Linkage ID support (no ECSTA TAPI driver)";
-	else if(!bLineSupportsCallLinkageID)
+	else if (!bLineSupportsCallLinkageID)
 		m_strCallLinkageData = L"No Call Linkage ID support (ECSTA does not support it)";
 	else
 		m_strCallLinkageData = strCallLinkageData.c_str();

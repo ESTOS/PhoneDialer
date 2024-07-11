@@ -3,20 +3,20 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
-#include "phone.h"
 #include "PhoneCapsDlg.h"
+#include "phone.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -24,75 +24,57 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-LPCSTR g_pszButtonModes[] = {
-	"Dummy ",
-	"Call ",
-	"Feature ",
-	"KeyPad ",
-	"Local ",
-	"Display "
-};
+LPCSTR g_pszButtonModes[] = {"Dummy ", "Call ", "Feature ", "KeyPad ", "Local ", "Display "};
 
-LPCSTR g_pszButtonFunctions[] = {
-	"Unknown",
-	"Conference",
-	"Transfer",
-	"Drop",
-	"Hold",
-	"Recall",
-	"Disconnect",
-	"Connect",
-	"MsgWaitOn",
-	"MsgWaitOff",
-	"SelectRing",
-	"AbbrevDial",
-	"Forward",
-	"Pickup",
-	"RingAgain",
-	"Park",
-	"Reject",
-	"Redirect",
-	"Mute",
-	"Volume Up",
-	"Volume Down",
-	"Speaker On",
-	"Speaker Off",
-	"Flash",
-	"Data On",
-	"Data Off",
-	"Do Not Disturb",
-	"Intercom",
-	"BridgedApp",
-	"Busy",
-	"Call Appearance",
-	"Date/Time",
-	"Directory",
-	"Cover",
-	"CallID",
-	"Last Number",
-	"Night Service",
-	"Send Calls",
-	"Msg Indicator",
-	"Rep Dial",
-	"SetRep Dial",
-	"System Speed Dial",
-	"Station Speed Dial"
-	"Camp On",
-	"Save Repeat",
-	"Queue Call",
-	"None"
-};
+LPCSTR g_pszButtonFunctions[] = {"Unknown",
+								 "Conference",
+								 "Transfer",
+								 "Drop",
+								 "Hold",
+								 "Recall",
+								 "Disconnect",
+								 "Connect",
+								 "MsgWaitOn",
+								 "MsgWaitOff",
+								 "SelectRing",
+								 "AbbrevDial",
+								 "Forward",
+								 "Pickup",
+								 "RingAgain",
+								 "Park",
+								 "Reject",
+								 "Redirect",
+								 "Mute",
+								 "Volume Up",
+								 "Volume Down",
+								 "Speaker On",
+								 "Speaker Off",
+								 "Flash",
+								 "Data On",
+								 "Data Off",
+								 "Do Not Disturb",
+								 "Intercom",
+								 "BridgedApp",
+								 "Busy",
+								 "Call Appearance",
+								 "Date/Time",
+								 "Directory",
+								 "Cover",
+								 "CallID",
+								 "Last Number",
+								 "Night Service",
+								 "Send Calls",
+								 "Msg Indicator",
+								 "Rep Dial",
+								 "SetRep Dial",
+								 "System Speed Dial",
+								 "Station Speed Dial"
+								 "Camp On",
+								 "Save Repeat",
+								 "Queue Call",
+								 "None"};
 
-LPCSTR g_pszLampModes[] = {
-	"Dummy ",
-	"Off ",
-	"Steady ",
-	"Wink ",
-	"Flash ",
-	"Flutter ",
-	"Broken Flutter ",
-	"Unknown "
-};
+LPCSTR g_pszLampModes[] = {"Dummy ", "Off ", "Steady ", "Wink ", "Flash ", "Flutter ", "Broken Flutter ", "Unknown "};
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneCapsDlg dialog
@@ -148,7 +130,6 @@ void CPhoneCapsDlg::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-
 BEGIN_MESSAGE_MAP(CPhoneCapsDlg, CDialog)
 	//{{AFX_MSG_MAP(CPhoneCapsDlg)
 	ON_EN_CHANGE(IDC_DISPLAY, OnChangeDisplay)
@@ -179,17 +160,17 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneCapsDlg message handlers
 
-BOOL CPhoneCapsDlg::OnInitDialog() 
+BOOL CPhoneCapsDlg::OnInitDialog()
 {
-    // Reset the font to all be ANSI var.
-    CFont fntAnsi;
-    fntAnsi.CreateStockObject (ANSI_VAR_FONT);
-    CWnd* pwndChild = GetWindow (GW_CHILD);
-    while (pwndChild != NULL && IsChild(pwndChild))
-    {
-        pwndChild->SetFont(&fntAnsi);
-        pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
-    }
+	// Reset the font to all be ANSI var.
+	CFont fntAnsi;
+	fntAnsi.CreateStockObject(ANSI_VAR_FONT);
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild != NULL && IsChild(pwndChild))
+	{
+		pwndChild->SetFont(&fntAnsi);
+		pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
+	}
 
 	// Change our titlebar
 	CString strWindow;
@@ -202,7 +183,7 @@ BOOL CPhoneCapsDlg::OnInitDialog()
 
 	// Set the font for the display to be FIXED.
 	CFont fntAnsiFixed;
-    fntAnsiFixed.CreateStockObject (ANSI_FIXED_FONT);
+	fntAnsiFixed.CreateStockObject(ANSI_FIXED_FONT);
 	m_edtDisplay.SetFont(&fntAnsiFixed);
 
 	InitPhone();
@@ -228,7 +209,7 @@ void CPhoneCapsDlg::InitPhone()
 		for (unsigned int i = 0; i < lpCaps->dwNumRingModes; i++)
 		{
 			CString strRingMode;
-			strRingMode.Format(_T("Ring Mode #%d"), i+1);
+			strRingMode.Format(_T("Ring Mode #%d"), i + 1);
 			m_cbRingModes.AddString(strRingMode);
 		}
 		m_cbRingModes.EnableWindow((lpCaps->dwNumRingModes > 0));
@@ -308,7 +289,7 @@ void CPhoneCapsDlg::InitPhone()
 		{
 			m_lbButtons.ResetContent();
 			m_lbButtons.EnableWindow(TRUE);
-			for (int i = 0; i < (int) lpCaps->dwNumButtonLamps; i++)
+			for (int i = 0; i < (int)lpCaps->dwNumButtonLamps; i++)
 			{
 				CString strButton;
 				strButton.Format(_T("Button %d"), i);
@@ -321,8 +302,7 @@ void CPhoneCapsDlg::InitPhone()
 			m_lbButtons.EnableWindow(FALSE);
 
 		m_strDisplayXY.Format(_T("%ld x %ld"), lpCaps->dwDisplayNumColumns, lpCaps->dwDisplayNumRows);
-		if (lpCaps->dwDisplayNumRows == 0 &&
-			lpCaps->dwDisplayNumColumns == 0)
+		if (lpCaps->dwDisplayNumRows == 0 && lpCaps->dwDisplayNumColumns == 0)
 		{
 			m_edtDisplay.EnableWindow(FALSE);
 			m_btnSetDisplay.EnableWindow(FALSE);
@@ -348,29 +328,59 @@ void CPhoneCapsDlg::InitPhone()
 
 		switch (lpStatus->dwHandsetHookSwitchMode)
 		{
-			case PHONEHOOKSWITCHMODE_ONHOOK:		m_iHandset = 0; break;
-			case PHONEHOOKSWITCHMODE_MIC:			m_iHandset = 1; break;
-			case PHONEHOOKSWITCHMODE_SPEAKER:		m_iHandset = 3; break;
-			case PHONEHOOKSWITCHMODE_MICSPEAKER:	m_iHandset = 2; break;
-			default:								m_iHandset = -1; break;
+			case PHONEHOOKSWITCHMODE_ONHOOK:
+				m_iHandset = 0;
+				break;
+			case PHONEHOOKSWITCHMODE_MIC:
+				m_iHandset = 1;
+				break;
+			case PHONEHOOKSWITCHMODE_SPEAKER:
+				m_iHandset = 3;
+				break;
+			case PHONEHOOKSWITCHMODE_MICSPEAKER:
+				m_iHandset = 2;
+				break;
+			default:
+				m_iHandset = -1;
+				break;
 		}
 
 		switch (lpStatus->dwSpeakerHookSwitchMode)
 		{
-			case PHONEHOOKSWITCHMODE_ONHOOK:		m_iSpeaker = 0; break;
-			case PHONEHOOKSWITCHMODE_MIC:			m_iSpeaker = 1; break;
-			case PHONEHOOKSWITCHMODE_SPEAKER:		m_iSpeaker = 3; break;
-			case PHONEHOOKSWITCHMODE_MICSPEAKER:	m_iSpeaker = 2; break;
-			default:								m_iSpeaker = -1; break;
+			case PHONEHOOKSWITCHMODE_ONHOOK:
+				m_iSpeaker = 0;
+				break;
+			case PHONEHOOKSWITCHMODE_MIC:
+				m_iSpeaker = 1;
+				break;
+			case PHONEHOOKSWITCHMODE_SPEAKER:
+				m_iSpeaker = 3;
+				break;
+			case PHONEHOOKSWITCHMODE_MICSPEAKER:
+				m_iSpeaker = 2;
+				break;
+			default:
+				m_iSpeaker = -1;
+				break;
 		}
 
 		switch (lpStatus->dwHeadsetHookSwitchMode)
 		{
-			case PHONEHOOKSWITCHMODE_ONHOOK:		m_iHeadset = 0; break;
-			case PHONEHOOKSWITCHMODE_MIC:			m_iHeadset = 1; break;
-			case PHONEHOOKSWITCHMODE_SPEAKER:		m_iHeadset = 3; break;
-			case PHONEHOOKSWITCHMODE_MICSPEAKER:	m_iHeadset = 2; break;
-			default:								m_iHeadset = -1; break;
+			case PHONEHOOKSWITCHMODE_ONHOOK:
+				m_iHeadset = 0;
+				break;
+			case PHONEHOOKSWITCHMODE_MIC:
+				m_iHeadset = 1;
+				break;
+			case PHONEHOOKSWITCHMODE_SPEAKER:
+				m_iHeadset = 3;
+				break;
+			case PHONEHOOKSWITCHMODE_MICSPEAKER:
+				m_iHeadset = 2;
+				break;
+			default:
+				m_iHeadset = -1;
+				break;
 		}
 
 		// Set the initial volume/gain.
@@ -391,21 +401,21 @@ void CPhoneCapsDlg::InitPhone()
 
 	UpdateData(FALSE);
 
-}// CPhoneCapsDlg::InitPhone
+} // CPhoneCapsDlg::InitPhone
 
-void CPhoneCapsDlg::OnChangeDisplay() 
+void CPhoneCapsDlg::OnChangeDisplay()
 {
 	m_btnSetDisplay.EnableWindow(TRUE);
 }
 
-void CPhoneCapsDlg::OnGetDisplay() 
+void CPhoneCapsDlg::OnGetDisplay()
 {
 	m_pPhone->GetPhoneStatus(TRUE);
 	m_edtDisplay.SetWindowText(m_pPhone->GetDisplay());
 	m_btnSetDisplay.EnableWindow(FALSE);
 }
 
-void CPhoneCapsDlg::OnSetDisplay() 
+void CPhoneCapsDlg::OnSetDisplay()
 {
 	char strDisplay[500] = {0};
 	::GetWindowTextA(m_edtDisplay.m_hWnd, strDisplay, 499);
@@ -415,18 +425,28 @@ void CPhoneCapsDlg::OnSetDisplay()
 	OnGetDisplay();
 }
 
-void CPhoneCapsDlg::OnChangeHandset() 
+void CPhoneCapsDlg::OnChangeHandset()
 {
 	int iOriginal = m_iHandset;
 	UpdateData(TRUE);
 	DWORD dwMode;
 	switch (m_iHandset)
 	{
-		case 0: dwMode = PHONEHOOKSWITCHMODE_ONHOOK; break;
-		case 1: dwMode = PHONEHOOKSWITCHMODE_MIC; break;
-		case 2: dwMode = PHONEHOOKSWITCHMODE_MICSPEAKER; break;
-		case 3: dwMode = PHONEHOOKSWITCHMODE_SPEAKER; break;
-		default: dwMode = 0; break;
+		case 0:
+			dwMode = PHONEHOOKSWITCHMODE_ONHOOK;
+			break;
+		case 1:
+			dwMode = PHONEHOOKSWITCHMODE_MIC;
+			break;
+		case 2:
+			dwMode = PHONEHOOKSWITCHMODE_MICSPEAKER;
+			break;
+		case 3:
+			dwMode = PHONEHOOKSWITCHMODE_SPEAKER;
+			break;
+		default:
+			dwMode = 0;
+			break;
 	}
 
 	LONG lResult = GetTAPIConnection()->WaitForReply(m_pPhone->SetHandsetHookswitch(dwMode));
@@ -438,7 +458,7 @@ void CPhoneCapsDlg::OnChangeHandset()
 	}
 }
 
-void CPhoneCapsDlg::OnChangeHeadset() 
+void CPhoneCapsDlg::OnChangeHeadset()
 {
 	int iOriginal = m_iHeadset;
 	UpdateData(TRUE);
@@ -446,11 +466,21 @@ void CPhoneCapsDlg::OnChangeHeadset()
 	DWORD dwMode;
 	switch (m_iHeadset)
 	{
-		case 0: dwMode = PHONEHOOKSWITCHMODE_ONHOOK; break;
-		case 1: dwMode = PHONEHOOKSWITCHMODE_MIC; break;
-		case 2: dwMode = PHONEHOOKSWITCHMODE_MICSPEAKER; break;
-		case 3: dwMode = PHONEHOOKSWITCHMODE_SPEAKER; break;
-		default: dwMode = 0; break;
+		case 0:
+			dwMode = PHONEHOOKSWITCHMODE_ONHOOK;
+			break;
+		case 1:
+			dwMode = PHONEHOOKSWITCHMODE_MIC;
+			break;
+		case 2:
+			dwMode = PHONEHOOKSWITCHMODE_MICSPEAKER;
+			break;
+		case 3:
+			dwMode = PHONEHOOKSWITCHMODE_SPEAKER;
+			break;
+		default:
+			dwMode = 0;
+			break;
 	}
 
 	LONG lResult = GetTAPIConnection()->WaitForReply(m_pPhone->SetHeadsetHookswitch(dwMode));
@@ -462,18 +492,28 @@ void CPhoneCapsDlg::OnChangeHeadset()
 	}
 }
 
-void CPhoneCapsDlg::OnChangeSpeaker() 
+void CPhoneCapsDlg::OnChangeSpeaker()
 {
 	int iOriginal = m_iSpeaker;
 	UpdateData(TRUE);
 	DWORD dwMode;
 	switch (m_iSpeaker)
 	{
-		case 0: dwMode = PHONEHOOKSWITCHMODE_ONHOOK; break;
-		case 1: dwMode = PHONEHOOKSWITCHMODE_MIC; break;
-		case 2: dwMode = PHONEHOOKSWITCHMODE_MICSPEAKER; break;
-		case 3: dwMode = PHONEHOOKSWITCHMODE_SPEAKER; break;
-		default: dwMode = 0; break;
+		case 0:
+			dwMode = PHONEHOOKSWITCHMODE_ONHOOK;
+			break;
+		case 1:
+			dwMode = PHONEHOOKSWITCHMODE_MIC;
+			break;
+		case 2:
+			dwMode = PHONEHOOKSWITCHMODE_MICSPEAKER;
+			break;
+		case 3:
+			dwMode = PHONEHOOKSWITCHMODE_SPEAKER;
+			break;
+		default:
+			dwMode = 0;
+			break;
 	}
 
 	LONG lResult = GetTAPIConnection()->WaitForReply(m_pPhone->SetSpeakerHookswitch(dwMode));
@@ -485,7 +525,7 @@ void CPhoneCapsDlg::OnChangeSpeaker()
 	}
 }
 
-void CPhoneCapsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
+void CPhoneCapsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
 
@@ -515,7 +555,7 @@ void CPhoneCapsDlg::OnChangeVolumeHandset(UINT nPos)
 		m_ctlVolHandset.SetPos(m_pPhone->GetPhoneStatus()->dwHandsetVolume);
 	}
 
-}// CPhoneCapsDlg::OnChangeVolumeHandset
+} // CPhoneCapsDlg::OnChangeVolumeHandset
 
 void CPhoneCapsDlg::OnChangeVolumeHeadset(UINT nPos)
 {
@@ -527,7 +567,7 @@ void CPhoneCapsDlg::OnChangeVolumeHeadset(UINT nPos)
 		m_ctlVolHeadset.SetPos(m_pPhone->GetPhoneStatus()->dwHeadsetVolume);
 	}
 
-}// CPhoneCapsDlg::OnChangeVolumeHeadset
+} // CPhoneCapsDlg::OnChangeVolumeHeadset
 
 void CPhoneCapsDlg::OnChangeVolumeSpeaker(UINT nPos)
 {
@@ -539,7 +579,7 @@ void CPhoneCapsDlg::OnChangeVolumeSpeaker(UINT nPos)
 		m_ctlVolSpeaker.SetPos(m_pPhone->GetPhoneStatus()->dwSpeakerVolume);
 	}
 
-}// CPhoneCapsDlg::OnChangeVolumeSpeaker
+} // CPhoneCapsDlg::OnChangeVolumeSpeaker
 
 void CPhoneCapsDlg::OnChangeVolumeRinger(UINT nPos)
 {
@@ -551,7 +591,7 @@ void CPhoneCapsDlg::OnChangeVolumeRinger(UINT nPos)
 		m_ctlVolRinger.SetPos(m_pPhone->GetPhoneStatus()->dwRingVolume);
 	}
 
-}// CPhoneCapsDlg::OnChangeVolumeHeadset
+} // CPhoneCapsDlg::OnChangeVolumeHeadset
 
 void CPhoneCapsDlg::OnChangeGainHandset(UINT nPos)
 {
@@ -563,7 +603,7 @@ void CPhoneCapsDlg::OnChangeGainHandset(UINT nPos)
 		m_ctlGainHandset.SetPos(m_pPhone->GetPhoneStatus()->dwHandsetGain);
 	}
 
-}// CPhoneCapsDlg::OnChangeGainHandset
+} // CPhoneCapsDlg::OnChangeGainHandset
 
 void CPhoneCapsDlg::OnChangeGainHeadset(UINT nPos)
 {
@@ -575,7 +615,7 @@ void CPhoneCapsDlg::OnChangeGainHeadset(UINT nPos)
 		m_ctlGainHeadset.SetPos(m_pPhone->GetPhoneStatus()->dwHeadsetGain);
 	}
 
-}// CPhoneCapsDlg::OnChangeGainHeadset
+} // CPhoneCapsDlg::OnChangeGainHeadset
 
 void CPhoneCapsDlg::OnChangeGainSpeaker(UINT nPos)
 {
@@ -587,9 +627,9 @@ void CPhoneCapsDlg::OnChangeGainSpeaker(UINT nPos)
 		m_ctlGainSpeaker.SetPos(m_pPhone->GetPhoneStatus()->dwSpeakerGain);
 	}
 
-}// CPhoneCapsDlg::OnChangeGainSpeaker
+} // CPhoneCapsDlg::OnChangeGainSpeaker
 
-void CPhoneCapsDlg::OnChangeButton() 
+void CPhoneCapsDlg::OnChangeButton()
 {
 	int nCurSel = m_lbButtons.GetCurSel();
 	if (nCurSel == LB_ERR)
@@ -621,7 +661,7 @@ void CPhoneCapsDlg::OnChangeButton()
 				Button.dwButtonMode = Button.dwButtonMode >> 1;
 				i++;
 			}
-			
+
 			DWORD dwLampMode = m_pPhone->GetLampMode(nCurSel);
 			i = 0;
 			m_strLampMode = _T("");
@@ -643,15 +683,15 @@ void CPhoneCapsDlg::OnChangeButton()
 	}
 	UpdateData(FALSE);
 
-}// CPhoneCapsDlg::OnChangeButton
+} // CPhoneCapsDlg::OnChangeButton
 
-void CPhoneCapsDlg::OnConfigure() 
+void CPhoneCapsDlg::OnConfigure()
 {
 	m_pPhone->Config(this, NULL);
-	
-}// CPhoneCapsDlg::OnConfigure
 
-void CPhoneCapsDlg::OnClose() 
+} // CPhoneCapsDlg::OnConfigure
+
+void CPhoneCapsDlg::OnClose()
 {
 	m_pPhone->Close();
 	((CMyPhone*)m_pPhone)->m_pPhone = NULL;
@@ -660,8 +700,8 @@ void CPhoneCapsDlg::OnClose()
 
 LRESULT CPhoneCapsDlg::OnDevStateChange(WPARAM wParam, LPARAM lParam)
 {
-	DWORD dwParam1 = (DWORD) wParam;
-	DWORD dwParam2 = (DWORD) lParam;
+	DWORD dwParam1 = (DWORD)wParam;
+	DWORD dwParam2 = (DWORD)lParam;
 
 	UpdateData(TRUE);
 
@@ -682,42 +722,76 @@ LRESULT CPhoneCapsDlg::OnDevStateChange(WPARAM wParam, LPARAM lParam)
 
 	return 0;
 
-}// CPhoneCapsDlg::OnDevStateChange
+} // CPhoneCapsDlg::OnDevStateChange
 
 void CPhoneCapsDlg::AdjustFlags(DWORD dwParam1, DWORD dwParam2, const LPPHONESTATUS pStatus)
 {
 	switch (dwParam1)
 	{
-		case PHONESTATE_CONNECTED:		m_fConnected = true; break;
-		case PHONESTATE_DISCONNECTED:	m_fConnected = false; break;
-		case PHONESTATE_SUSPEND:		m_fSuspended = true; break;
-		case PHONESTATE_RESUME:			m_fSuspended = false; break;
-		case PHONESTATE_DISPLAY:		OnGetDisplay(); break;
+		case PHONESTATE_CONNECTED:
+			m_fConnected = true;
+			break;
+		case PHONESTATE_DISCONNECTED:
+			m_fConnected = false;
+			break;
+		case PHONESTATE_SUSPEND:
+			m_fSuspended = true;
+			break;
+		case PHONESTATE_RESUME:
+			m_fSuspended = false;
+			break;
+		case PHONESTATE_DISPLAY:
+			OnGetDisplay();
+			break;
 		case PHONESTATE_HANDSETHOOKSWITCH:
 			switch (pStatus->dwHandsetHookSwitchMode)
 			{
-				case PHONEHOOKSWITCHMODE_ONHOOK: m_iHandset = 0; break;
-				case PHONEHOOKSWITCHMODE_MIC:	 m_iHandset = 1; break;
-				case PHONEHOOKSWITCHMODE_MICSPEAKER: m_iHandset = 2; break;
-				case PHONEHOOKSWITCHMODE_SPEAKER:	 m_iHandset = 3; break;
+				case PHONEHOOKSWITCHMODE_ONHOOK:
+					m_iHandset = 0;
+					break;
+				case PHONEHOOKSWITCHMODE_MIC:
+					m_iHandset = 1;
+					break;
+				case PHONEHOOKSWITCHMODE_MICSPEAKER:
+					m_iHandset = 2;
+					break;
+				case PHONEHOOKSWITCHMODE_SPEAKER:
+					m_iHandset = 3;
+					break;
 			}
 			break;
 		case PHONESTATE_SPEAKERHOOKSWITCH:
 			switch (pStatus->dwSpeakerHookSwitchMode)
 			{
-				case PHONEHOOKSWITCHMODE_ONHOOK: m_iSpeaker = 0; break;
-				case PHONEHOOKSWITCHMODE_MIC:	 m_iSpeaker = 1; break;
-				case PHONEHOOKSWITCHMODE_MICSPEAKER: m_iSpeaker = 2; break;
-				case PHONEHOOKSWITCHMODE_SPEAKER:	 m_iSpeaker = 3; break;
+				case PHONEHOOKSWITCHMODE_ONHOOK:
+					m_iSpeaker = 0;
+					break;
+				case PHONEHOOKSWITCHMODE_MIC:
+					m_iSpeaker = 1;
+					break;
+				case PHONEHOOKSWITCHMODE_MICSPEAKER:
+					m_iSpeaker = 2;
+					break;
+				case PHONEHOOKSWITCHMODE_SPEAKER:
+					m_iSpeaker = 3;
+					break;
 			}
 			break;
 		case PHONESTATE_HEADSETHOOKSWITCH:
 			switch (pStatus->dwHeadsetHookSwitchMode)
 			{
-				case PHONEHOOKSWITCHMODE_ONHOOK: m_iHeadset = 0; break;
-				case PHONEHOOKSWITCHMODE_MIC:	 m_iHeadset = 1; break;
-				case PHONEHOOKSWITCHMODE_MICSPEAKER: m_iHeadset = 2; break;
-				case PHONEHOOKSWITCHMODE_SPEAKER:	 m_iHeadset = 3; break;
+				case PHONEHOOKSWITCHMODE_ONHOOK:
+					m_iHeadset = 0;
+					break;
+				case PHONEHOOKSWITCHMODE_MIC:
+					m_iHeadset = 1;
+					break;
+				case PHONEHOOKSWITCHMODE_MICSPEAKER:
+					m_iHeadset = 2;
+					break;
+				case PHONEHOOKSWITCHMODE_SPEAKER:
+					m_iHeadset = 3;
+					break;
 			}
 			break;
 
@@ -755,10 +829,10 @@ void CPhoneCapsDlg::AdjustFlags(DWORD dwParam1, DWORD dwParam2, const LPPHONESTA
 			break;
 
 		case PHONESTATE_LAMP:
-			if (dwParam2 == (DWORD) m_lbButtons.GetCurSel())
+			if (dwParam2 == (DWORD)m_lbButtons.GetCurSel())
 				OnChangeButton();
 			break;
-		
+
 		case PHONESTATE_RINGMODE:
 			m_cbRingModes.SetCurSel(pStatus->dwRingMode);
 			break;
@@ -768,9 +842,9 @@ void CPhoneCapsDlg::AdjustFlags(DWORD dwParam1, DWORD dwParam2, const LPPHONESTA
 			break;
 	}
 
-}// CPhoneCapsDlg::AdjustFlags
+} // CPhoneCapsDlg::AdjustFlags
 
-void CPhoneCapsDlg::OnSelchangeRingmodes() 
+void CPhoneCapsDlg::OnSelchangeRingmodes()
 {
 	int iCurSel = m_cbRingModes.GetCurSel();
 	LONG lResult = GetTAPIConnection()->WaitForReply(m_pPhone->SetRing(iCurSel, m_pPhone->GetPhoneStatus()->dwRingVolume));
@@ -781,7 +855,7 @@ void CPhoneCapsDlg::OnSelchangeRingmodes()
 	}
 }
 
-void CPhoneCapsDlg::OnDestroy() 
+void CPhoneCapsDlg::OnDestroy()
 {
 	CDialog::OnDestroy();
 	delete this;

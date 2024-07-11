@@ -3,40 +3,40 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
-#include "Phone.h"
 #include "PhoneDlg.h"
-#include "CallDataDlg.h"
-#include "UUIDlg.h"
-#include "DialDlg.h"
+#include "..\ATAPI\include\ecstaext.h"
 #include "AgentStateDlg.h"
-#include "ConfListDlg.h"
-#include "TransferDlg.h"
-#include "CompleteTransferDlg.h"
+#include "AppspecificDlg.h"
+#include "CallDataDlg.h"
 #include "CompleteCall.h"
-#include "SetupConfDlg.h"
-#include "PhoneCapsDlg.h"
-#include "PredDialDlg.h"
-#include "ISDNInfo.h"
-#include "QOSInfo.h"
+#include "CompleteTransferDlg.h"
+#include "ConfListDlg.h"
+#include "DialDlg.h"
+#include "ECallFeatures.h"
+#include "ECSTAAgentGroupStateDlg.h"
 #include "ForwardDlg.h"
 #include "ForwardList.h"
-#include "AppspecificDlg.h"
-#include "ECallFeatures.h"
+#include "ISDNInfo.h"
 #include "MakeCallExtended.h"
-#include "..\ATAPI\include\ecstaext.h"
-#include "ECSTAAgentGroupStateDlg.h"
+#include "Phone.h"
+#include "PhoneCapsDlg.h"
+#include "PredDialDlg.h"
+#include "QOSInfo.h"
+#include "SetupConfDlg.h"
+#include "TransferDlg.h"
+#include "UUIDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -52,7 +52,6 @@ DWORD g_dwLastError = 0;
 const UINT IDT_TIMER = 100;
 const UINT IDT_TIMER_REPOSITION = 101;
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CMyLine
 //
@@ -60,7 +59,7 @@ const UINT IDT_TIMER_REPOSITION = 101;
 //
 class CMyLine : public CTapiLine
 {
-	DECLARE_DYNCREATE (CMyLine)
+	DECLARE_DYNCREATE(CMyLine)
 protected:
 	virtual void OnDynamicCreate()
 	{
@@ -73,17 +72,20 @@ protected:
 		::PostMessage(theApp.m_hWndMain, UM_DYNAMICREMOVE, (WPARAM)m_dwDeviceID, NULL);
 	}
 
-    virtual void OnAddressStateChange (DWORD dwAddressID, DWORD dwState) {
-		CTapiLine::OnAddressStateChange (dwAddressID, dwState);
+	virtual void OnAddressStateChange(DWORD dwAddressID, DWORD dwState)
+	{
+		CTapiLine::OnAddressStateChange(dwAddressID, dwState);
 		::SendMessage(theApp.m_hWndMain, UM_ADDRESSCHANGE, (WPARAM)GetAddress(dwAddressID), (LPARAM)dwState);
 	}
 
-	virtual void OnAgentStateChange (DWORD dwAddressID, DWORD dwFields, DWORD dwState) {
-		CTapiLine::OnAgentStateChange (dwAddressID, dwFields, dwState);
+	virtual void OnAgentStateChange(DWORD dwAddressID, DWORD dwFields, DWORD dwState)
+	{
+		CTapiLine::OnAgentStateChange(dwAddressID, dwFields, dwState);
 		::SendMessage(theApp.m_hWndMain, UM_AGENTCHANGE, (WPARAM)GetAddress(dwAddressID), dwFields);
 	}
 
-    virtual void OnDeviceStateChange (DWORD dwDeviceState, DWORD dwStateDetail1, DWORD dwStateDetail2) {
+	virtual void OnDeviceStateChange(DWORD dwDeviceState, DWORD dwStateDetail1, DWORD dwStateDetail2)
+	{
 		CTapiLine::OnDeviceStateChange(dwDeviceState, dwStateDetail1, dwStateDetail2);
 		::SendMessage(theApp.m_hWndMain, UM_LINECHANGE, (WPARAM)this, NULL);
 	}
@@ -113,7 +115,8 @@ protected:
 		}
 	}
 
-    virtual void OnNewCall (CTapiCall* pCall) {
+	virtual void OnNewCall(CTapiCall* pCall)
+	{
 		CTapiLine::OnNewCall(pCall);
 		::SendMessage(theApp.m_hWndMain, UM_NEWCALL, (WPARAM)pCall, NULL);
 	}
@@ -126,9 +129,10 @@ protected:
 //
 class CMyCall : public CTapiCall
 {
-	DECLARE_DYNCREATE (CMyCall)
+	DECLARE_DYNCREATE(CMyCall)
 public:
-    virtual void OnInfoChange (DWORD dwInfoState) {
+	virtual void OnInfoChange(DWORD dwInfoState)
+	{
 		CTapiCall::OnInfoChange(dwInfoState);
 
 		CWnd* pwnd = theApp.m_pMainWnd;
@@ -146,20 +150,22 @@ public:
 		}
 	}
 
-    virtual void OnStateChange (DWORD dwState, DWORD dwStateDetail, DWORD dwPrivilage) {
+	virtual void OnStateChange(DWORD dwState, DWORD dwStateDetail, DWORD dwPrivilage)
+	{
 		CTapiCall::OnStateChange(dwState, dwStateDetail, dwPrivilage);
 		::SendMessage(theApp.m_hWndMain, UM_CALLCHANGE, 0, (LPARAM)(CTapiCall*)this);
 	}
 
-	virtual void OnMediaModeChange (DWORD dwMediaMode) {
+	virtual void OnMediaModeChange(DWORD dwMediaMode)
+	{
 		CTapiCall::OnMediaModeChange(dwMediaMode);
 		::SendMessage(theApp.m_hWndMain, UM_CALLCHANGE, 0, (LPARAM)(CTapiCall*)this);
 	}
 };
 
-IMPLEMENT_DYNCREATE (CMyLine, CTapiLine)
-IMPLEMENT_DYNCREATE (CMyCall, CTapiCall)
-IMPLEMENT_DYNCREATE (CMyPhone, CTapiPhone)
+IMPLEMENT_DYNCREATE(CMyLine, CTapiLine)
+IMPLEMENT_DYNCREATE(CMyCall, CTapiCall)
+IMPLEMENT_DYNCREATE(CMyPhone, CTapiPhone)
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainApp::InitInstance
@@ -174,16 +180,13 @@ BOOL CMainApp::InitInstance()
 #endif
 
 	m_hWndMain = NULL;
-    // Initialize a connection with TAPI and determine if there 
-    // are any TAPI complient devices installed.
-    if (GetTAPIConnection()->Init(_T("JPhoneDialer"), 
-			RUNTIME_CLASS(CMyLine), NULL, RUNTIME_CLASS(CMyCall),
-			RUNTIME_CLASS(CMyPhone)) != 0 ||
-        GetTAPIConnection()->GetLineDeviceCount() == 0)
-    {
-        AfxMessageBox (_T("There are no TAPI devices installed!"));
+	// Initialize a connection with TAPI and determine if there
+	// are any TAPI complient devices installed.
+	if (GetTAPIConnection()->Init(_T("JPhoneDialer"), RUNTIME_CLASS(CMyLine), NULL, RUNTIME_CLASS(CMyCall), RUNTIME_CLASS(CMyPhone)) != 0 || GetTAPIConnection()->GetLineDeviceCount() == 0)
+	{
+		AfxMessageBox(_T("There are no TAPI devices installed!"));
 		return FALSE;
-    }
+	}
 
 	GetFileVersionString(_T("FileVersion"), m_strVersion);
 
@@ -197,7 +200,7 @@ BOOL CMainApp::InitInstance()
 
 	return FALSE;
 
-}// CMainApp::InitInstance
+} // CMainApp::InitInstance
 
 BOOL CMainApp::GetFileVersionString(const TCHAR* szItemFromVersionToQuery, CString& strStringFromVersionInfo)
 {
@@ -205,19 +208,19 @@ BOOL CMainApp::GetFileVersionString(const TCHAR* szItemFromVersionToQuery, CStri
 
 	TCHAR* szTempPath = NULL;
 	szTempPath = new TCHAR[_MAX_FNAME];
-	if(GetModuleFileName(theApp.m_hInstance, szTempPath, _MAX_FNAME))
+	if (GetModuleFileName(theApp.m_hInstance, szTempPath, _MAX_FNAME))
 	{
 		DWORD dwVerHnd;
 		DWORD dwVerInfoSize = GetFileVersionInfoSize(szTempPath, &dwVerHnd);
 
-		if (dwVerInfoSize) 
+		if (dwVerInfoSize)
 		{
 			LPTSTR lpstrVffInfo;
 			HANDLE hMem;
 			hMem = GlobalAlloc(GMEM_MOVEABLE, dwVerInfoSize);
 			lpstrVffInfo = (LPTSTR)GlobalLock(hMem);
 
-			if(GetFileVersionInfo(szTempPath, dwVerHnd, dwVerInfoSize, lpstrVffInfo))
+			if (GetFileVersionInfo(szTempPath, dwVerHnd, dwVerInfoSize, lpstrVffInfo))
 			{
 				TCHAR szGetName[256];
 				LPTSTR lpVersion;
@@ -225,7 +228,7 @@ BOOL CMainApp::GetFileVersionString(const TCHAR* szItemFromVersionToQuery, CStri
 
 				// Get language id
 				_tcscpy(szGetName, _T("\\VarFileInfo\\Translation"));
-				if(VerQueryValue((LPVOID)lpstrVffInfo, (LPTSTR)szGetName, (void**)&lpVersion, (UINT *)&uVersionLen))
+				if (VerQueryValue((LPVOID)lpstrVffInfo, (LPTSTR)szGetName, (void**)&lpVersion, (UINT*)&uVersionLen))
 				{
 					_tcscpy(szGetName, _T("\\StringFileInfo\\"));
 					USHORT* pLan = (USHORT*)lpVersion;
@@ -233,7 +236,7 @@ BOOL CMainApp::GetFileVersionString(const TCHAR* szItemFromVersionToQuery, CStri
 
 					// Get requested item
 					_tcscat(szGetName, szItemFromVersionToQuery);
-					if(VerQueryValue((LPVOID)lpstrVffInfo, (LPTSTR)szGetName, (void**)&lpVersion, (UINT *)&uVersionLen))
+					if (VerQueryValue((LPVOID)lpstrVffInfo, (LPTSTR)szGetName, (void**)&lpVersion, (UINT*)&uVersionLen))
 					{
 						strStringFromVersionInfo = (TCHAR*)lpVersion;
 						bRetCode = TRUE;
@@ -243,11 +246,10 @@ BOOL CMainApp::GetFileVersionString(const TCHAR* szItemFromVersionToQuery, CStri
 
 			GlobalUnlock(hMem);
 			GlobalFree(hMem);
-
 		}
 	}
 
-	if(szTempPath)
+	if (szTempPath)
 		delete szTempPath;
 
 	return bRetCode;
@@ -283,8 +285,7 @@ BEGIN_MESSAGE_MAP(CPhoneDlg, CDialog)
 	ON_MESSAGE(UM_MSGWAIT, i_OnLineMsgWaitChange)
 	ON_MESSAGE(UM_ABSENTMESSAGE, i_OnLineAbsentMessageChange)
 	ON_MESSAGE(UM_ACTIVEADDRESS, i_OnLineActiveAddressChange)
-	
-	
+
 	ON_MESSAGE(UM_AGENTCHANGE, i_OnAgentChange)
 	ON_MESSAGE(UM_ECSTAAGENTEVENT, i_OnECSTAAgentEvent)
 
@@ -343,7 +344,7 @@ LPCTSTR LookupError(LONG lResult)
 	static TCHAR szBuff[1024];
 
 	if (lResult == 0xffffffff)
-		_tcscpy (szBuff, _T("Request timeout"));
+		_tcscpy(szBuff, _T("Request timeout"));
 	else if (lResult > 0x80000000)
 	{
 		if (lResult >= 0x80000000 && lResult < 0x90000000)
@@ -356,17 +357,17 @@ LPCTSTR LookupError(LONG lResult)
 			lResult &= ~0x90000000;
 			lResult |= 0x9000;
 		}
-		if (LoadString(AfxGetResourceHandle(), (UINT) lResult, szBuff, 1024) == 0)
-			_tcscpy (szBuff, _T("Unknown Error"));
+		if (LoadString(AfxGetResourceHandle(), (UINT)lResult, szBuff, 1024) == 0)
+			_tcscpy(szBuff, _T("Unknown Error"));
 	}
 	else
 	{
-		_tcscpy (szBuff, _T("Unknown Error"));
+		_tcscpy(szBuff, _T("Unknown Error"));
 	}
 
 	return szBuff;
 
-}// LookupError
+} // LookupError
 
 /////////////////////////////////////////////////////////////////////////////
 // ErrorMsg
@@ -382,14 +383,14 @@ void ErrorMsg(LPCSTR pszBuff, ...)
 	vsprintf(szBuff, pszBuff, args);
 	va_end(args);
 
-	CPhoneDlg* pDlg = (CPhoneDlg*) theApp.m_pMainWnd;
+	CPhoneDlg* pDlg = (CPhoneDlg*)theApp.m_pMainWnd;
 	if (pDlg->GetSafeHwnd() && ::IsWindow(pDlg->GetSafeHwnd()))
 	{
 		::SetDlgItemTextA(pDlg->m_hWnd, IDC_STATUS, szBuff);
 		g_dwLastError = GetTickCount();
 	}
 
-}// ErrorMsg
+} // ErrorMsg
 
 void ErrorMsg(LPCWSTR pszBuff, ...)
 {
@@ -400,14 +401,14 @@ void ErrorMsg(LPCWSTR pszBuff, ...)
 	vswprintf(szBuff, pszBuff, args);
 	va_end(args);
 
-	CPhoneDlg* pDlg = (CPhoneDlg*) theApp.m_pMainWnd;
+	CPhoneDlg* pDlg = (CPhoneDlg*)theApp.m_pMainWnd;
 	if (pDlg->GetSafeHwnd() && ::IsWindow(pDlg->GetSafeHwnd()))
 	{
 		::SetDlgItemTextW(pDlg->m_hWnd, IDC_STATUS, szBuff);
 		g_dwLastError = GetTickCount();
 	}
 
-}// ErrorMsg
+} // ErrorMsg
 
 /////////////////////////////////////////////////////////////////////////////
 // ClearErrors
@@ -416,18 +417,19 @@ void ErrorMsg(LPCWSTR pszBuff, ...)
 //
 void ClearErrors()
 {
-	CPhoneDlg* pDlg = (CPhoneDlg*) theApp.m_pMainWnd;
+	CPhoneDlg* pDlg = (CPhoneDlg*)theApp.m_pMainWnd;
 	if (pDlg->GetSafeHwnd() && ::IsWindow(pDlg->GetSafeHwnd()))
 		pDlg->SetDlgItemText(IDC_STATUS, _T(""));
 
-}// ClearErrors
+} // ClearErrors
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::CPhoneDlg
 //
 // Constructor for the phone dialog
 
-CPhoneDlg::CPhoneDlg(CWnd* pParent) : CDialog(CPhoneDlg::IDD, pParent)
+CPhoneDlg::CPhoneDlg(CWnd* pParent)
+	: CDialog(CPhoneDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CPhoneDlg)
 	m_pForwardList = NULL;
@@ -476,7 +478,7 @@ CPhoneDlg::CPhoneDlg(CWnd* pParent) : CDialog(CPhoneDlg::IDD, pParent)
 	m_uiTimerRefresh = 0;
 	m_uiTimerReposition = 0;
 
-}// CPhoneDlg::CPhoneDlg
+} // CPhoneDlg::CPhoneDlg
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::DoDataExchange
@@ -523,7 +525,7 @@ void CPhoneDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ANSWER, m_btnAnswer);
 	DDX_Control(pDX, IDC_AGENTINFO, m_btnAgentInfo);
 	DDX_Control(pDX, IDC_ACTIVE, m_btnActiveAddress);
-	
+
 	DDX_Control(pDX, IDC_ADDTOCONF, m_btnAddToConf);
 	DDX_Text(pDX, IDC_CALLDIRECTION, m_strOrigin);
 	DDX_Text(pDX, IDC_CALLID, m_strCallID);
@@ -557,11 +559,11 @@ void CPhoneDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CONNECTED, m_fConnected);
 	DDX_Check(pDX, IDC_INSERVICE, m_fInService);
 	DDX_Check(pDX, IDC_PASSWORDFAILED, m_fPasswordFailed);
-	
+
 	DDX_Text(pDX, IDC_RELCALLID, m_strRelatedCallID);
 	//}}AFX_DATA_MAP
 
-}// CPhoneDlg::DoDataExchange
+} // CPhoneDlg::DoDataExchange
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnInitDialog
@@ -583,21 +585,19 @@ public:
 BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
 {
 	if (!hWnd)
-		return TRUE;		// Not a window
+		return TRUE; // Not a window
 	if (!::IsWindowVisible(hWnd))
-		return TRUE;		// Not visible
+		return TRUE; // Not visible
 
 	TCHAR String[255] = {0};
 	if (!SendMessage(hWnd, WM_GETTEXT, _countof(String) - 1, (LPARAM)String))
-		return TRUE;		// No window title
-	
+		return TRUE; // No window title
+
 	EWindowListHelper* pWndList = (EWindowListHelper*)lParam;
-	if(pWndList->m_hMyHWND != hWnd)
+	if (pWndList->m_hMyHWND != hWnd)
 	{
-		if(pWndList->m_strMyCaption == String)
-		{
+		if (pWndList->m_strMyCaption == String)
 			pWndList->push_back(hWnd);
-		}
 	}
 
 	return TRUE;
@@ -608,12 +608,12 @@ BOOL CPhoneDlg::OnInitDialog()
 	theApp.m_hWndMain = m_hWnd;
 	CString strCaption;
 
-	#ifdef _WIN64
-		GetWindowText(strCaption);
-		strCaption += " X64";
-		SetWindowText(strCaption);
-	#endif
-	if(!theApp.m_strVersion.IsEmpty())
+#ifdef _WIN64
+	GetWindowText(strCaption);
+	strCaption += " X64";
+	SetWindowText(strCaption);
+#endif
+	if (!theApp.m_strVersion.IsEmpty())
 	{
 		GetWindowText(strCaption);
 		strCaption += " - ";
@@ -621,9 +621,9 @@ BOOL CPhoneDlg::OnInitDialog()
 		SetWindowText(strCaption);
 	}
 
-    // Reset the font to all be ANSI var.
-    CFont fntAnsi;
-    fntAnsi.CreateStockObject (ANSI_VAR_FONT);
+	// Reset the font to all be ANSI var.
+	CFont fntAnsi;
+	fntAnsi.CreateStockObject(ANSI_VAR_FONT);
 
 	LOGFONT lf;
 	fntAnsi.GetObject(sizeof(LOGFONT), &lf);
@@ -632,12 +632,12 @@ BOOL CPhoneDlg::OnInitDialog()
 	lf.lfWeight = FW_BOLD;
 	m_fntBold.CreateFontIndirect(&lf);
 
-    CWnd* pwndChild = GetWindow (GW_CHILD);
-    while (pwndChild != NULL && IsChild(pwndChild))
-    {
-        pwndChild->SetFont(&fntAnsi);
-        pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
-    }
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild != NULL && IsChild(pwndChild))
+	{
+		pwndChild->SetFont(&fntAnsi);
+		pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
+	}
 
 	// Connect all the controls via DDX
 	CDialog::OnInitDialog();
@@ -660,8 +660,8 @@ BOOL CPhoneDlg::OnInitDialog()
 
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
-	SetIcon(m_hIcon, TRUE);			// Set big icon
-	SetIcon(m_hIcon, FALSE);		// Set small icon
+	SetIcon(m_hIcon, TRUE);	 // Set big icon
+	SetIcon(m_hIcon, FALSE); // Set small icon
 
 	m_ctlSession.SetRange(0, 0);
 
@@ -675,13 +675,11 @@ BOOL CPhoneDlg::OnInitDialog()
 
 	return TRUE;
 
-}// CPhoneDlg::OnInitDialog
-
-
+} // CPhoneDlg::OnInitDialog
 
 void CPhoneDlg::FillLineList()
 {
-	//Remember out selected line.
+	// Remember out selected line.
 	int iOldPos = m_cbLines.GetCurSel();
 	m_cbLines.ResetContent();
 	bool bCommandLineFoundLine = false;
@@ -695,12 +693,12 @@ void CPhoneDlg::FillLineList()
 			if (pLine->IsValid())
 			{
 				int iPos = m_cbLines.AddString(pLine->GetLineName());
-				if(!m_strCommandLine.IsEmpty() && pLine->GetLineName().Find(m_strCommandLine) != -1)
+				if (!m_strCommandLine.IsEmpty() && pLine->GetLineName().Find(m_strCommandLine) != -1)
 				{
 					bCommandLineFoundLine = true;
 					m_cbLines.SetCurSel(iPos);
 				}
-				ASSERT (iPos != CB_ERR);
+				ASSERT(iPos != CB_ERR);
 				m_cbLines.SetItemDataPtr(iPos, pLine);
 			}
 			else
@@ -710,7 +708,7 @@ void CPhoneDlg::FillLineList()
 		}
 	}
 
-	if(bCommandLineFoundLine)
+	if (bCommandLineFoundLine)
 	{
 		m_btnStartSession.EnableWindow(TRUE);
 		OnChangeLine();
@@ -730,7 +728,6 @@ void CPhoneDlg::FillLineList()
 		}
 	}
 	m_strCommandLine = _T("");
-
 }
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnSysCommand
@@ -747,20 +744,20 @@ void CPhoneDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	else
 		CDialog::OnSysCommand(nID, lParam);
 
-}// CPhoneDlg::OnSysCommand
+} // CPhoneDlg::OnSysCommand
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnPaint
 //
 // Paint the minimized window
 //
-void CPhoneDlg::OnPaint() 
+void CPhoneDlg::OnPaint()
 {
 	if (IsIconic())
 	{
 		CPaintDC dc(this); // device context for painting
 
-		SendMessage(WM_ICONERASEBKGND, (WPARAM) dc.GetSafeHdc(), 0);
+		SendMessage(WM_ICONERASEBKGND, (WPARAM)dc.GetSafeHdc(), 0);
 
 		// Center icon in client rectangle
 		int cxIcon = GetSystemMetrics(SM_CXICON);
@@ -776,7 +773,7 @@ void CPhoneDlg::OnPaint()
 	else
 		CDialog::OnPaint();
 
-}// CPhoneDlg::OnPaint
+} // CPhoneDlg::OnPaint
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnQueryDragIcon
@@ -785,16 +782,16 @@ void CPhoneDlg::OnPaint()
 //
 HCURSOR CPhoneDlg::OnQueryDragIcon()
 {
-	return (HCURSOR) m_hIcon;
+	return (HCURSOR)m_hIcon;
 
-}// CPhoneDlg::OnQueryDragIcon
+} // CPhoneDlg::OnQueryDragIcon
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnChangeLine
 //
 // This is called when the user selects a new line in our combo box.
 //
-void CPhoneDlg::OnChangeLine() 
+void CPhoneDlg::OnChangeLine()
 {
 	// Remove any previous line errors
 	ClearErrors();
@@ -816,21 +813,21 @@ void CPhoneDlg::OnChangeLine()
 
 		bool bUpdateAdresses = true;
 
-		if(m_cbAddress.GetCount() == (int)pLine->GetAddressCount())
+		if (m_cbAddress.GetCount() == (int)pLine->GetAddressCount())
 		{
 			bUpdateAdresses = false;
 
-			std::list<CTapiAddress*> before,after;
-			for(int iCount = 0; iCount < m_cbAddress.GetCount(); iCount++)
+			std::list<CTapiAddress*> before, after;
+			for (int iCount = 0; iCount < m_cbAddress.GetCount(); iCount++)
 				before.push_back((CTapiAddress*)m_cbAddress.GetItemDataPtr(iCount));
 
 			for (DWORD dwAddress = 0; dwAddress < pLine->GetAddressCount(); dwAddress++)
 				after.push_back(pLine->GetAddress(dwAddress));
-			if(before != after)
+			if (before != after)
 				bUpdateAdresses = true;
 		}
 
-		if(bUpdateAdresses)
+		if (bUpdateAdresses)
 		{
 			m_cbAddress.GetCount();
 			// Load the address information
@@ -844,20 +841,12 @@ void CPhoneDlg::OnChangeLine()
 				else
 					strName.Format(_T("%s - ID %ld"), (const wchar_t*)pAddr->GetDialableAddress(), dwAddress);
 
-				CString strDeviceName;
-				CString strDeviceID;
-				CString strDeviceType;
-				DWORD dwAddressFlags = 0;
-				if (pAddr->GetECSTAAddressCaps(strDeviceType, strDeviceName, strDeviceID, dwAddressFlags) == NO_ERROR)
-				{
-					if (dwAddressFlags & ECSTA_ACTIVEADDRESSFLAG_IS_ACTIVEADDRESS)
-						strName.AppendFormat(_T(" - %s - %s - active"), (const wchar_t*)strDeviceName, (const wchar_t*)strDeviceID);
-					else
-						strName.AppendFormat(_T(" - %s - %s"), (const wchar_t*)strDeviceName, (const wchar_t*)strDeviceID);
-				}
+				ECSTAAddressCaps addressCaps;
+				if (pAddr->GetECSTAAddressCaps(addressCaps) == NO_ERROR)
+					strName += addressCaps.getDisplayText();
 
 				int iPos = m_cbAddress.AddString(strName);
-				ASSERT (iPos != CB_ERR);
+				ASSERT(iPos != CB_ERR);
 				m_cbAddress.SetItemDataPtr(iPos, pAddr);
 			}
 
@@ -876,7 +865,7 @@ void CPhoneDlg::OnChangeLine()
 			NoLineSelected();
 	}
 
-}// CPhoneDlg::OnChangeLine
+} // CPhoneDlg::OnChangeLine
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnLoadLineInfo
@@ -908,10 +897,10 @@ void CPhoneDlg::OnLoadLineInfo(CTapiLine* pLine)
 	LPLINEDEVCAPS lpCaps = pLine->GetLineCaps();
 	if (lpCaps)
 	{
-		GetDlgItem(IDC_CONNECTED)->EnableWindow ((lpCaps->dwSettableDevStatus & LINEDEVSTATUSFLAGS_CONNECTED) != 0);
-		GetDlgItem(IDC_INSERVICE)->EnableWindow ((lpCaps->dwSettableDevStatus & LINEDEVSTATUSFLAGS_INSERVICE) != 0);
-		GetDlgItem(IDC_LOCKED)->EnableWindow ((lpCaps->dwSettableDevStatus & LINEDEVSTATUSFLAGS_LOCKED) != 0);
-		GetDlgItem(IDC_MESSAGEWAITING)->EnableWindow ((lpCaps->dwSettableDevStatus & LINEDEVSTATUSFLAGS_MSGWAIT) != 0);
+		GetDlgItem(IDC_CONNECTED)->EnableWindow((lpCaps->dwSettableDevStatus & LINEDEVSTATUSFLAGS_CONNECTED) != 0);
+		GetDlgItem(IDC_INSERVICE)->EnableWindow((lpCaps->dwSettableDevStatus & LINEDEVSTATUSFLAGS_INSERVICE) != 0);
+		GetDlgItem(IDC_LOCKED)->EnableWindow((lpCaps->dwSettableDevStatus & LINEDEVSTATUSFLAGS_LOCKED) != 0);
+		GetDlgItem(IDC_MESSAGEWAITING)->EnableWindow((lpCaps->dwSettableDevStatus & LINEDEVSTATUSFLAGS_MSGWAIT) != 0);
 		GetDlgItem(IDC_PASSWORDFAILED)->EnableWindow(FALSE);
 	}
 
@@ -944,7 +933,7 @@ void CPhoneDlg::OnLoadLineInfo(CTapiLine* pLine)
 	}
 	UpdateData(FALSE);
 
-}// CPhoneDlg::OnLoadLineInfo
+} // CPhoneDlg::OnLoadLineInfo
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::MoveToCall
@@ -979,8 +968,8 @@ void CPhoneDlg::MoveToCall(int iCall)
 	m_strCallNumber = _T("0 of 0");
 
 	EnableCallButtons(0, 0, 0, 0);
-	m_btnUserUserInfo.EnableWindow (FALSE);
-	m_btnCallData.EnableWindow (FALSE);
+	m_btnUserUserInfo.EnableWindow(FALSE);
+	m_btnCallData.EnableWindow(FALSE);
 	m_btnQOS.EnableWindow(FALSE);
 	m_btnISDN.EnableWindow(FALSE);
 
@@ -996,16 +985,16 @@ void CPhoneDlg::MoveToCall(int iCall)
 	}
 
 	m_iCall = iCall;
-	m_strCallNumber.Format(_T("%d of %d"), m_iCall+1, m_arrCalls.GetSize());
+	m_strCallNumber.Format(_T("%d of %d"), m_iCall + 1, m_arrCalls.GetSize());
 
-	CTapiCall* pCall = (CTapiCall*) m_arrCalls[m_iCall];
+	CTapiCall* pCall = (CTapiCall*)m_arrCalls[m_iCall];
 
 	m_strCallState = pCall->GetCallStateString();
 
 	LPLINECALLINFO lpCallInfo = pCall->GetCallInfo();
 	LPLINECALLSTATUS lpCallStatus = pCall->GetCallStatus();
 
-	if(lpCallStatus)
+	if (lpCallStatus)
 		m_strCallFeatures.Format(_T("0x%lX"), lpCallStatus->dwCallFeatures);
 	m_btnFeatures.EnableWindow(TRUE);
 	m_strCallFeaturesList = pCall->GetCallFeaturesString();
@@ -1029,10 +1018,7 @@ void CPhoneDlg::MoveToCall(int iCall)
 		m_strOrigin = _T("Conference");
 	else if (lpCallInfo->dwOrigin & LINECALLORIGIN_OUTBOUND)
 		m_strOrigin = _T("Outbound");
-	else if (lpCallInfo->dwOrigin & 
-				(LINECALLORIGIN_INTERNAL |
-				LINECALLORIGIN_EXTERNAL |
-				LINECALLORIGIN_INBOUND))
+	else if (lpCallInfo->dwOrigin & (LINECALLORIGIN_INTERNAL | LINECALLORIGIN_EXTERNAL | LINECALLORIGIN_INBOUND))
 		m_strOrigin = _T("Inbound");
 	else if (lpCallInfo->dwOrigin == LINECALLORIGIN_UNAVAIL)
 		m_strOrigin = _T("Unavail");
@@ -1048,48 +1034,107 @@ void CPhoneDlg::MoveToCall(int iCall)
 		m_strOrigin = _T("Unknown");
 
 	// Enable our conference list button
-	m_btnConfList.EnableWindow((pCall->GetCallState() == LINECALLSTATE_CONFERENCED) ||
-			(lpCallInfo->dwOrigin & LINECALLORIGIN_CONFERENCE) != 0);
+	m_btnConfList.EnableWindow((pCall->GetCallState() == LINECALLSTATE_CONFERENCED) || (lpCallInfo->dwOrigin & LINECALLORIGIN_CONFERENCE) != 0);
 
 	switch (lpCallInfo->dwReason)
 	{
-		case LINECALLREASON_DIRECT:			m_strReason = _T("Direct"); break;
-		case LINECALLREASON_FWDBUSY:		m_strReason = _T("FwdBusy"); break;
-		case LINECALLREASON_FWDNOANSWER:	m_strReason = _T("FwdNoAns"); break;
-		case LINECALLREASON_FWDUNCOND:		m_strReason = _T("FwdUnc"); break;
-		case LINECALLREASON_PICKUP:			m_strReason = _T("Pickup"); break;
-		case LINECALLREASON_UNPARK:			m_strReason = _T("Unpark"); break;
-		case LINECALLREASON_REDIRECT:		m_strReason = _T("Redirect"); break;
-		case LINECALLREASON_CALLCOMPLETION:	m_strReason = _T("CallComp"); break;
-		case LINECALLREASON_TRANSFER:		m_strReason = _T("Transfer"); break;
-		case LINECALLREASON_REMINDER:		m_strReason = _T("Reminder"); break;
-		case LINECALLREASON_UNAVAIL:		m_strReason = _T("Unavail"); break;
-		case LINECALLREASON_INTRUDE:		m_strReason = _T("Intrude"); break;
-		case LINECALLREASON_PARKED:			m_strReason = _T("Parked"); break;
-		case LINECALLREASON_CAMPEDON:		m_strReason = _T("CampedOn"); break;
-		case LINECALLREASON_ROUTEREQUEST:	m_strReason = _T("Route"); break;
-		case LINECALLREASON_UNKNOWN:		
-		default:							m_strReason = _T("Unknown"); break;
+		case LINECALLREASON_DIRECT:
+			m_strReason = _T("Direct");
+			break;
+		case LINECALLREASON_FWDBUSY:
+			m_strReason = _T("FwdBusy");
+			break;
+		case LINECALLREASON_FWDNOANSWER:
+			m_strReason = _T("FwdNoAns");
+			break;
+		case LINECALLREASON_FWDUNCOND:
+			m_strReason = _T("FwdUnc");
+			break;
+		case LINECALLREASON_PICKUP:
+			m_strReason = _T("Pickup");
+			break;
+		case LINECALLREASON_UNPARK:
+			m_strReason = _T("Unpark");
+			break;
+		case LINECALLREASON_REDIRECT:
+			m_strReason = _T("Redirect");
+			break;
+		case LINECALLREASON_CALLCOMPLETION:
+			m_strReason = _T("CallComp");
+			break;
+		case LINECALLREASON_TRANSFER:
+			m_strReason = _T("Transfer");
+			break;
+		case LINECALLREASON_REMINDER:
+			m_strReason = _T("Reminder");
+			break;
+		case LINECALLREASON_UNAVAIL:
+			m_strReason = _T("Unavail");
+			break;
+		case LINECALLREASON_INTRUDE:
+			m_strReason = _T("Intrude");
+			break;
+		case LINECALLREASON_PARKED:
+			m_strReason = _T("Parked");
+			break;
+		case LINECALLREASON_CAMPEDON:
+			m_strReason = _T("CampedOn");
+			break;
+		case LINECALLREASON_ROUTEREQUEST:
+			m_strReason = _T("Route");
+			break;
+		case LINECALLREASON_UNKNOWN:
+		default:
+			m_strReason = _T("Unknown");
+			break;
 	}
 
 	DWORD dwMediaMode = lpCallInfo->dwMediaMode & ~LINEMEDIAMODE_UNKNOWN;
 	switch (dwMediaMode)
 	{
-		case LINEMEDIAMODE_INTERACTIVEVOICE: m_strMediaMode = _T("Voice"); break;
-		case LINEMEDIAMODE_AUTOMATEDVOICE:	 m_strMediaMode = _T("Automated"); break;
-		case LINEMEDIAMODE_DATAMODEM:		 m_strMediaMode = _T("Modem"); break;
-		case LINEMEDIAMODE_G3FAX:			 m_strMediaMode = _T("G3FAX"); break;
-		case LINEMEDIAMODE_TDD:				 m_strMediaMode = _T("TDD"); break;
-		case LINEMEDIAMODE_G4FAX:			 m_strMediaMode = _T("G4FAX"); break;
-		case LINEMEDIAMODE_DIGITALDATA:		 m_strMediaMode = _T("DigData"); break;
-		case LINEMEDIAMODE_TELETEX:			 m_strMediaMode = _T("Teletex"); break;
-		case LINEMEDIAMODE_VIDEOTEX:		 m_strMediaMode = _T("VidTex"); break;
-		case LINEMEDIAMODE_TELEX:			 m_strMediaMode = _T("Telex"); break;
-		case LINEMEDIAMODE_MIXED:			 m_strMediaMode = _T("Mixed"); break;
-		case LINEMEDIAMODE_ADSI:			 m_strMediaMode = _T("ASDI"); break;
-		case LINEMEDIAMODE_VOICEVIEW:		 m_strMediaMode = _T("VoiceView"); break;
-		case LINEMEDIAMODE_UNKNOWN:			 
-		default:							 m_strMediaMode = _T("Unknown"); break;
+		case LINEMEDIAMODE_INTERACTIVEVOICE:
+			m_strMediaMode = _T("Voice");
+			break;
+		case LINEMEDIAMODE_AUTOMATEDVOICE:
+			m_strMediaMode = _T("Automated");
+			break;
+		case LINEMEDIAMODE_DATAMODEM:
+			m_strMediaMode = _T("Modem");
+			break;
+		case LINEMEDIAMODE_G3FAX:
+			m_strMediaMode = _T("G3FAX");
+			break;
+		case LINEMEDIAMODE_TDD:
+			m_strMediaMode = _T("TDD");
+			break;
+		case LINEMEDIAMODE_G4FAX:
+			m_strMediaMode = _T("G4FAX");
+			break;
+		case LINEMEDIAMODE_DIGITALDATA:
+			m_strMediaMode = _T("DigData");
+			break;
+		case LINEMEDIAMODE_TELETEX:
+			m_strMediaMode = _T("Teletex");
+			break;
+		case LINEMEDIAMODE_VIDEOTEX:
+			m_strMediaMode = _T("VidTex");
+			break;
+		case LINEMEDIAMODE_TELEX:
+			m_strMediaMode = _T("Telex");
+			break;
+		case LINEMEDIAMODE_MIXED:
+			m_strMediaMode = _T("Mixed");
+			break;
+		case LINEMEDIAMODE_ADSI:
+			m_strMediaMode = _T("ASDI");
+			break;
+		case LINEMEDIAMODE_VOICEVIEW:
+			m_strMediaMode = _T("VoiceView");
+			break;
+		case LINEMEDIAMODE_UNKNOWN:
+		default:
+			m_strMediaMode = _T("Unknown");
+			break;
 	}
 
 	SYSTEMTIME localTime;
@@ -1103,7 +1148,6 @@ void CPhoneDlg::MoveToCall(int iCall)
 		tmDiff = CTime(localTime) - CTime(lpCallStatus->tStateEntryTime);
 	}
 	m_strLastStateChangeTime = tmDiff.Format(_T("%H:%M:%S"));
-
 
 	// Now fill in CALLER information.
 	m_strCallerIDName = pCall->GetCallerIDName();
@@ -1121,19 +1165,19 @@ void CPhoneDlg::MoveToCall(int iCall)
 	m_strRedirectedName = pCall->GetRedirectedFromIDName();
 	m_strRedirectedNumber = pCall->GetRedirectedFromIDNumber();
 
-	if(!m_strCallerIDName.IsEmpty())
+	if (!m_strCallerIDName.IsEmpty())
 		m_strCallerIDName = _T("Name: ") + m_strCallerIDName;
-	
-	if(!m_strCalledIDName.IsEmpty())
+
+	if (!m_strCalledIDName.IsEmpty())
 		m_strCalledIDName = _T("Name: ") + m_strCalledIDName;
 
-	if(!m_strConnectedIDName.IsEmpty())
+	if (!m_strConnectedIDName.IsEmpty())
 		m_strConnectedIDName = _T("Name: ") + m_strConnectedIDName;
 
-	if(!m_strRedirectedName.IsEmpty())
+	if (!m_strRedirectedName.IsEmpty())
 		m_strRedirectedName = _T("Name: ") + m_strRedirectedName;
 
-	if(!m_strRedirectingName.IsEmpty())
+	if (!m_strRedirectingName.IsEmpty())
 		m_strRedirectingName = _T("Name: ") + m_strRedirectingName;
 
 	// Check the transfer mode capabilities of the owner Address
@@ -1143,9 +1187,7 @@ void CPhoneDlg::MoveToCall(int iCall)
 	{
 		LPLINEADDRESSCAPS lpCaps = pAddr->GetAddressCaps();
 		if (lpCaps)
-		{
 			dwTransferModes = lpCaps->dwTransferModes;
-		}
 	}
 
 	DWORD dwECSTACallFeatures = pCall->GetECSTACallFeatures();
@@ -1153,21 +1195,14 @@ void CPhoneDlg::MoveToCall(int iCall)
 	// Enable the appropriate call buttons.
 	EnableCallButtons(lpCallStatus->dwCallFeatures, lpCallStatus->dwCallFeatures2, dwTransferModes, dwECSTACallFeatures);
 
-	m_btnUserUserInfo.EnableWindow(lpCallInfo->dwUserUserInfoSize > 0 ||
-			(lpCallStatus->dwCallFeatures & (LINECALLFEATURE_SENDUSERUSER | 
-				LINECALLFEATURE_RELEASEUSERUSERINFO)));
-	m_btnCallData.EnableWindow(lpCallInfo->dwCallDataSize > 0 || 
-			(lpCallStatus->dwCallFeatures & LINECALLFEATURE_SETCALLDATA));
-	m_btnQOS.EnableWindow(lpCallInfo->dwReceivingFlowspecSize > 0 ||
-			lpCallInfo->dwSendingFlowspecSize > 0 ||
-			(lpCallStatus->dwCallFeatures & LINECALLFEATURE_SETQOS));
-	m_btnISDN.EnableWindow(lpCallInfo->dwHighLevelCompSize > 0 ||
-			lpCallInfo->dwLowLevelCompSize > 0 ||
-			lpCallInfo->dwChargingInfoSize > 0);
+	m_btnUserUserInfo.EnableWindow(lpCallInfo->dwUserUserInfoSize > 0 || (lpCallStatus->dwCallFeatures & (LINECALLFEATURE_SENDUSERUSER | LINECALLFEATURE_RELEASEUSERUSERINFO)));
+	m_btnCallData.EnableWindow(lpCallInfo->dwCallDataSize > 0 || (lpCallStatus->dwCallFeatures & LINECALLFEATURE_SETCALLDATA));
+	m_btnQOS.EnableWindow(lpCallInfo->dwReceivingFlowspecSize > 0 || lpCallInfo->dwSendingFlowspecSize > 0 || (lpCallStatus->dwCallFeatures & LINECALLFEATURE_SETQOS));
+	m_btnISDN.EnableWindow(lpCallInfo->dwHighLevelCompSize > 0 || lpCallInfo->dwLowLevelCompSize > 0 || lpCallInfo->dwChargingInfoSize > 0);
 
 	UpdateData(FALSE);
 
-}// CPhoneDlg::MoveToCall
+} // CPhoneDlg::MoveToCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::NoLineSelected
@@ -1202,10 +1237,10 @@ void CPhoneDlg::NoLineSelected()
 	// Turn off the call buttons.
 	m_arrCalls.RemoveAll();
 	m_iCall = 0;
-	m_ctlCalls.SetRange(0,0);
+	m_ctlCalls.SetRange(0, 0);
 	UpdateData(FALSE);
 
-}// CPhoneDlg::NoLineSelected
+} // CPhoneDlg::NoLineSelected
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::NoCallSelected
@@ -1247,17 +1282,17 @@ void CPhoneDlg::NoCallSelected()
 	// Turn off all the buttons.
 	EnableCallButtons(0, 0, 0, 0);
 
-	m_btnUserUserInfo.EnableWindow (FALSE);
-	m_btnCallData.EnableWindow (FALSE);
+	m_btnUserUserInfo.EnableWindow(FALSE);
+	m_btnCallData.EnableWindow(FALSE);
 	m_btnQOS.EnableWindow(FALSE);
 	m_btnISDN.EnableWindow(FALSE);
 	m_btnFeatures.EnableWindow(FALSE);
 
-	if(m_pDlgCallFeatures)
+	if (m_pDlgCallFeatures)
 		m_pDlgCallFeatures->SetCallFeatures(_T(""));
 	if (m_pDlgCallData)
 		m_pDlgCallData->OnCallChanged();
-}// CPhoneDlg::NoCallSelected
+} // CPhoneDlg::NoCallSelected
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::EnableCallButtons
@@ -1272,10 +1307,10 @@ void CPhoneDlg::EnableCallButtons(DWORD dwFeatures, DWORD dwFeatures2, DWORD dwT
 	m_btnRedirect.EnableWindow((dwFeatures & LINECALLFEATURE_REDIRECT) > 0);
 	m_btnHold.EnableWindow((dwFeatures & (LINECALLFEATURE_HOLD | LINECALLFEATURE_UNHOLD)) > 0);
 	m_btnDrop.EnableWindow((dwFeatures & LINECALLFEATURE_DROP) > 0);
-	
+
 	m_btnComplete.EnableWindow((dwFeatures & LINECALLFEATURE_COMPLETETRANSF) > 0 && (dwTransfermodes & LINETRANSFERMODE_TRANSFER) && (dwFeatures2 & LINECALLFEATURE2_TRANSFERNORM));
 	m_btnCompleteAsConference.EnableWindow((dwFeatures & LINECALLFEATURE_COMPLETETRANSF) > 0 && (dwTransfermodes & LINETRANSFERMODE_CONFERENCE) && (dwFeatures2 & LINECALLFEATURE2_TRANSFERCONF));
-	
+
 	m_btnAnswer.EnableWindow((dwFeatures & LINECALLFEATURE_ANSWER) > 0);
 	m_btnAddToConf.EnableWindow((dwFeatures & (LINECALLFEATURE_ADDTOCONF | LINECALLFEATURE_PREPAREADDCONF)) > 0);
 	m_btnAccept.EnableWindow((dwFeatures & LINECALLFEATURE_ACCEPT) > 0);
@@ -1296,7 +1331,7 @@ void CPhoneDlg::EnableCallButtons(DWORD dwFeatures, DWORD dwFeatures2, DWORD dwT
 	else
 		m_btnHold.SetWindowText(_T("Ho&ld"));
 
-}// CPhoneDlg::EnableCallButtons
+} // CPhoneDlg::EnableCallButtons
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::EnableLineButtons
@@ -1317,26 +1352,27 @@ void CPhoneDlg::EnableLineButtons(DWORD dwCaps)
 		else
 			m_btnForward.EnableWindow(FALSE);
 	}
-	else m_btnForward.EnableWindow(FALSE);
+	else
+		m_btnForward.EnableWindow(FALSE);
 
-}// CPhoneDlg::EnableLineButtons
+} // CPhoneDlg::EnableLineButtons
 
-void CPhoneDlg::UpdateButtons(DWORD dwCaps)
+void CPhoneDlg::UpdateButtons(DWORD dwAddressCaps)
 {
 	CTapiAddress* pAddr = GetActiveAddress();
 	CTapiLine* pLine = GetActiveLine();
 
-	static DWORD m_dwCaps = 0;
-	if(dwCaps != m_dwCaps && dwCaps)
-		m_dwCaps = dwCaps;
+	static DWORD m_dwAddressCaps = 0;
+	if (dwAddressCaps != m_dwAddressCaps && dwAddressCaps)
+		m_dwAddressCaps = dwAddressCaps;
 
-	if(pAddr == NULL || pLine == NULL)
+	if (pAddr == NULL || pLine == NULL)
 	{
 		m_btnMakeCall.EnableWindow(FALSE);
 		m_btnPickup.EnableWindow(FALSE);
 		m_btnUnpark.EnableWindow(FALSE);
 	}
-	else if(m_strNumber.IsEmpty() && !(GetKeyState(VK_CONTROL) < 0))
+	else if (m_strNumber.IsEmpty() && !(GetKeyState(VK_CONTROL) < 0))
 	{
 		m_btnMakeCall.EnableWindow(FALSE);
 		m_btnPickup.EnableWindow(FALSE);
@@ -1344,9 +1380,9 @@ void CPhoneDlg::UpdateButtons(DWORD dwCaps)
 	}
 	else
 	{
-		m_btnMakeCall.EnableWindow((m_dwCaps & LINEADDRFEATURE_MAKECALL) > 0);
-		m_btnPickup.EnableWindow((m_dwCaps & LINEADDRFEATURE_PICKUP) > 0);
-		m_btnUnpark.EnableWindow((m_dwCaps & LINEADDRFEATURE_UNPARK) > 0);
+		m_btnMakeCall.EnableWindow((m_dwAddressCaps & LINEADDRFEATURE_MAKECALL) > 0);
+		m_btnPickup.EnableWindow((m_dwAddressCaps & LINEADDRFEATURE_PICKUP) > 0);
+		m_btnUnpark.EnableWindow((m_dwAddressCaps & LINEADDRFEATURE_UNPARK) > 0);
 	}
 }
 
@@ -1355,29 +1391,14 @@ void CPhoneDlg::UpdateButtons(DWORD dwCaps)
 //
 // Open a new session
 //
-void CPhoneDlg::OnStartSession() 
+void CPhoneDlg::OnStartSession()
 {
 	// Priority of media modes
 	static struct
 	{
 		DWORD dwMediaMode;
 		LPCTSTR pszName;
-	} g_MediaModes[] = {
-		{ LINEMEDIAMODE_INTERACTIVEVOICE,	_T("Voice") },
-		{ LINEMEDIAMODE_DATAMODEM,			_T("DataModem") },
-		{ LINEMEDIAMODE_AUTOMATEDVOICE,		_T("AutomatedVoice") }, 
-		{ LINEMEDIAMODE_DIGITALDATA,		_T("DigitalData") },
-		{ LINEMEDIAMODE_G3FAX,				_T("G3 FAX") },
-		{ LINEMEDIAMODE_G4FAX,				_T("G4 FAX") },
-		{ LINEMEDIAMODE_TDD,				_T("TDD") },
-		{ LINEMEDIAMODE_TELETEX,			_T("TeleTex") },
-		{ LINEMEDIAMODE_VIDEOTEX,			_T("VideoTex") },
-		{ LINEMEDIAMODE_TELEX,				_T("Telex") },
-		{ LINEMEDIAMODE_MIXED,				_T("Mixed") },
-		{ LINEMEDIAMODE_ADSI,				_T("ADSI") },
-		{ LINEMEDIAMODE_VOICEVIEW,			_T("VoiceView") },
-		{ 0, NULL }
-	};
+	} g_MediaModes[] = {{LINEMEDIAMODE_INTERACTIVEVOICE, _T("Voice")}, {LINEMEDIAMODE_DATAMODEM, _T("DataModem")}, {LINEMEDIAMODE_AUTOMATEDVOICE, _T("AutomatedVoice")}, {LINEMEDIAMODE_DIGITALDATA, _T("DigitalData")}, {LINEMEDIAMODE_G3FAX, _T("G3 FAX")}, {LINEMEDIAMODE_G4FAX, _T("G4 FAX")}, {LINEMEDIAMODE_TDD, _T("TDD")}, {LINEMEDIAMODE_TELETEX, _T("TeleTex")}, {LINEMEDIAMODE_VIDEOTEX, _T("VideoTex")}, {LINEMEDIAMODE_TELEX, _T("Telex")}, {LINEMEDIAMODE_MIXED, _T("Mixed")}, {LINEMEDIAMODE_ADSI, _T("ADSI")}, {LINEMEDIAMODE_VOICEVIEW, _T("VoiceView")}, {0, NULL}};
 
 	ClearErrors();
 	NoLineSelected();
@@ -1400,7 +1421,7 @@ void CPhoneDlg::OnStartSession()
 			dwMediaMode = (lpCaps->dwMediaModes & ~LINEMEDIAMODE_UNKNOWN);
 
 		// Open the line
-		LONG lResult = pLine->Open (LINECALLPRIVILEGE_OWNER | LINECALLPRIVILEGE_MONITOR, dwMediaMode);
+		LONG lResult = pLine->Open(LINECALLPRIVILEGE_OWNER | LINECALLPRIVILEGE_MONITOR, dwMediaMode);
 
 		// UNIMODEM only allows ONE media mode to be chosen.. pick the best one available.
 		if (lResult == LINEERR_INVALMEDIAMODE)
@@ -1410,7 +1431,7 @@ void CPhoneDlg::OnStartSession()
 			{
 				if (dwMediaMode & g_MediaModes[i].dwMediaMode)
 				{
-					lResult = pLine->Open (LINECALLPRIVILEGE_OWNER | LINECALLPRIVILEGE_MONITOR, g_MediaModes[i].dwMediaMode);
+					lResult = pLine->Open(LINECALLPRIVILEGE_OWNER | LINECALLPRIVILEGE_MONITOR, g_MediaModes[i].dwMediaMode);
 					if (lResult == 0)
 					{
 						ErrorMsg(_T("Forced to open line with media mode %s"), g_MediaModes[i].pszName);
@@ -1426,7 +1447,7 @@ void CPhoneDlg::OnStartSession()
 		else
 		{
 			// Get the states we get notified on
-			DWORD dwAddrSt = (LINEADDRESSSTATE_CAPSCHANGE + LINEADDRESSSTATE_CAPSCHANGE-1);
+			DWORD dwAddrSt = (LINEADDRESSSTATE_CAPSCHANGE + LINEADDRESSSTATE_CAPSCHANGE - 1);
 			CTapiAddress* pAddr = GetActiveAddress();
 			if (pAddr)
 			{
@@ -1434,25 +1455,25 @@ void CPhoneDlg::OnStartSession()
 				if (lpACaps)
 					dwAddrSt &= lpACaps->dwAddressStates;
 			}
-			DWORD dwStates = (LINEDEVSTATE_REMOVED + LINEDEVSTATE_REMOVED-1);
-			if (lpCaps) 
+			DWORD dwStates = (LINEDEVSTATE_REMOVED + LINEDEVSTATE_REMOVED - 1);
+			if (lpCaps)
 				dwStates &= lpCaps->dwLineStates;
 			dwStates |= LINEDEVSTATE_CAPSCHANGE;
 			lResult = pLine->SetStatusMessages(dwStates, dwAddrSt);
 			if (lResult != 0)
 				ShowError("lineSetStatusMessages", lResult);
-			
+
 			pLine->GetLineCaps(0, 0, TRUE);
 			pLine->GatherAddressInformation();
 			AddSession(pLine);
-			OnLoadLineInfo(pLine);			
+			OnLoadLineInfo(pLine);
 		}
 	}
 	OnChangeLine();
 	OnAddressChange();
 	GetECSTALineSpecific();
 
-}// OnStartSession
+} // OnStartSession
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnNewCall
@@ -1467,12 +1488,10 @@ void CPhoneDlg::OnNewCall(CTapiCall* pCall)
 
 	// Make sure it isn't there.
 	for (int i = 0; i < m_arrCalls.GetSize(); i++)
-	{
-		if (pCall == (CTapiCall*) m_arrCalls[i])
+		if (pCall == (CTapiCall*)m_arrCalls[i])
 			return;
-	}
 
-	if(pLine->GetLineName().Find(_T("IP Office Phone")) != 0)
+	if (pLine->GetLineName().Find(_T("IP Office Phone")) != 0)
 	{
 		// Die IP Office meldet den Call nach dem MakeCall initial mit LineCallstate Idle
 		// If the call is IDLE, deallocate it.
@@ -1493,7 +1512,7 @@ void CPhoneDlg::OnNewCall(CTapiCall* pCall)
 	// Show this new call.
 	MoveToCall(iPos);
 
-}// CPhoneDlg::OnNewCall
+} // CPhoneDlg::OnNewCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::RemoveCall
@@ -1505,7 +1524,7 @@ void CPhoneDlg::RemoveCall(CTapiCall* pCall)
 	// Make sure it is there
 	for (int i = 0; i < m_arrCalls.GetSize(); i++)
 	{
-		if (pCall == (CTapiCall*) m_arrCalls[i])
+		if (pCall == (CTapiCall*)m_arrCalls[i])
 		{
 			m_arrCalls.RemoveAt(i);
 			if (m_iCall == i)
@@ -1534,7 +1553,7 @@ void CPhoneDlg::RemoveCall(CTapiCall* pCall)
 	else
 		pCall->Deallocate();
 
-}// CPhoneDlg::RemoveCall
+} // CPhoneDlg::RemoveCall
 
 void CPhoneDlg::InitPendingDeleteCalls()
 {
@@ -1545,11 +1564,8 @@ void CPhoneDlg::FinishPendingDeleteCalls()
 {
 	m_bDelayDeleteCalls = false;
 	for (int i = 0; i < m_arrCallsPendingDelete.GetSize(); i++)
-	{
 		((CTapiCall*)m_arrCallsPendingDelete[i])->Deallocate();
-	}
 	m_arrCallsPendingDelete.RemoveAll();
-
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1557,19 +1573,19 @@ void CPhoneDlg::FinishPendingDeleteCalls()
 //
 // This changes the session using the updown control.
 //
-void CPhoneDlg::OnDeltaposSession(NMHDR* pNMHDR, LRESULT* pResult) 
+void CPhoneDlg::OnDeltaposSession(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
-	CTapiLine* pLine = (CTapiLine*) m_arrSessions[m_iSession];
+	CTapiLine* pLine = (CTapiLine*)m_arrSessions[m_iSession];
 	if (pNMUpDown->iDelta > 0)
 	{
-		if (m_iSession < m_arrSessions.GetSize()-1)
-			pLine = (CTapiLine*) m_arrSessions[++m_iSession];
+		if (m_iSession < m_arrSessions.GetSize() - 1)
+			pLine = (CTapiLine*)m_arrSessions[++m_iSession];
 	}
 	else
 	{
 		if (m_iSession > 0)
-			pLine = (CTapiLine*) m_arrSessions[--m_iSession];
+			pLine = (CTapiLine*)m_arrSessions[--m_iSession];
 	}
 
 	for (int i = 0; i < m_cbLines.GetCount(); i++)
@@ -1584,7 +1600,7 @@ void CPhoneDlg::OnDeltaposSession(NMHDR* pNMHDR, LRESULT* pResult)
 	}
 	*pResult = 0;
 
-}// CPhoneDlg::OnDeltaposSession
+} // CPhoneDlg::OnDeltaposSession
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::UpdateSession
@@ -1601,10 +1617,10 @@ void CPhoneDlg::UpdateSession(CTapiLine* pLine)
 	{
 		for (int i = 0; i < m_arrSessions.GetSize(); i++)
 		{
-			if (pLine == (CTapiLine*) m_arrSessions[i])
+			if (pLine == (CTapiLine*)m_arrSessions[i])
 			{
 				m_iSession = i;
-				m_strSessionNum.Format(_T("%d of %d"), i+1, m_arrSessions.GetSize());
+				m_strSessionNum.Format(_T("%d of %d"), i + 1, m_arrSessions.GetSize());
 				break;
 			}
 		}
@@ -1613,7 +1629,7 @@ void CPhoneDlg::UpdateSession(CTapiLine* pLine)
 	m_ctlSession.SetPos(m_iSession);
 	UpdateData(FALSE);
 
-}// CPhoneDlg::UpdateSession
+} // CPhoneDlg::UpdateSession
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::AddSession
@@ -1627,7 +1643,7 @@ void CPhoneDlg::AddSession(CTapiLine* pLine)
 	m_ctlSession.Invalidate(TRUE);
 	UpdateSession(pLine);
 
-}// CPhoneDlg::AddSession
+} // CPhoneDlg::AddSession
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::RemoveSession
@@ -1638,7 +1654,7 @@ void CPhoneDlg::RemoveSession(CTapiLine* pLine)
 {
 	for (int i = 0; i < m_arrSessions.GetSize(); i++)
 	{
-		if (pLine == (CTapiLine*) m_arrSessions[i])
+		if (pLine == (CTapiLine*)m_arrSessions[i])
 		{
 			m_arrSessions.RemoveAt(i);
 			break;
@@ -1648,16 +1664,16 @@ void CPhoneDlg::RemoveSession(CTapiLine* pLine)
 	m_ctlSession.Invalidate(TRUE);
 	UpdateSession(NULL);
 
-}// CPhoneDlg::RemoveSession
+} // CPhoneDlg::RemoveSession
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnTimer
 //
 // Periodic interval timer.
 //
-void CPhoneDlg::OnTimer(UINT_PTR nIDEvent) 
+void CPhoneDlg::OnTimer(UINT_PTR nIDEvent)
 {
-	if(nIDEvent == m_uiTimerRefresh)
+	if (nIDEvent == m_uiTimerRefresh)
 	{
 		CTapiCall* pCall = GetActiveCall();
 		if (pCall != NULL)
@@ -1690,13 +1706,13 @@ void CPhoneDlg::OnTimer(UINT_PTR nIDEvent)
 		if ((g_dwLastError + 10000) < GetTickCount())
 			ClearErrors();
 	}
-	else if(nIDEvent == m_uiTimerReposition)
+	else if (nIDEvent == m_uiTimerReposition)
 	{
 		KillTimer(m_uiTimerReposition);
 		m_uiTimerReposition = 0;
 		RepositionWindow();
 	}
-}// CPhoneDlg::OnTimer
+} // CPhoneDlg::OnTimer
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnAddressChange
@@ -1704,7 +1720,7 @@ void CPhoneDlg::OnTimer(UINT_PTR nIDEvent)
 // This is called when the user selects a new address in our address
 // combo box.
 //
-void CPhoneDlg::OnAddressChange() 
+void CPhoneDlg::OnAddressChange()
 {
 	CTapiLine* pLine = GetActiveLine();
 
@@ -1718,26 +1734,19 @@ void CPhoneDlg::OnAddressChange()
 		return;
 	}
 
-	CString strDeviceName;
-	CString strDeviceID;
-	CString strDeviceType;
-	DWORD dwAddressFlags = 0;
-	if (pLine->IsOpen() && pAddr->GetECSTAAddressCaps(strDeviceType, strDeviceName, strDeviceID, dwAddressFlags) == NO_ERROR)
-	{
-		if (dwAddressFlags & ECSTA_ACTIVEADDRESSFLAG_ALLOWACTIVEADDRESS)
+	ECSTAAddressCaps addressCaps;
+	if (pLine->IsOpen() && pAddr->GetECSTAAddressCaps(addressCaps) == NO_ERROR)
+		if (addressCaps.m_dwAddressFlags & ECSTA_ADDRESSFLAG_ALLOWACTIVEADDRESS)
 			m_btnActiveAddress.EnableWindow(TRUE);
 		else
 			m_btnActiveAddress.EnableWindow(FALSE);
-	}
 	else
-	{
 		m_btnActiveAddress.EnableWindow(FALSE);
-	}
 
 	// Otherwise use the current address features to enable the buttons.
 	LPLINEADDRESSSTATUS lpStatus = pAddr->GetAddressStatus(TRUE);
 	LPLINEADDRESSCAPS lpCaps = pAddr->GetAddressCaps();
-	EnableLineButtons( (lpStatus != NULL) ? lpStatus->dwAddressFeatures : 0);
+	EnableLineButtons((lpStatus != NULL) ? lpStatus->dwAddressFeatures : 0);
 
 	// Enable/Disable the agent button
 	BOOL bAgentSupported = (lpStatus != NULL) ? pAddr->SupportsAgents() : FALSE;
@@ -1760,16 +1769,14 @@ void CPhoneDlg::OnAddressChange()
 	m_btnAgentInfo.EnableWindow(bAgentSupported);
 
 	// Set the "max" calls.  This is a combination of all Active/OnHold calls.
-	int iMaxCalls = (int) (lpCaps->dwMaxNumActiveCalls + 
-			lpCaps->dwMaxNumOnHoldCalls +
-			lpCaps->dwMaxNumOnHoldPendingCalls);
+	int iMaxCalls = (int)(lpCaps->dwMaxNumActiveCalls + lpCaps->dwMaxNumOnHoldCalls + lpCaps->dwMaxNumOnHoldPendingCalls);
 	m_strMaxCalls.Format(_T("%d"), iMaxCalls);
 	UpdateData(FALSE);
 
 	if (m_pForwardList)
 		m_pForwardList->UpdateList();
 
-}// CPhoneDlg::OnAddressChange
+} // CPhoneDlg::OnAddressChange
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnChangeCall
@@ -1777,14 +1784,14 @@ void CPhoneDlg::OnAddressChange()
 // This is called when the user uses the updown control to walk through
 // our call list.
 //
-void CPhoneDlg::OnChangeCall(NMHDR* pNMHDR, LRESULT* pResult) 
+void CPhoneDlg::OnChangeCall(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	ClearErrors();
 
 	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
 	if (pNMUpDown->iDelta > 0)
 	{
-		if (m_iCall < m_arrCalls.GetSize()-1)
+		if (m_iCall < m_arrCalls.GetSize() - 1)
 			MoveToCall(++m_iCall);
 	}
 	else
@@ -1794,7 +1801,7 @@ void CPhoneDlg::OnChangeCall(NMHDR* pNMHDR, LRESULT* pResult)
 	}
 	*pResult = 0;
 
-}// CPhoneDlg::OnChangeCall
+} // CPhoneDlg::OnChangeCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::i_OnAgentChange
@@ -1804,13 +1811,13 @@ void CPhoneDlg::OnChangeCall(NMHDR* pNMHDR, LRESULT* pResult)
 LRESULT CPhoneDlg::i_OnAgentChange(WPARAM wParam, LPARAM lParam)
 {
 	CTapiAddress* pAddr = (CTapiAddress*)wParam;
-	CAgentStateDlg* pDlg = (CAgentStateDlg*) m_mapAgentDlg[pAddr];
+	CAgentStateDlg* pDlg = (CAgentStateDlg*)m_mapAgentDlg[pAddr];
 	if (pDlg != NULL)
 		pDlg->PostMessage(UM_AGENTCHANGE, wParam, lParam);
 	OnAddressChange();
 	return 0L;
 
-}// CPhoneDlg::i_OnAgentChange
+} // CPhoneDlg::i_OnAgentChange
 
 LRESULT CPhoneDlg::i_OnECSTAAgentEvent(WPARAM wParam, LPARAM lParam)
 {
@@ -1828,7 +1835,7 @@ LRESULT CPhoneDlg::i_OnECSTAAgentEvent(WPARAM wParam, LPARAM lParam)
 
 	return 0L;
 
-}// CPhoneDlg::i_OnECSTAAgentGroupChange
+} // CPhoneDlg::i_OnECSTAAgentGroupChange
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::i_OnCallChange
@@ -1837,17 +1844,17 @@ LRESULT CPhoneDlg::i_OnECSTAAgentEvent(WPARAM wParam, LPARAM lParam)
 //
 LRESULT CPhoneDlg::i_OnCallChange(WPARAM /*wParam*/, LPARAM lParam)
 {
-	CTapiCall* pCall = (CTapiCall*) lParam;
+	CTapiCall* pCall = (CTapiCall*)lParam;
 	// Die IP Office meldet den Call nach dem MakeCall initial mit LineCallstate Idle
 	// If the call is IDLE, deallocate it.
 	if (pCall->GetCallState() == LINECALLSTATE_IDLE)
 	{
-		CTapiLine *pLine = pCall->GetLineOwner();
-		if(pLine)
+		CTapiLine* pLine = pCall->GetLineOwner();
+		if (pLine)
 		{
-			if(pLine->GetLineName().Find(_T("IP Office Phone")) == 0)
+			if (pLine->GetLineName().Find(_T("IP Office Phone")) == 0)
 			{
-				if(pCall->GetCallWasNonIdle())
+				if (pCall->GetCallWasNonIdle())
 				{
 					RemoveCall(pCall);
 					return 0;
@@ -1866,12 +1873,12 @@ LRESULT CPhoneDlg::i_OnCallChange(WPARAM /*wParam*/, LPARAM lParam)
 		}
 	}
 
-	if(pCall == GetActiveCall())
+	if (pCall == GetActiveCall())
 		MoveToCall(m_iCall);
 
 	return 0;
 
-}// CPhoneDlg::i_OnCallChange
+} // CPhoneDlg::i_OnCallChange
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::i_OnAddressChange
@@ -1881,7 +1888,7 @@ LRESULT CPhoneDlg::i_OnCallChange(WPARAM /*wParam*/, LPARAM lParam)
 LRESULT CPhoneDlg::i_OnAddressChange(WPARAM wParam, LPARAM lParam)
 {
 	DWORD dwState = (DWORD)lParam;
-	CTapiAddress* pAddr = (CTapiAddress*) wParam;
+	CTapiAddress* pAddr = (CTapiAddress*)wParam;
 	if (GetActiveAddress() == pAddr)
 	{
 		OnAddressChange();
@@ -1890,7 +1897,7 @@ LRESULT CPhoneDlg::i_OnAddressChange(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 
-}// CPhoneDlg::i_OnAddressChange
+} // CPhoneDlg::i_OnAddressChange
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::i_OnDynamicRemove
@@ -1902,7 +1909,7 @@ LRESULT CPhoneDlg::i_OnDynamicRemove(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	FillLineList();
 	return 0;
 
-}// CPhoneDlg::i_OnDynamicRemove
+} // CPhoneDlg::i_OnDynamicRemove
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::i_OnDynamicCreate
@@ -1914,12 +1921,12 @@ LRESULT CPhoneDlg::i_OnDynamicCreate(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	FillLineList();
 	return 0;
 
-}// CPhoneDlg::i_OnDynamicCreate
+} // CPhoneDlg::i_OnDynamicCreate
 
 void CPhoneDlg::UpdateAddressNames()
 {
 	int iItem = m_cbAddress.GetCurSel();
-	//update address names (for Panasonic activeAddress)
+	// update address names (for Panasonic activeAddress)
 	for (int i = 0; i < m_cbAddress.GetCount(); i++)
 	{
 		CTapiAddress* pAddr = (CTapiAddress*)m_cbAddress.GetItemDataPtr(i);
@@ -1929,17 +1936,9 @@ void CPhoneDlg::UpdateAddressNames()
 		else
 			strName.Format(_T("%s - ID %ld"), (const wchar_t*)pAddr->GetDialableAddress(), pAddr->GetAddressID());
 
-		CString strDeviceName;
-		CString strDeviceID;
-		CString strDeviceType;
-		DWORD dwAddressFlags = 0;
-		if (pAddr->GetECSTAAddressCaps(strDeviceType, strDeviceName, strDeviceID, dwAddressFlags) == NO_ERROR)
-		{
-			if (dwAddressFlags & ECSTA_ACTIVEADDRESSFLAG_IS_ACTIVEADDRESS)
-				strName.AppendFormat(_T(" - %s - %s - active"), (const wchar_t*)strDeviceName, (const wchar_t*)strDeviceID);
-			else
-				strName.AppendFormat(_T(" - %s - %s"), (const wchar_t*)strDeviceName, (const wchar_t*)strDeviceID);
-		}
+		ECSTAAddressCaps addressCaps;
+		if (pAddr->GetECSTAAddressCaps(addressCaps) == NO_ERROR)
+			strName += addressCaps.getDisplayText();
 		m_cbAddress.DeleteString(i);
 		m_cbAddress.InsertString(i, strName);
 		m_cbAddress.SetItemDataPtr(i, pAddr);
@@ -1962,14 +1961,14 @@ LRESULT CPhoneDlg::i_OnLineAbsentMessageChange(WPARAM wParam, LPARAM lParam)
 	CTapiLine* pLine = (CTapiLine*)wParam;
 	if (GetActiveLine() == pLine)
 	{
-		//update absentmessage
+		// update absentmessage
 		ETSPVarStruct<VARSTRING> absentStruct;
 		if (pLine->GetDevConfigStruct(L"ecsta/AbsentMessage", &absentStruct) == NO_ERROR)
 		{
 			if (absentStruct.pData->dwStringFormat == STRINGFORMAT_BINARY && absentStruct.pData->dwStringSize == sizeof(ECSTADEVSPECIFICELEMENT_ABSENTMESSAGEPARAMS))
 			{
-				//ECSTADEVSPECIFICELEMENT_ABSENTMESSAGEPARAMS* params = (ECSTADEVSPECIFICELEMENT_ABSENTMESSAGEPARAMS*)((BYTE*)absentStruct.pData + absentStruct.pData->dwStringOffset);
-				//int i = 0;
+				// ECSTADEVSPECIFICELEMENT_ABSENTMESSAGEPARAMS* params = (ECSTADEVSPECIFICELEMENT_ABSENTMESSAGEPARAMS*)((BYTE*)absentStruct.pData + absentStruct.pData->dwStringOffset);
+				// int i = 0;
 			}
 		}
 	}
@@ -1981,7 +1980,7 @@ LRESULT CPhoneDlg::i_OnLineMsgWaitChange(WPARAM wParam, LPARAM lParam)
 	CTapiLine* pLine = (CTapiLine*)wParam;
 	if (GetActiveLine() == pLine)
 	{
-		//update msgWait Counter...
+		// update msgWait Counter...
 		CString strText;
 		strText.Format(_T("MWI (%d)"), lParam);
 		GetDlgItem(IDC_MESSAGEWAITING)->SetWindowText(strText);
@@ -1998,7 +1997,7 @@ LRESULT CPhoneDlg::i_OnLineMsgWaitChange(WPARAM wParam, LPARAM lParam)
 //
 LRESULT CPhoneDlg::i_OnLineChange(WPARAM wParam, LPARAM /*lParam*/)
 {
-	CTapiLine* pLine = (CTapiLine*) wParam;
+	CTapiLine* pLine = (CTapiLine*)wParam;
 	pLine->GatherAddressInformation();
 
 	if (GetActiveLine() == pLine)
@@ -2018,7 +2017,7 @@ LRESULT CPhoneDlg::i_OnLineChange(WPARAM wParam, LPARAM /*lParam*/)
 	}
 	return 0;
 
-}// CPhoneDlg::i_OnLineChange
+} // CPhoneDlg::i_OnLineChange
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::i_OnNewCall
@@ -2027,11 +2026,11 @@ LRESULT CPhoneDlg::i_OnLineChange(WPARAM wParam, LPARAM /*lParam*/)
 //
 LRESULT CPhoneDlg::i_OnNewCall(WPARAM wParam, LPARAM /*lParam*/)
 {
-	CTapiCall* pCall = (CTapiCall*) wParam;
+	CTapiCall* pCall = (CTapiCall*)wParam;
 	OnNewCall(pCall);
 	return 0;
 
-}// CPhoneDlg::i_OnNewCall
+} // CPhoneDlg::i_OnNewCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::GetActiveCall
@@ -2041,11 +2040,11 @@ LRESULT CPhoneDlg::i_OnNewCall(WPARAM wParam, LPARAM /*lParam*/)
 CTapiCall* CPhoneDlg::GetActiveCall()
 {
 	if (m_iCall >= 0 && m_iCall < m_arrCalls.GetSize())
-		return (CTapiCall*) m_arrCalls[m_iCall];
+		return (CTapiCall*)m_arrCalls[m_iCall];
 	m_iCall = -1;
 	return NULL;
 
-}// CPhoneDlg::GetActiveCall
+} // CPhoneDlg::GetActiveCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::GetActiveLine
@@ -2060,7 +2059,7 @@ CTapiLine* CPhoneDlg::GetActiveLine()
 		return NULL;
 	return (CTapiLine*)m_cbLines.GetItemDataPtr(iCurSel);
 
-}// CPhoneDlg::GetActiveLine
+} // CPhoneDlg::GetActiveLine
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::GetActiveAddress
@@ -2072,16 +2071,16 @@ CTapiAddress* CPhoneDlg::GetActiveAddress()
 	int iCurSel = m_cbAddress.GetCurSel();
 	if (iCurSel == CB_ERR)
 		return NULL;
-	return (CTapiAddress*) m_cbAddress.GetItemDataPtr(iCurSel);
+	return (CTapiAddress*)m_cbAddress.GetItemDataPtr(iCurSel);
 
-}// CPhoneDlg::GetActiveLine
+} // CPhoneDlg::GetActiveLine
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnDropCall
 //
 // Drops the currently displayed call.
 //
-void CPhoneDlg::OnDropCall() 
+void CPhoneDlg::OnDropCall()
 {
 	ClearErrors();
 
@@ -2100,14 +2099,14 @@ void CPhoneDlg::OnDropCall()
 			ShowError("lineDrop", lResult);
 	}
 
-}// CPhoneDlg::OnDropCall
+} // CPhoneDlg::OnDropCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnAcceptCall
 //
 // Accepts the currently displayed call.
 //
-void CPhoneDlg::OnAcceptCall() 
+void CPhoneDlg::OnAcceptCall()
 {
 	ClearErrors();
 
@@ -2126,14 +2125,14 @@ void CPhoneDlg::OnAcceptCall()
 			ShowError("lineAccept", lResult);
 	}
 
-}// CPhoneDlg::OnAcceptCall
+} // CPhoneDlg::OnAcceptCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnAnswerCall
 //
 // Answers the currently displayed call.
 //
-void CPhoneDlg::OnAnswerCall() 
+void CPhoneDlg::OnAnswerCall()
 {
 	ClearErrors();
 
@@ -2152,14 +2151,14 @@ void CPhoneDlg::OnAnswerCall()
 			ShowError("lineAnswer", lResult);
 	}
 
-}// CPhoneDlg::OnAnswerCall
+} // CPhoneDlg::OnAnswerCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnMakeCall
 //
 // Places a new call
 //
-void CPhoneDlg::OnMakeCall() 
+void CPhoneDlg::OnMakeCall()
 {
 	CTapiLine* pLine = GetActiveLine();
 	if (pLine == NULL)
@@ -2201,8 +2200,8 @@ void CPhoneDlg::OnMakeCall()
 				lpCallParams->dwAddressMode = LINEADDRESSMODE_ADDRESSID;
 				lpCallParams->dwPredictiveAutoTransferStates = dlg.m_dwCallStates;
 				lpCallParams->dwTargetAddressOffset = dwCallParamsUsed;
-				lpCallParams->dwTargetAddressSize = (dlg.m_strTarget.GetLength()+1) * sizeof(TCHAR);
-				lstrcpy((LPTSTR)((LPBYTE)lpCallParams+lpCallParams->dwTargetAddressOffset), dlg.m_strTarget);
+				lpCallParams->dwTargetAddressSize = (dlg.m_strTarget.GetLength() + 1) * sizeof(TCHAR);
+				lstrcpy((LPTSTR)((LPBYTE)lpCallParams + lpCallParams->dwTargetAddressOffset), dlg.m_strTarget);
 				lpCallParams->dwNoAnswerTimeout = dlg.m_nTimeout;
 
 				dwCallParamsUsed += lpCallParams->dwTargetAddressSize;
@@ -2224,14 +2223,14 @@ void CPhoneDlg::OnMakeCall()
 		}
 	}
 
-	if(GetKeyState(VK_CONTROL) < 0)
+	if (GetKeyState(VK_CONTROL) < 0)
 	{
 		MakeCallExtended makecallextendedDlg;
-		
+
 		makecallextendedDlg.m_strCalledID = m_strNumber;
 		makecallextendedDlg.dwAddressCapsFlags = dwAddressCapsFlags;
-		
-		if(makecallextendedDlg.DoModal() == IDCANCEL)
+
+		if (makecallextendedDlg.DoModal() == IDCANCEL)
 			return;
 
 		if (!lpCallParams)
@@ -2246,16 +2245,14 @@ void CPhoneDlg::OnMakeCall()
 		lstrcpy((LPTSTR)((LPBYTE)lpCallParams + lpCallParams->dwCallingPartyIDOffset), makecallextendedDlg.m_strCallingID);
 		dwCallParamsUsed += lpCallParams->dwCallingPartyIDSize;
 
-		if(makecallextendedDlg.m_bBlockMyCallingID)
+		if (makecallextendedDlg.m_bBlockMyCallingID)
 			lpCallParams->dwCallParamFlags |= LINECALLPARAMFLAGS_BLOCKID;
 
-        if(makecallextendedDlg.m_bSetDestinationAutoOffHook)
-            lpCallParams->dwCallParamFlags |= LINECALLPARAMFLAGS_DESTOFFHOOK;
-
+		if (makecallextendedDlg.m_bSetDestinationAutoOffHook)
+			lpCallParams->dwCallParamFlags |= LINECALLPARAMFLAGS_DESTOFFHOOK;
 	}
 
-
-	//Test of calldata
+	// Test of calldata
 	/*
 	CString strCallData = "hallo";
 	lpCallParams = (LPLINECALLPARAMS) new BYTE[sizeof(LINECALLPARAMS) + strCallData.GetLength()+1];
@@ -2273,22 +2270,21 @@ void CPhoneDlg::OnMakeCall()
 	lpCallParams->dwNoAnswerTimeout = 0;
 	*/
 
-
 	CTapiCall* pCall = NULL;
 	LONG lResult = pLine->MakeCall(&pCall, m_strNumber, 0, lpCallParams);
 	if (lResult != 0)
 		ShowError("lineMakeCall", lResult);
 
-	delete [] lpCallParams;
+	delete[] lpCallParams;
 
-}// CPhoneDlg::OnMakeCall
+} // CPhoneDlg::OnMakeCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnUnparkCall
 //
 // Unpark a call from an extension
 //
-void CPhoneDlg::OnUnparkCall() 
+void CPhoneDlg::OnUnparkCall()
 {
 	CTapiAddress* pAddress = GetActiveAddress();
 	if (pAddress == NULL)
@@ -2298,19 +2294,18 @@ void CPhoneDlg::OnUnparkCall()
 	ClearErrors();
 
 	CTapiCall* pCall = NULL;
-	LONG lResult = GetTAPIConnection()->WaitForReply(
-		pAddress->Unpark(&pCall, m_strNumber));
+	LONG lResult = GetTAPIConnection()->WaitForReply(pAddress->Unpark(&pCall, m_strNumber));
 	if (lResult != 0)
 		ShowError("lineUnpark", lResult);
 
-}// CPhoneDlg::OnUnparkCall
+} // CPhoneDlg::OnUnparkCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnPickupCall
 //
 // Pickup a call from an extension
 //
-void CPhoneDlg::OnPickupCall() 
+void CPhoneDlg::OnPickupCall()
 {
 	CTapiAddress* pAddress = GetActiveAddress();
 	if (pAddress == NULL)
@@ -2320,19 +2315,18 @@ void CPhoneDlg::OnPickupCall()
 	ClearErrors();
 
 	CTapiCall* pCall = NULL;
-	LONG lResult = GetTAPIConnection()->WaitForReply(
-			pAddress->Pickup(&pCall, m_strNumber, NULL));
+	LONG lResult = GetTAPIConnection()->WaitForReply(pAddress->Pickup(&pCall, m_strNumber, NULL));
 	if (lResult != 0)
 		ShowError("linePickup", lResult);
 
-}// CPhoneDlg::OnPickupCall
+} // CPhoneDlg::OnPickupCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnHoldCall
 //
 // Hold/Unhold the current call
 //
-void CPhoneDlg::OnHoldCall() 
+void CPhoneDlg::OnHoldCall()
 {
 	ClearErrors();
 
@@ -2344,30 +2338,27 @@ void CPhoneDlg::OnHoldCall()
 	LONG lResult = pCall->SetPrivilege(LINECALLPRIVILEGE_OWNER);
 	if (lResult != 0)
 		ShowError("lineSetCallPrivilege", lResult);
+	else if (pCall->GetCallStatus()->dwCallFeatures & LINECALLFEATURE_HOLD)
+	{
+		lResult = GetTAPIConnection()->WaitForReply(pCall->Hold());
+		if (lResult != 0)
+			ShowError("lineHold", lResult);
+	}
 	else
 	{
-		if (pCall->GetCallStatus()->dwCallFeatures & LINECALLFEATURE_HOLD)
-		{
-			lResult = GetTAPIConnection()->WaitForReply(pCall->Hold());
-			if (lResult != 0)
-				ShowError("lineHold", lResult);
-		}
-		else
-		{
-			lResult = GetTAPIConnection()->WaitForReply(pCall->Unhold());
-			if (lResult != 0)
-				ShowError("lineUnhold", lResult);
-		}
+		lResult = GetTAPIConnection()->WaitForReply(pCall->Unhold());
+		if (lResult != 0)
+			ShowError("lineUnhold", lResult);
 	}
 
-}// CPhoneDlg::OnHoldCall
+} // CPhoneDlg::OnHoldCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnSwapHoldCall
 //
 // SwapHold the current call
 //
-void CPhoneDlg::OnSwapHoldCall() 
+void CPhoneDlg::OnSwapHoldCall()
 {
 	ClearErrors();
 
@@ -2380,22 +2371,14 @@ void CPhoneDlg::OnSwapHoldCall()
 	// Find the other call.  If this call is NOT onHOLD, then
 	// look for any onHold call with the SWAPHOLD bit set.
 	CTapiCall* pCall_Cons = NULL;
-	if ((pCall->GetCallState() & (LINECALLSTATE_ONHOLD | 
-			LINECALLSTATE_ONHOLDPENDTRANSFER |
-			LINECALLSTATE_ONHOLDPENDCONF)))
+	if ((pCall->GetCallState() & (LINECALLSTATE_ONHOLD | LINECALLSTATE_ONHOLDPENDTRANSFER | LINECALLSTATE_ONHOLDPENDCONF)))
 	{
-		 pCall_Cons = pLine->FindCall((LINECALLSTATE_CONNECTED | 
-				LINECALLSTATE_RINGBACK | 
-				LINECALLSTATE_PROCEEDING |
-				LINECALLSTATE_DIALING |
-				LINECALLSTATE_DIALTONE), LINECALLFEATURE_SWAPHOLD);
+		pCall_Cons = pLine->FindCall((LINECALLSTATE_CONNECTED | LINECALLSTATE_RINGBACK | LINECALLSTATE_PROCEEDING | LINECALLSTATE_DIALING | LINECALLSTATE_DIALTONE), LINECALLFEATURE_SWAPHOLD);
 	}
 	else
 	{
 		pCall_Cons = pCall;
-		pCall = pLine->FindCall((LINECALLSTATE_ONHOLD | 
-				LINECALLSTATE_ONHOLDPENDTRANSFER |
-				LINECALLSTATE_ONHOLDPENDCONF), LINECALLFEATURE_SWAPHOLD);
+		pCall = pLine->FindCall((LINECALLSTATE_ONHOLD | LINECALLSTATE_ONHOLDPENDTRANSFER | LINECALLSTATE_ONHOLDPENDCONF), LINECALLFEATURE_SWAPHOLD);
 	}
 
 	if (pCall == NULL || pCall_Cons == NULL)
@@ -2421,14 +2404,14 @@ void CPhoneDlg::OnSwapHoldCall()
 		}
 	}
 
-}// CPhoneDlg::OnSwapHoldCall
+} // CPhoneDlg::OnSwapHoldCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnCallData
 //
 // Set/Get the call data
 //
-void CPhoneDlg::OnCallData() 
+void CPhoneDlg::OnCallData()
 {
 	ClearErrors();
 
@@ -2452,17 +2435,16 @@ void CPhoneDlg::OnCallData()
 
 	LPLINECALLINFO lpCallInfo = pCall->GetCallInfo();
 	LPLINECALLSTATUS lpCallStatus = pCall->GetCallStatus();
-	m_btnCallData.EnableWindow(lpCallInfo->dwCallDataSize > 0 || 
-			(lpCallStatus->dwCallFeatures & LINECALLFEATURE_SETCALLDATA));
+	m_btnCallData.EnableWindow(lpCallInfo->dwCallDataSize > 0 || (lpCallStatus->dwCallFeatures & LINECALLFEATURE_SETCALLDATA));
 
-}// CPhoneDlg::OnCallData
+} // CPhoneDlg::OnCallData
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnUserUserInfo
 //
 // Set/Get the UUI.
 //
-void CPhoneDlg::OnUserUserInfo() 
+void CPhoneDlg::OnUserUserInfo()
 {
 	ClearErrors();
 
@@ -2475,18 +2457,16 @@ void CPhoneDlg::OnUserUserInfo()
 
 	LPLINECALLINFO lpCallInfo = pCall->GetCallInfo();
 	LPLINECALLSTATUS lpCallStatus = pCall->GetCallStatus();
-	m_btnUserUserInfo.EnableWindow(lpCallInfo->dwUserUserInfoSize > 0 ||
-			(lpCallStatus->dwCallFeatures & (LINECALLFEATURE_SENDUSERUSER | 
-				LINECALLFEATURE_RELEASEUSERUSERINFO)));
+	m_btnUserUserInfo.EnableWindow(lpCallInfo->dwUserUserInfoSize > 0 || (lpCallStatus->dwCallFeatures & (LINECALLFEATURE_SENDUSERUSER | LINECALLFEATURE_RELEASEUSERUSERINFO)));
 
-}// CPhoneDlg::OnUserUserInfo
+} // CPhoneDlg::OnUserUserInfo
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnISDN
 //
 // Display ISDN information (Charging, Low/Hi level compat).
 //
-void CPhoneDlg::OnISDN() 
+void CPhoneDlg::OnISDN()
 {
 	ClearErrors();
 
@@ -2498,18 +2478,16 @@ void CPhoneDlg::OnISDN()
 	}
 
 	LPLINECALLINFO lpCallInfo = pCall->GetCallInfo();
-	m_btnISDN.EnableWindow(lpCallInfo->dwHighLevelCompSize > 0 ||
-			lpCallInfo->dwLowLevelCompSize > 0 ||
-			lpCallInfo->dwChargingInfoSize > 0);
+	m_btnISDN.EnableWindow(lpCallInfo->dwHighLevelCompSize > 0 || lpCallInfo->dwLowLevelCompSize > 0 || lpCallInfo->dwChargingInfoSize > 0);
 
-}// CPhoneDlg::OnISDN
+} // CPhoneDlg::OnISDN
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnQos
 //
 // Display/Set Quality of Service information
 //
-void CPhoneDlg::OnQos() 
+void CPhoneDlg::OnQos()
 {
 	ClearErrors();
 
@@ -2522,18 +2500,16 @@ void CPhoneDlg::OnQos()
 
 	LPLINECALLINFO lpCallInfo = pCall->GetCallInfo();
 	LPLINECALLSTATUS lpCallStatus = pCall->GetCallStatus();
-	m_btnQOS.EnableWindow(lpCallInfo->dwReceivingFlowspecSize > 0 ||
-			lpCallInfo->dwSendingFlowspecSize > 0 ||
-			(lpCallStatus->dwCallFeatures & LINECALLFEATURE_SETQOS));
+	m_btnQOS.EnableWindow(lpCallInfo->dwReceivingFlowspecSize > 0 || lpCallInfo->dwSendingFlowspecSize > 0 || (lpCallStatus->dwCallFeatures & LINECALLFEATURE_SETQOS));
 
-}// CPhoneDlg::OnQos
+} // CPhoneDlg::OnQos
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnDial
 //
 // Dial a number
 //
-void CPhoneDlg::OnDial() 
+void CPhoneDlg::OnDial()
 {
 	ClearErrors();
 
@@ -2556,9 +2532,9 @@ void CPhoneDlg::OnDial()
 				lResult = GetTAPIConnection()->WaitForReply(pCall->GenerateDigits(LINEDIGITMODE_DTMF, dlg.m_strNumber));
 
 			if (lResult != 0)
-			{	
+			{
 				const LINECALLSTATUS* lpStatus = pCall->GetCallStatus();
- 				if (lpStatus && (lpStatus->dwCallFeatures & LINECALLFEATURE_DIAL) != 0)
+				if (lpStatus && (lpStatus->dwCallFeatures & LINECALLFEATURE_DIAL) != 0)
 					ShowError("lineDial", lResult);
 				else
 					ShowError("lineGenerateDigits", lResult);
@@ -2566,14 +2542,14 @@ void CPhoneDlg::OnDial()
 		}
 	}
 
-}// CPhoneDlg::OnDial
+} // CPhoneDlg::OnDial
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnRedirectCall
 //
 // Redirect the call to another number
 //
-void CPhoneDlg::OnRedirectCall() 
+void CPhoneDlg::OnRedirectCall()
 {
 	ClearErrors();
 
@@ -2596,14 +2572,14 @@ void CPhoneDlg::OnRedirectCall()
 		}
 	}
 
-}// CPhoneDlg::OnRedirectCall
+} // CPhoneDlg::OnRedirectCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnChangeLineStatus
 //
 // Update the LINEDEVSTATE flags in the provider from our config.
 //
-void CPhoneDlg::OnChangeLineStatus() 
+void CPhoneDlg::OnChangeLineStatus()
 {
 	CTapiLine* pLine = GetActiveLine();
 	if (pLine == NULL)
@@ -2664,8 +2640,7 @@ void CPhoneDlg::OnChangeLineStatus()
 		UpdateData(FALSE);
 	}
 
-}// CPhoneDlg::OnChangeLineStatus
-
+} // CPhoneDlg::OnChangeLineStatus
 
 void CPhoneDlg::OnActiveAddress()
 {
@@ -2679,14 +2654,14 @@ void CPhoneDlg::OnActiveAddress()
 
 	DWORD dwAddress = pAddr->GetAddressID();
 	pLine->SetDevConfig(&dwAddress, sizeof(dwAddress), L"ecsta/SetActiveAddress");
-}// CPhoneDlg::OnAgentInfo
+} // CPhoneDlg::OnAgentInfo
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnAgentInfo
 //
 // Open a new modaless agent information dialog
 //
-void CPhoneDlg::OnAgentInfo() 
+void CPhoneDlg::OnAgentInfo()
 {
 	CTapiLine* pLine = GetActiveLine();
 	if (pLine == NULL)
@@ -2709,7 +2684,7 @@ void CPhoneDlg::OnAgentInfo()
 	if (pAddr == NULL)
 		return;
 
-	CAgentStateDlg* pDlg = (CAgentStateDlg*) m_mapAgentDlg[pAddr];
+	CAgentStateDlg* pDlg = (CAgentStateDlg*)m_mapAgentDlg[pAddr];
 	if (pDlg == NULL || !IsWindow(pDlg->GetSafeHwnd()))
 	{
 		delete pDlg;
@@ -2720,7 +2695,7 @@ void CPhoneDlg::OnAgentInfo()
 	pDlg->ShowWindow(SW_SHOW);
 	pDlg->SetActiveWindow();
 
-}// CPhoneDlg::OnAgentInfo
+} // CPhoneDlg::OnAgentInfo
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnDestroy
@@ -2732,11 +2707,11 @@ void CPhoneDlg::OnDestroy()
 {
 	for (POSITION pos = m_mapAgentDlg.GetStartPosition(); pos != NULL;)
 	{
-		void* pAddr, *pDlg;
+		void *pAddr, *pDlg;
 		m_mapAgentDlg.GetNextAssoc(pos, pAddr, pDlg);
 		delete ((CAgentStateDlg*)pDlg);
 	}
-	if(m_pDlgCallFeatures)
+	if (m_pDlgCallFeatures)
 	{
 		m_pDlgCallFeatures->DestroyWindow();
 		delete m_pDlgCallFeatures;
@@ -2748,8 +2723,8 @@ void CPhoneDlg::OnDestroy()
 		delete m_pDlgCallData;
 		m_pDlgCallData = 0;
 	}
-	
-}// CPhoneDlg::OnDestroy
+
+} // CPhoneDlg::OnDestroy
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnAgentClose
@@ -2758,18 +2733,18 @@ void CPhoneDlg::OnDestroy()
 //
 void CPhoneDlg::OnAgentClose(CTapiAddress* pAddr)
 {
-	CAgentStateDlg* pDlg = (CAgentStateDlg*) m_mapAgentDlg[pAddr];
-	ASSERT (pDlg != NULL);
+	CAgentStateDlg* pDlg = (CAgentStateDlg*)m_mapAgentDlg[pAddr];
+	ASSERT(pDlg != NULL);
 	m_mapAgentDlg[pAddr] = NULL;
 
-}// CPhoneDlg::OnAgentClose
+} // CPhoneDlg::OnAgentClose
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnConferenceList
 //
 // List the members of a conference
 //
-void CPhoneDlg::OnConferenceList() 
+void CPhoneDlg::OnConferenceList()
 {
 	ClearErrors();
 	CTapiCall* pCall = GetActiveCall();
@@ -2779,14 +2754,14 @@ void CPhoneDlg::OnConferenceList()
 	CConfListDlg dlg(this, pCall);
 	dlg.DoModal();
 
-}// CPhoneDlg::OnConferenceList
+} // CPhoneDlg::OnConferenceList
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnTransfer
 //
 // Initiate a consultation or blind transfer of a call.
 //
-void CPhoneDlg::OnTransfer() 
+void CPhoneDlg::OnTransfer()
 {
 	ClearErrors();
 	CTapiCall* pCall = GetActiveCall();
@@ -2799,7 +2774,7 @@ void CPhoneDlg::OnTransfer()
 		ShowError("lineSetCallPrivilege", lResult);
 		return;
 	}
-		
+
 	CTransferDlg dlgT(this, pCall);
 	if (dlgT.DoModal() == IDOK)
 	{
@@ -2858,18 +2833,16 @@ void CPhoneDlg::OnTransfer()
 				}
 				else
 				{
-					//Prevent calls to be destroyed during that dialog
+					// Prevent calls to be destroyed during that dialog
 
 					// Complete the transfer..
 					CCompleteTransferDlg dlgC(this, pCall, pCCall);
 					INT_PTR iResult = dlgC.DoModal();
 					if (iResult == IDOK)
 					{
-						DWORD dwTransferType = (dlgC.m_fConference == TRUE) ?
-								LINETRANSFERMODE_CONFERENCE : LINETRANSFERMODE_TRANSFER;
+						DWORD dwTransferType = (dlgC.m_fConference == TRUE) ? LINETRANSFERMODE_CONFERENCE : LINETRANSFERMODE_TRANSFER;
 						CTapiCall* pConfOwner;
-						lResult = GetTAPIConnection()->WaitForReply(
-								pCall->CompleteTransfer(pCCall, &pConfOwner, dwTransferType));
+						lResult = GetTAPIConnection()->WaitForReply(pCall->CompleteTransfer(pCCall, &pConfOwner, dwTransferType));
 						if (lResult != 0)
 							ShowError("lineCompleteTransfer", lResult);
 					}
@@ -2882,11 +2855,11 @@ void CPhoneDlg::OnTransfer()
 					}
 					else if (iResult == IDC_CMDCLOSE)
 					{
-						//do nothing
+						// do nothing
 					}
 				}
 			}
-			//Deallocate calls destroyed during th dialog
+			// Deallocate calls destroyed during th dialog
 			FinishPendingDeleteCalls();
 		}
 
@@ -2899,14 +2872,14 @@ void CPhoneDlg::OnTransfer()
 		}
 	}
 
-}// CPhoneDlg::OnTransfer
+} // CPhoneDlg::OnTransfer
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnParkCall
 //
 // Park a call to an extension
 //
-void CPhoneDlg::OnParkCall() 
+void CPhoneDlg::OnParkCall()
 {
 	ClearErrors();
 	CTapiCall* pCall = GetActiveCall();
@@ -2922,14 +2895,11 @@ void CPhoneDlg::OnParkCall()
 			ShowError("lineSetCallPrivilege", lResult);
 		else
 		{
-			DWORD dwParkMode = (dlg.m_strNumber.IsEmpty()) ? 
-						LINEPARKMODE_NONDIRECTED : 
-						LINEPARKMODE_DIRECTED;
+			DWORD dwParkMode = (dlg.m_strNumber.IsEmpty()) ? LINEPARKMODE_NONDIRECTED : LINEPARKMODE_DIRECTED;
 			TCHAR szBuff[255];
 			memset(szBuff, 0, 255);
 
-			lResult = GetTAPIConnection()->WaitForReply(
-					pCall->Park(dwParkMode, dlg.m_strNumber, szBuff, 255));
+			lResult = GetTAPIConnection()->WaitForReply(pCall->Park(dwParkMode, dlg.m_strNumber, szBuff, 255));
 
 			if (lResult != 0)
 				ShowError("linePark", lResult);
@@ -2938,14 +2908,14 @@ void CPhoneDlg::OnParkCall()
 		}
 	}
 
-}// CPhoneDlg::OnParkCall
+} // CPhoneDlg::OnParkCall
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnCompleteTransfer
 //
 // Complete a transfer
 //
-void CPhoneDlg::OnCompleteTransfer() 
+void CPhoneDlg::OnCompleteTransfer()
 {
 	ClearErrors();
 	CTapiLine* pLine = GetActiveLine();
@@ -2956,22 +2926,14 @@ void CPhoneDlg::OnCompleteTransfer()
 	// Find the other call.  If this call is NOT onHOLD, then
 	// look for any onHold call with the COMPLETETRANS bit set.
 	CTapiCall* pCall_Cons = NULL;
-	if ((pCall->GetCallState() & (LINECALLSTATE_ONHOLD | 
-			LINECALLSTATE_ONHOLDPENDTRANSFER |
-			LINECALLSTATE_ONHOLDPENDCONF)))
+	if ((pCall->GetCallState() & (LINECALLSTATE_ONHOLD | LINECALLSTATE_ONHOLDPENDTRANSFER | LINECALLSTATE_ONHOLDPENDCONF)))
 	{
-		 pCall_Cons = pLine->FindCall((LINECALLSTATE_CONNECTED | 
-				LINECALLSTATE_RINGBACK |	
-				LINECALLSTATE_PROCEEDING |
-				LINECALLSTATE_DIALING |
-				LINECALLSTATE_DIALTONE), LINECALLFEATURE_COMPLETETRANSF);
+		pCall_Cons = pLine->FindCall((LINECALLSTATE_CONNECTED | LINECALLSTATE_RINGBACK | LINECALLSTATE_PROCEEDING | LINECALLSTATE_DIALING | LINECALLSTATE_DIALTONE), LINECALLFEATURE_COMPLETETRANSF);
 	}
 	else
 	{
 		pCall_Cons = pCall;
-		pCall = pLine->FindCall((LINECALLSTATE_ONHOLD | 
-				LINECALLSTATE_ONHOLDPENDTRANSFER |
-				LINECALLSTATE_ONHOLDPENDCONF), LINECALLFEATURE_COMPLETETRANSF);
+		pCall = pLine->FindCall((LINECALLSTATE_ONHOLD | LINECALLSTATE_ONHOLDPENDTRANSFER | LINECALLSTATE_ONHOLDPENDCONF), LINECALLFEATURE_COMPLETETRANSF);
 	}
 
 	if (pCall == NULL || pCall_Cons == NULL)
@@ -2997,30 +2959,29 @@ void CPhoneDlg::OnCompleteTransfer()
 
 	// Complete the transfer
 	CTapiCall* pConfOwner;
-	lResult = GetTAPIConnection()->WaitForReply(
-			pCall->CompleteTransfer(pCall_Cons, &pConfOwner, LINETRANSFERMODE_TRANSFER));
+	lResult = GetTAPIConnection()->WaitForReply(pCall->CompleteTransfer(pCall_Cons, &pConfOwner, LINETRANSFERMODE_TRANSFER));
 	if (lResult != 0)
 		ShowError("lineCompleteTransfer", lResult);
 
-}// CPhoneDlg::OnCompleteTransfer
+} // CPhoneDlg::OnCompleteTransfer
 
 void CPhoneDlg::GetECSTALineSpecific()
 {
 	if (GetActiveLine()->IsTSP_ECSTA())
 	{
 		CTapiLine* pLine = GetActiveLine();
-		//update absentmessage
+		// update absentmessage
 		ETSPVarStruct<VARSTRING> absentStruct;
 		if (pLine->GetDevConfigStruct(L"ecsta/AbsentMessage", &absentStruct) == NO_ERROR)
 		{
 			if (absentStruct.pData->dwStringFormat == STRINGFORMAT_BINARY && absentStruct.pData->dwStringSize == sizeof(ECSTADEVSPECIFICELEMENT_ABSENTMESSAGEPARAMS))
 			{
-				//ECSTADEVSPECIFICELEMENT_ABSENTMESSAGEPARAMS* params = (ECSTADEVSPECIFICELEMENT_ABSENTMESSAGEPARAMS*)((BYTE*)absentStruct.pData + absentStruct.pData->dwStringOffset);
-				//int i = 0;
+				// ECSTADEVSPECIFICELEMENT_ABSENTMESSAGEPARAMS* params = (ECSTADEVSPECIFICELEMENT_ABSENTMESSAGEPARAMS*)((BYTE*)absentStruct.pData + absentStruct.pData->dwStringOffset);
+				// int i = 0;
 			}
 		}
 
-		//update msgwait
+		// update msgwait
 		ETSPVarStruct<VARSTRING> msgwaitStruct;
 		if (pLine->GetDevConfigStruct(L"ecsta/MessageWaitingParams", &msgwaitStruct) == NO_ERROR)
 		{
@@ -3035,14 +2996,13 @@ void CPhoneDlg::GetECSTALineSpecific()
 			}
 		}
 	}
-
 }
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnCompleteCall
 //
 // Complete a call delivery
 //
-void CPhoneDlg::OnCompleteCall() 
+void CPhoneDlg::OnCompleteCall()
 {
 	ClearErrors();
 	CTapiCall* pCall = GetActiveCall();
@@ -3059,8 +3019,7 @@ void CPhoneDlg::OnCompleteCall()
 		else
 		{
 			DWORD dwCompletionID;
-			lResult = GetTAPIConnection()->WaitForReply(
-					pCall->CompleteCall(&dwCompletionID, dlg.m_dwMode, dlg.m_dwMessageID));
+			lResult = GetTAPIConnection()->WaitForReply(pCall->CompleteCall(&dwCompletionID, dlg.m_dwMode, dlg.m_dwMessageID));
 			if (lResult != 0)
 				ShowError("lineCompleteCall", lResult);
 			else
@@ -3068,7 +3027,7 @@ void CPhoneDlg::OnCompleteCall()
 		}
 	}
 
-}// CPhoneDlg::OnCompleteCall
+} // CPhoneDlg::OnCompleteCall
 
 void CPhoneDlg::OnCallRecording()
 {
@@ -3082,62 +3041,59 @@ void CPhoneDlg::OnCallRecording()
 	LONG lResult = pCall->SetPrivilege(LINECALLPRIVILEGE_OWNER);
 	if (lResult != 0)
 		ShowError("lineSetCallPrivilege", lResult);
+	else if (pCall->GetECSTACallFeatures() & ECSTA_CALLFEATURE_CALLRECORDINGSTOP)
+	{
+		// Create Devspecific Command
+		DWORD dwSize = sizeof(ECSTA150DEVSPECIFICNEXTLIST) + sizeof(ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS);
+		ECSTA150DEVSPECIFICNEXTLIST* pList = (ECSTA150DEVSPECIFICNEXTLIST*)malloc(dwSize);
+		memset(pList, 0x00, dwSize);
+		pList->dwID = ECSTA150DEVSPECIFICNEXTLISTID;
+		pList->dwTotalSize = dwSize;
+		pList->dwUsedSize = sizeof(ECSTA150DEVSPECIFICNEXTLIST);
+		pList->dwNumElements = 1;
+		pList->elements[0].dwElementID = ECSTADEVSPECIFICELEMENT_CALLRECORDINGSTOP;
+		pList->elements[0].dwOffset = pList->dwUsedSize;
+		pList->elements[0].dwSize = sizeof(ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS);
+		ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS params;
+		lstrcpyn(params.szVoiceMailNumber, _T("500"), _countof(params.szVoiceMailNumber));
+
+		memcpy((BYTE*)pList + pList->elements[0].dwOffset, &params, sizeof(params));
+		pList->dwUsedSize += pList->elements[0].dwSize;
+
+		pList->dwNeededSize = pList->dwUsedSize;
+
+		lResult = GetTAPIConnection()->WaitForReply(pCall->DevSpecific((void*)pList, pList->dwTotalSize));
+		if (lResult != 0)
+			ShowError("lineDevSpecific CallRecording", lResult);
+
+		free(pList);
+	}
 	else
 	{
-		if (pCall->GetECSTACallFeatures() & ECSTA_CALLFEATURE_CALLRECORDINGSTOP)
-		{
-			//Create Devspecific Command
-			DWORD dwSize = sizeof(ECSTA150DEVSPECIFICNEXTLIST) + sizeof(ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS);
-			ECSTA150DEVSPECIFICNEXTLIST* pList = (ECSTA150DEVSPECIFICNEXTLIST*)malloc(dwSize);
-			memset(pList, 0x00, dwSize);
-			pList->dwID = ECSTA150DEVSPECIFICNEXTLISTID;
-			pList->dwTotalSize = dwSize;
-			pList->dwUsedSize = sizeof(ECSTA150DEVSPECIFICNEXTLIST);
-			pList->dwNumElements = 1;
-			pList->elements[0].dwElementID = ECSTADEVSPECIFICELEMENT_CALLRECORDINGSTOP;
-			pList->elements[0].dwOffset = pList->dwUsedSize;
-			pList->elements[0].dwSize = sizeof(ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS);
-			ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS params;
-			lstrcpyn(params.szVoiceMailNumber, _T("500"), _countof(params.szVoiceMailNumber));
+		// Create Devspecific Command
+		DWORD dwSize = sizeof(ECSTA150DEVSPECIFICNEXTLIST) + sizeof(ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS);
+		ECSTA150DEVSPECIFICNEXTLIST* pList = (ECSTA150DEVSPECIFICNEXTLIST*)malloc(dwSize);
+		memset(pList, 0x00, dwSize);
+		pList->dwID = ECSTA150DEVSPECIFICNEXTLISTID;
+		pList->dwTotalSize = dwSize;
+		pList->dwUsedSize = sizeof(ECSTA150DEVSPECIFICNEXTLIST);
+		pList->dwNumElements = 1;
+		pList->elements[0].dwElementID = ECSTADEVSPECIFICELEMENT_CALLRECORDINGSTART;
+		pList->elements[0].dwOffset = pList->dwUsedSize;
+		pList->elements[0].dwSize = sizeof(ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS);
+		ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS params;
+		lstrcpyn(params.szVoiceMailNumber, _T("500"), _countof(params.szVoiceMailNumber));
 
-			memcpy((BYTE*)pList + pList->elements[0].dwOffset, &params, sizeof(params));
-			pList->dwUsedSize += pList->elements[0].dwSize;
+		memcpy((BYTE*)pList + pList->elements[0].dwOffset, &params, sizeof(params));
+		pList->dwUsedSize += pList->elements[0].dwSize;
 
-			pList->dwNeededSize = pList->dwUsedSize;
+		pList->dwNeededSize = pList->dwUsedSize;
 
-			lResult = GetTAPIConnection()->WaitForReply(pCall->DevSpecific((void*)pList, pList->dwTotalSize));
-			if (lResult != 0)
-				ShowError("lineDevSpecific CallRecording", lResult);
+		lResult = GetTAPIConnection()->WaitForReply(pCall->DevSpecific((void*)pList, pList->dwTotalSize));
+		if (lResult != 0)
+			ShowError("lineDevSpecific CallRecording", lResult);
 
-			free(pList);
-		}
-		else
-		{
-			//Create Devspecific Command
-			DWORD dwSize = sizeof(ECSTA150DEVSPECIFICNEXTLIST) + sizeof(ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS);
-			ECSTA150DEVSPECIFICNEXTLIST* pList = (ECSTA150DEVSPECIFICNEXTLIST*)malloc(dwSize);
-			memset(pList, 0x00, dwSize);
-			pList->dwID = ECSTA150DEVSPECIFICNEXTLISTID;
-			pList->dwTotalSize = dwSize;
-			pList->dwUsedSize = sizeof(ECSTA150DEVSPECIFICNEXTLIST);
-			pList->dwNumElements = 1;
-			pList->elements[0].dwElementID = ECSTADEVSPECIFICELEMENT_CALLRECORDINGSTART;
-			pList->elements[0].dwOffset = pList->dwUsedSize;
-			pList->elements[0].dwSize = sizeof(ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS);
-			ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS params;
-			lstrcpyn(params.szVoiceMailNumber, _T("500"), _countof(params.szVoiceMailNumber));
-
-			memcpy((BYTE*)pList + pList->elements[0].dwOffset, &params, sizeof(params));
-			pList->dwUsedSize += pList->elements[0].dwSize;
-
-			pList->dwNeededSize = pList->dwUsedSize;
-
-			lResult = GetTAPIConnection()->WaitForReply(pCall->DevSpecific((void*)pList, pList->dwTotalSize));
-			if (lResult != 0)
-				ShowError("lineDevSpecific CallRecording", lResult);
-
-			free(pList);
-		}
+		free(pList);
 	}
 }
 
@@ -3157,7 +3113,7 @@ void CPhoneDlg::OnAppspecific()
 
 	if (Dlg.DoModal() != IDOK)
 		return;
-	
+
 	// Make sure we are owner.
 	LONG lResult = pCall->SetPrivilege(LINECALLPRIVILEGE_OWNER);
 	if (lResult != 0)
@@ -3175,7 +3131,7 @@ void CPhoneDlg::OnAppspecific()
 //
 // Setup a new conference using an existing call
 //
-void CPhoneDlg::OnSetupConference() 
+void CPhoneDlg::OnSetupConference()
 {
 	ClearErrors();
 	CTapiLine* pLine = GetActiveLine();
@@ -3184,16 +3140,12 @@ void CPhoneDlg::OnSetupConference()
 		return;
 
 	// See if we have calls which can be placed into a conference via
-	// transfer.  This requires at least one call on hold and one 
+	// transfer.  This requires at least one call on hold and one
 	// connected call.
 	BOOL fMergeAllowed = FALSE;
 	LPLINECALLSTATUS lpStatus = pCall->GetCallStatus();
-	if ((lpStatus->dwCallFeatures & LINECALLFEATURE_COMPLETETRANSF &&
-		 pCall->GetAddressInfo()->GetAddressCaps()->dwTransferModes & LINETRANSFERMODE_CONFERENCE) && 
-		 lpStatus->dwCallFeatures2 & LINECALLFEATURE2_TRANSFERCONF)
-	{
+	if ((lpStatus->dwCallFeatures & LINECALLFEATURE_COMPLETETRANSF && pCall->GetAddressInfo()->GetAddressCaps()->dwTransferModes & LINETRANSFERMODE_CONFERENCE) && lpStatus->dwCallFeatures2 & LINECALLFEATURE2_TRANSFERCONF)
 		fMergeAllowed = TRUE;
-	}
 
 	CSetupConfDlg dlg(this, pCall, fMergeAllowed);
 	if (dlg.DoModal() == IDOK)
@@ -3207,8 +3159,7 @@ void CPhoneDlg::OnSetupConference()
 			{
 				CTapiCall* pConf;
 				CTapiCall* pCons;
-				lResult = GetTAPIConnection()->WaitForReply(
-						pCall->SetupConference(&pConf, &pCons, 3, NULL));
+				lResult = GetTAPIConnection()->WaitForReply(pCall->SetupConference(&pConf, &pCons, 3, NULL));
 				if (lResult != 0)
 					ShowError("lineSetupConference", lResult);
 
@@ -3236,13 +3187,11 @@ void CPhoneDlg::OnSetupConference()
 						}
 						else
 						{
-
 							// Let the user decide when to complete the conference.
 							CCompleteTransferDlg dlgC(this, pCall, pCons, TRUE);
 							if (dlgC.DoModal() == IDOK)
 							{
-								lResult = GetTAPIConnection()->WaitForReply(
-										pConf->AddToConference(pCons));
+								lResult = GetTAPIConnection()->WaitForReply(pConf->AddToConference(pCons));
 								if (lResult != 0)
 									ShowError("lineAddToConference", lResult);
 							}
@@ -3265,22 +3214,14 @@ void CPhoneDlg::OnSetupConference()
 			// Find the other call(s).  If this call is NOT onHOLD, then
 			// look for any onHold call with the COMPLETETRANS bit set.
 			CTapiCall* pCall_Cons = NULL;
-			if ((pCall->GetCallState() & (LINECALLSTATE_ONHOLD | 
-					LINECALLSTATE_ONHOLDPENDTRANSFER |
-					LINECALLSTATE_ONHOLDPENDCONF)))
+			if ((pCall->GetCallState() & (LINECALLSTATE_ONHOLD | LINECALLSTATE_ONHOLDPENDTRANSFER | LINECALLSTATE_ONHOLDPENDCONF)))
 			{
-				 pCall_Cons = pLine->FindCall((LINECALLSTATE_CONNECTED | 
-						LINECALLSTATE_RINGBACK | 
-						LINECALLSTATE_PROCEEDING |
-						LINECALLSTATE_DIALING |
-						LINECALLSTATE_DIALTONE), LINECALLFEATURE_COMPLETETRANSF);
+				pCall_Cons = pLine->FindCall((LINECALLSTATE_CONNECTED | LINECALLSTATE_RINGBACK | LINECALLSTATE_PROCEEDING | LINECALLSTATE_DIALING | LINECALLSTATE_DIALTONE), LINECALLFEATURE_COMPLETETRANSF);
 			}
 			else
 			{
 				pCall_Cons = pCall;
-				pCall = pLine->FindCall((LINECALLSTATE_ONHOLD | 
-						LINECALLSTATE_ONHOLDPENDTRANSFER |
-						LINECALLSTATE_ONHOLDPENDCONF), LINECALLFEATURE_COMPLETETRANSF);
+				pCall = pLine->FindCall((LINECALLSTATE_ONHOLD | LINECALLSTATE_ONHOLDPENDTRANSFER | LINECALLSTATE_ONHOLDPENDCONF), LINECALLFEATURE_COMPLETETRANSF);
 			}
 
 			if (pCall == NULL || pCall_Cons == NULL)
@@ -3306,8 +3247,7 @@ void CPhoneDlg::OnSetupConference()
 
 			// Complete the transfer
 			CTapiCall* pConfOwner;
-			lResult = GetTAPIConnection()->WaitForReply(
-					pCall->CompleteTransfer(pCall_Cons, &pConfOwner, LINETRANSFERMODE_CONFERENCE));
+			lResult = GetTAPIConnection()->WaitForReply(pCall->CompleteTransfer(pCall_Cons, &pConfOwner, LINETRANSFERMODE_CONFERENCE));
 			if (lResult != 0)
 				ShowError("lineCompleteTransfer", lResult);
 
@@ -3317,11 +3257,9 @@ void CPhoneDlg::OnSetupConference()
 			{
 				CTapiCall* pOldCall = pCall;
 				int iCount = 0;
-				do 
+				do
 				{
-					pCall = pLine->FindCall((LINECALLSTATE_ONHOLD | 
-							LINECALLSTATE_ONHOLDPENDTRANSFER |
-							LINECALLSTATE_ONHOLDPENDCONF), LINECALLFEATURE_COMPLETETRANSF);
+					pCall = pLine->FindCall((LINECALLSTATE_ONHOLD | LINECALLSTATE_ONHOLDPENDTRANSFER | LINECALLSTATE_ONHOLDPENDCONF), LINECALLFEATURE_COMPLETETRANSF);
 
 					if (pCall == pOldCall)
 					{
@@ -3333,8 +3271,7 @@ void CPhoneDlg::OnSetupConference()
 					else if (pCall != NULL)
 					{
 						pOldCall = pCall;
-						lResult = GetTAPIConnection()->WaitForReply(
-							pConfOwner->AddToConference(pCall));
+						lResult = GetTAPIConnection()->WaitForReply(pConfOwner->AddToConference(pCall));
 						if (lResult != 0)
 							ShowError("lineAddToConference", lResult);
 					}
@@ -3344,14 +3281,14 @@ void CPhoneDlg::OnSetupConference()
 		}
 	}
 
-}// CPhoneDlg::OnSetupConference
+} // CPhoneDlg::OnSetupConference
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnAddToConference
 //
 // Add a new party to a conference.
 //
-void CPhoneDlg::OnAddToConference() 
+void CPhoneDlg::OnAddToConference()
 {
 	ClearErrors();
 	CTapiLine* pLine = GetActiveLine();
@@ -3361,9 +3298,7 @@ void CPhoneDlg::OnAddToConference()
 
 	// If this is a conference call that is not connected, create a new party for
 	// the call.
-	if (pCall->GetCallInfo()->dwOrigin == LINECALLORIGIN_CONFERENCE &&
-		pCall->GetCallState() == LINECALLSTATE_CONNECTED &&
-		(pCall->GetCallStatus()->dwCallFeatures & LINECALLFEATURE_PREPAREADDCONF) != 0)
+	if (pCall->GetCallInfo()->dwOrigin == LINECALLORIGIN_CONFERENCE && pCall->GetCallState() == LINECALLSTATE_CONNECTED && (pCall->GetCallStatus()->dwCallFeatures & LINECALLFEATURE_PREPAREADDCONF) != 0)
 	{
 		LONG lResult = pCall->SetPrivilege(LINECALLPRIVILEGE_OWNER);
 		if (lResult != 0)
@@ -3383,18 +3318,12 @@ void CPhoneDlg::OnAddToConference()
 	CTapiCall* pCall_Cons = NULL;
 	if (pCall->GetCallInfo()->dwOrigin == LINECALLORIGIN_CONFERENCE)
 	{
-		 pCall_Cons = pLine->FindCall((LINECALLSTATE_CONNECTED | 
-				LINECALLSTATE_RINGBACK | 
-				LINECALLSTATE_PROCEEDING |
-				LINECALLSTATE_DIALING |
-				LINECALLSTATE_DIALTONE), LINECALLFEATURE_ADDTOCONF);
+		pCall_Cons = pLine->FindCall((LINECALLSTATE_CONNECTED | LINECALLSTATE_RINGBACK | LINECALLSTATE_PROCEEDING | LINECALLSTATE_DIALING | LINECALLSTATE_DIALTONE), LINECALLFEATURE_ADDTOCONF);
 	}
 	else
 	{
 		pCall_Cons = pCall;
-		pCall = pLine->FindCall((LINECALLSTATE_ONHOLD | 
-				LINECALLSTATE_ONHOLDPENDTRANSFER |
-				LINECALLSTATE_ONHOLDPENDCONF), LINECALLFEATURE_ADDTOCONF);
+		pCall = pLine->FindCall((LINECALLSTATE_ONHOLD | LINECALLSTATE_ONHOLDPENDTRANSFER | LINECALLSTATE_ONHOLDPENDCONF), LINECALLFEATURE_ADDTOCONF);
 		if (pCall == NULL)
 			pCall = pLine->FindCall(LINECALLSTATE_ONHOLDPENDCONF, 0);
 	}
@@ -3421,19 +3350,18 @@ void CPhoneDlg::OnAddToConference()
 	}
 
 	// Complete the transfer
-	lResult = GetTAPIConnection()->WaitForReply(
-			pCall->AddToConference(pCall_Cons));
+	lResult = GetTAPIConnection()->WaitForReply(pCall->AddToConference(pCall_Cons));
 	if (lResult != 0)
 		ShowError("lineAddToConference", lResult);
 
-}// CPhoneDlg::OnAddToConference
+} // CPhoneDlg::OnAddToConference
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnForward
 //
 // This is called to forward the phone by the user.
 //
-void CPhoneDlg::OnForward() 
+void CPhoneDlg::OnForward()
 {
 	CTapiLine* pLine = GetActiveLine();
 	if (pLine == NULL)
@@ -3451,14 +3379,14 @@ void CPhoneDlg::OnForward()
 	dlg.DoModal();
 	m_pForwardList = NULL;
 
-}// CPhoneDlg::OnForward
+} // CPhoneDlg::OnForward
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnRemoveFromConference
 //
 // Remove a party from the conference
 //
-void CPhoneDlg::OnRemoveFromConference() 
+void CPhoneDlg::OnRemoveFromConference()
 {
 	ClearErrors();
 	CTapiCall* pCall = GetActiveCall();
@@ -3476,14 +3404,14 @@ void CPhoneDlg::OnRemoveFromConference()
 			ShowError("lineRemoveFromConference", lResult);
 	}
 
-}// CPhoneDlg::OnRemoveFromConference
+} // CPhoneDlg::OnRemoveFromConference
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnPhoneInfo
 //
 // Display the phone information
 //
-void CPhoneDlg::OnPhoneInfo() 
+void CPhoneDlg::OnPhoneInfo()
 {
 	ClearErrors();
 	CTapiLine* pLine = GetActiveLine();
@@ -3497,7 +3425,7 @@ void CPhoneDlg::OnPhoneInfo()
 		return;
 	}
 
-	CMyPhone* pPhone = (CMyPhone*) GetTAPIConnection()->GetPhoneFromDeviceID(dwPhoneID);
+	CMyPhone* pPhone = (CMyPhone*)GetTAPIConnection()->GetPhoneFromDeviceID(dwPhoneID);
 	if (pPhone == NULL)
 	{
 		ErrorMsg("Invalid phoneID (%ld) from tapi/phone", dwPhoneID);
@@ -3524,28 +3452,28 @@ void CPhoneDlg::OnPhoneInfo()
 		ShowError("phoneSetStatusMessages", lResult);
 	pPhone->m_pPhone = new CPhoneCapsDlg(this, pPhone);
 
-}// CPhoneDlg::OnPhoneInfo
+} // CPhoneDlg::OnPhoneInfo
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnConfig
 //
 // Display the line configuration for the open line
 //
-void CPhoneDlg::OnConfig() 
+void CPhoneDlg::OnConfig()
 {
 	ClearErrors();
 	CTapiLine* pLine = GetActiveLine();
 	if (pLine != NULL)
 		pLine->Config(this, NULL);
 
-}// CPhoneDlg::OnConfig
+} // CPhoneDlg::OnConfig
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnClose
 //
 // Signals the window to close
 //
-void CPhoneDlg::OnClose() 
+void CPhoneDlg::OnClose()
 {
 	// Look to see if we have pending requests we are still waiting for.
 	// If so, prompt the user and let them decide whether to wait or
@@ -3561,7 +3489,7 @@ void CPhoneDlg::OnClose()
 
 	EndDialog(IDCANCEL);
 
-}// CPhoneDlg::OnClose
+} // CPhoneDlg::OnClose
 
 /////////////////////////////////////////////////////////////////////////////
 // CPhoneDlg::OnFlashWindow
@@ -3573,12 +3501,11 @@ LRESULT CPhoneDlg::OnFlashWindow(WPARAM wParam, LPARAM /*lParam*/)
 	static DWORD dwTickCount = 0;
 	static DWORD dwLastWindow = 0;
 
-	if (dwLastWindow == wParam &&
-		dwTickCount + 1000 >= GetTickCount())
+	if (dwLastWindow == wParam && dwTickCount + 1000 >= GetTickCount())
 		return 0;
 
-    CFont fntAnsi;
-    fntAnsi.CreateStockObject (ANSI_VAR_FONT);
+	CFont fntAnsi;
+	fntAnsi.CreateStockObject(ANSI_VAR_FONT);
 
 	CWnd* pwnd = GetDlgItem((int)wParam);
 	if (pwnd != NULL)
@@ -3599,11 +3526,11 @@ LRESULT CPhoneDlg::OnFlashWindow(WPARAM wParam, LPARAM /*lParam*/)
 
 	return 0;
 
-}// CPhoneDlg::OnFlashWindow
+} // CPhoneDlg::OnFlashWindow
 
 void CPhoneDlg::OnBnClickedFeatures()
 {
-	if(!m_pDlgCallFeatures)
+	if (!m_pDlgCallFeatures)
 	{
 		m_pDlgCallFeatures = new ECallFeatures();
 		m_pDlgCallFeatures->Create(IDD_CALLFEATURES, this);
@@ -3611,12 +3538,12 @@ void CPhoneDlg::OnBnClickedFeatures()
 	}
 	else
 	{
-		if(m_pDlgCallFeatures->IsWindowVisible())
+		if (m_pDlgCallFeatures->IsWindowVisible())
 			m_pDlgCallFeatures->ShowWindow(SW_HIDE);
 		else
 			m_pDlgCallFeatures->ShowWindow(SW_SHOW);
 	}
-	if(m_pDlgCallFeatures)
+	if (m_pDlgCallFeatures)
 		m_pDlgCallFeatures->SetCallFeatures(m_strCallFeaturesList);
 }
 
@@ -3625,7 +3552,7 @@ void CPhoneDlg::OnBnClickedFeatures()
 //
 // Complete a transfer
 //
-void CPhoneDlg::OnBnClickedCompleteAsConference() 
+void CPhoneDlg::OnBnClickedCompleteAsConference()
 {
 	ClearErrors();
 	CTapiLine* pLine = GetActiveLine();
@@ -3636,18 +3563,14 @@ void CPhoneDlg::OnBnClickedCompleteAsConference()
 	// Find the other call.  If this call is NOT onHOLD, then
 	// look for any onHold call with the COMPLETETRANS bit set.
 	CTapiCall* pCall_Cons = NULL;
-	if ((pCall->GetCallState() & (LINECALLSTATE_ONHOLD | 
-			LINECALLSTATE_ONHOLDPENDTRANSFER |
-			LINECALLSTATE_ONHOLDPENDCONF)))
+	if ((pCall->GetCallState() & (LINECALLSTATE_ONHOLD | LINECALLSTATE_ONHOLDPENDTRANSFER | LINECALLSTATE_ONHOLDPENDCONF)))
 	{
-		 pCall_Cons = pLine->FindCall(LINECALLSTATE_CONNECTED, LINECALLFEATURE_COMPLETETRANSF);
+		pCall_Cons = pLine->FindCall(LINECALLSTATE_CONNECTED, LINECALLFEATURE_COMPLETETRANSF);
 	}
 	else if ((pCall->GetCallState() & LINECALLSTATE_CONNECTED))
 	{
 		pCall_Cons = pCall;
-		pCall = pLine->FindCall((LINECALLSTATE_ONHOLD | 
-				LINECALLSTATE_ONHOLDPENDTRANSFER |
-				LINECALLSTATE_ONHOLDPENDCONF), LINECALLFEATURE_COMPLETETRANSF);
+		pCall = pLine->FindCall((LINECALLSTATE_ONHOLD | LINECALLSTATE_ONHOLDPENDTRANSFER | LINECALLSTATE_ONHOLDPENDCONF), LINECALLFEATURE_COMPLETETRANSF);
 	}
 
 	if (pCall == NULL || pCall_Cons == NULL)
@@ -3673,13 +3596,11 @@ void CPhoneDlg::OnBnClickedCompleteAsConference()
 
 	// Complete the transfer
 	CTapiCall* pConfOwner;
-	lResult = GetTAPIConnection()->WaitForReply(
-			pCall->CompleteTransfer(pCall_Cons, &pConfOwner, LINETRANSFERMODE_CONFERENCE));
+	lResult = GetTAPIConnection()->WaitForReply(pCall->CompleteTransfer(pCall_Cons, &pConfOwner, LINETRANSFERMODE_CONFERENCE));
 	if (lResult != 0)
 		ShowError("lineCompleteTransfer", lResult);
 
-}// CPhoneDlg::OnBnClickedCompleteAsConference
-
+} // CPhoneDlg::OnBnClickedCompleteAsConference
 
 BOOL CPhoneDlg::PreTranslateMessage(MSG* pMsg)
 {
@@ -3687,7 +3608,7 @@ BOOL CPhoneDlg::PreTranslateMessage(MSG* pMsg)
 	if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_KEYUP)
 	{
 		static bool bControlPressed = false;
-		if(GetKeyState(VK_CONTROL) < 0 != bControlPressed)
+		if (GetKeyState(VK_CONTROL) < 0 != bControlPressed)
 		{
 			bControlPressed = GetKeyState(VK_CONTROL) < 0;
 			UpdateButtons(0);
@@ -3712,12 +3633,12 @@ void CPhoneDlg::RepositionWindow()
 
 	CRect rcTest = rcWindow;
 
-	#ifndef SM_XVIRTUALSCREEN
-	#define SM_XVIRTUALSCREEN       76
-	#define SM_YVIRTUALSCREEN       77
-	#define SM_CXVIRTUALSCREEN      78
-	#define SM_CYVIRTUALSCREEN      79
-	#endif
+#ifndef SM_XVIRTUALSCREEN
+#define SM_XVIRTUALSCREEN  76
+#define SM_YVIRTUALSCREEN  77
+#define SM_CXVIRTUALSCREEN 78
+#define SM_CYVIRTUALSCREEN 79
+#endif
 
 	CRect rcScreenTotal;
 	rcScreenTotal.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
@@ -3727,13 +3648,13 @@ void CPhoneDlg::RepositionWindow()
 
 	int iBorder = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXBORDER);
 
-	if(listWnd.size())
+	if (listWnd.size())
 	{
 		EWindowListHelper::iterator iter;
 		iter = listWnd.begin();
-		while(iter != listWnd.end())
+		while (iter != listWnd.end())
 		{
-			if(::IsIconic(*iter))
+			if (::IsIconic(*iter))
 			{
 				iter++;
 				continue;
@@ -3746,17 +3667,17 @@ void CPhoneDlg::RepositionWindow()
 			rcTest.MoveToY(rcWnd.top);
 			rcTest.MoveToX(rcWnd.left - rcTest.Width() - iBorder);
 
-			if(rcTest.left < rcScreenTotal.left)
+			if (rcTest.left < rcScreenTotal.left)
 				rcTest.MoveToX(rcScreenTotal.left);
 
 			bool bFailed = false;
 			EWindowListHelper::iterator iterIntern;
 			iterIntern = listWnd.begin();
-			while(iterIntern != listWnd.end())
+			while (iterIntern != listWnd.end())
 			{
 				CRect rcWnd2;
 				::GetWindowRect(*iterIntern, &rcWnd2);
-				if(CRect().IntersectRect(rcWnd2, rcTest))
+				if (CRect().IntersectRect(rcWnd2, rcTest))
 				{
 					bFailed = true;
 					break;
@@ -3764,21 +3685,21 @@ void CPhoneDlg::RepositionWindow()
 				iterIntern++;
 			}
 
-			if(bFailed)
+			if (bFailed)
 			{
 				// rechts davon
 				rcTest.MoveToX(rcWnd.right + iBorder);
-				if(rcTest.right > rcScreenTotal.right)
+				if (rcTest.right > rcScreenTotal.right)
 					rcTest.MoveToX(rcScreenTotal.right - rcWnd.Width());
 
 				bFailed = false;
 				EWindowListHelper::iterator iterIntern2;
 				iterIntern2 = listWnd.begin();
-				while(iterIntern2 != listWnd.end())
+				while (iterIntern2 != listWnd.end())
 				{
 					CRect rcWnd2;
 					::GetWindowRect(*iterIntern2, &rcWnd2);
-					if(CRect().IntersectRect(rcWnd2, rcTest))
+					if (CRect().IntersectRect(rcWnd2, rcTest))
 					{
 						bFailed = true;
 						break;
@@ -3786,26 +3707,27 @@ void CPhoneDlg::RepositionWindow()
 					iterIntern2++;
 				}
 			}
-			if(!bFailed)
+			if (!bFailed)
 			{
 				EWindowListHelper::iterator iterIntern3;
 				iterIntern3 = listWnd.begin();
-				while(iterIntern3 != listWnd.end())
+				while (iterIntern3 != listWnd.end())
 				{
 					CRect rcWnd3;
 					::GetWindowRect(*iterIntern3, &rcWnd3);
 
-					if(CRect().IntersectRect(rcWnd3, rcTest))
+					if (CRect().IntersectRect(rcWnd3, rcTest))
 					{
-						bFailed = true;;
+						bFailed = true;
+						;
 					}
 					iterIntern3++;
 				}
-				if(!bFailed)
+				if (!bFailed)
 					break;
 			}
 			iter++;
 		}
-		SetWindowPos(NULL, rcTest.left,rcTest.top,0,0, SWP_NOSIZE | SWP_NOZORDER);
+		SetWindowPos(NULL, rcTest.left, rcTest.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 	}
 }

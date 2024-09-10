@@ -5,15 +5,15 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 /*---------------------------------------------------------------*/
@@ -22,14 +22,14 @@
 #include "stdafx.h"
 
 #define INITGUID
-#include "resource.h"
-#include "hlinkctl.h"
-#include <objbase.h>
 #include <initguid.h>
+#include <intshcut.h>
+#include <objbase.h>
+#include <shlobj.h>
 #include <winnetwk.h>
 #include <winnls.h>
-#include <shlobj.h>
-#include <intshcut.h>
+#include "hlinkctl.h"
+#include "resource.h"
 
 /*---------------------------------------------------------------*/
 // DEBUG INFORMATION
@@ -62,12 +62,16 @@ END_MESSAGE_MAP()
 ** Description:  Hyperlink control constructor
 **
 *****************************************************************************/
-CHLinkCtrl::CHLinkCtrl() : m_clrNormal(RGB(0,0,255)), m_clrVisited(RGB(128,0,128)),
-	m_clrHighlight(RGB(255,0,0)), m_stCurrent(Initial), m_stLast(Initial)
+CHLinkCtrl::CHLinkCtrl()
+	: m_clrNormal(RGB(0, 0, 255))
+	, m_clrVisited(RGB(128, 0, 128))
+	, m_clrHighlight(RGB(255, 0, 0))
+	, m_stCurrent(Initial)
+	, m_stLast(Initial)
 {
 	m_hcursLink = AfxGetApp()->LoadCursor(IDC_HYPERHAND);
 
-}// CHLinkCtrl::CHLinkCtrl
+} // CHLinkCtrl::CHLinkCtrl
 
 /*****************************************************************************
 ** Procedure:  CHLinkCtrl::~CHLinkCtrl
@@ -83,7 +87,7 @@ CHLinkCtrl::~CHLinkCtrl()
 {
 	DestroyCursor(m_hcursLink);
 
-}// CHLinkCtrl::~CHLinkCtrl
+} // CHLinkCtrl::~CHLinkCtrl
 
 /*****************************************************************************
 ** Procedure:  CHLinkCtrl::OnSetCursor
@@ -97,16 +101,16 @@ CHLinkCtrl::~CHLinkCtrl()
 ** Description:  Sets the current cursor for the control
 **
 *****************************************************************************/
-BOOL CHLinkCtrl::OnSetCursor(CWnd* /*pwnd*/, UINT /*nHitTest*/, UINT /*nMsg*/) 
+BOOL CHLinkCtrl::OnSetCursor(CWnd* /*pwnd*/, UINT /*nHitTest*/, UINT /*nMsg*/)
 {
 	if (m_hcursLink != NULL)
 	{
-  		::SetCursor(m_hcursLink);
+		::SetCursor(m_hcursLink);
 		return TRUE;
 	}
 	return FALSE;
 
-}// CHLinkCtrl::OnSetCursor
+} // CHLinkCtrl::OnSetCursor
 
 /*****************************************************************************
 ** Procedure:  CHLinkCtrl::OnLButtonDown
@@ -119,7 +123,7 @@ BOOL CHLinkCtrl::OnSetCursor(CWnd* /*pwnd*/, UINT /*nHitTest*/, UINT /*nMsg*/)
 ** Description:  Manages the WM_LBUTTONDOWN event
 **
 *****************************************************************************/
-void CHLinkCtrl::OnLButtonDown(UINT /*nFlags*/, CPoint /*pt*/) 
+void CHLinkCtrl::OnLButtonDown(UINT /*nFlags*/, CPoint /*pt*/)
 {
 	CWaitCursor cursor;
 
@@ -128,8 +132,7 @@ void CHLinkCtrl::OnLButtonDown(UINT /*nFlags*/, CPoint /*pt*/)
 	GetWindowText(strLink);
 
 	// Spawn any .HTM handler installed
-	HINSTANCE hInstance = ShellExecute(GetParent()->GetSafeHwnd(), 
-		_T("open"), strLink, NULL, NULL, SW_SHOW);
+	HINSTANCE hInstance = ShellExecute(GetParent()->GetSafeHwnd(), _T("open"), strLink, NULL, NULL, SW_SHOW);
 	if (reinterpret_cast<INT_PTR>(hInstance) < 32L)
 		return;
 
@@ -137,7 +140,7 @@ void CHLinkCtrl::OnLButtonDown(UINT /*nFlags*/, CPoint /*pt*/)
 	m_stCurrent = Visited;
 	Invalidate();
 
-}// CHLinkCtrl::OnLButtonDown
+} // CHLinkCtrl::OnLButtonDown
 
 /*****************************************************************************
 ** Procedure:  CHLinkCtrl::OnMouseMove
@@ -150,7 +153,7 @@ void CHLinkCtrl::OnLButtonDown(UINT /*nFlags*/, CPoint /*pt*/)
 ** Description:  Manages the mouse movement over this control
 **
 *****************************************************************************/
-void CHLinkCtrl::OnMouseMove(UINT nFlags, CPoint pt) 
+void CHLinkCtrl::OnMouseMove(UINT nFlags, CPoint pt)
 {
 	CRect rc;
 	GetClientRect(rc);
@@ -162,20 +165,17 @@ void CHLinkCtrl::OnMouseMove(UINT nFlags, CPoint pt)
 			m_stLast = m_stCurrent;
 			m_stCurrent = Highlighted;
 			Invalidate();
-		} 
-	}
-	else
-	{
-		if (m_stCurrent == Highlighted)
-		{
-			m_stCurrent = m_stLast;
-			Invalidate();
-			ReleaseCapture();
 		}
+	}
+	else if (m_stCurrent == Highlighted)
+	{
+		m_stCurrent = m_stLast;
+		Invalidate();
+		ReleaseCapture();
 	}
 	CStatic::OnMouseMove(nFlags, pt);
 
-}// CHLinkCtrl::OnMouseMove
+} // CHLinkCtrl::OnMouseMove
 
 /*****************************************************************************
 ** Procedure:  CHLinkCtrl::CtlColor
@@ -192,7 +192,7 @@ HBRUSH CHLinkCtrl::CtlColor(CDC* pDC, UINT /*nCtlColor*/)
 {
 	// Make sure we are notified about mouse events.
 	DWORD dwStyle = GetStyle();
-	if (!(dwStyle & SS_NOTIFY)) 
+	if (!(dwStyle & SS_NOTIFY))
 		::SetWindowLong(GetSafeHwnd(), GWL_STYLE, dwStyle | SS_NOTIFY);
 
 	// Select the underline font
@@ -208,11 +208,9 @@ HBRUSH CHLinkCtrl::CtlColor(CDC* pDC, UINT /*nCtlColor*/)
 
 	// Set the text color and paint mode
 	pDC->SetBkMode(TRANSPARENT);
-	pDC->SetTextColor((m_stCurrent == Initial) ? m_clrNormal : 
-					  (m_stCurrent == Visited) ? m_clrVisited : m_clrHighlight);
+	pDC->SetTextColor((m_stCurrent == Initial) ? m_clrNormal : (m_stCurrent == Visited) ? m_clrVisited : m_clrHighlight);
 
 	// Return hollow brush since we don't paint background (parent does)
 	return (HBRUSH)::GetStockObject(HOLLOW_BRUSH);
 
-}// CHLinkCtrl::CtlColor
-
+} // CHLinkCtrl::CtlColor

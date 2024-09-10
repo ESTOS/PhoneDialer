@@ -1,20 +1,20 @@
 // TAPICONN.CPP
 //
-// This file contains the TAPI connection functions for the 
+// This file contains the TAPI connection functions for the
 // class library.
-// 
+//
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
@@ -32,81 +32,85 @@ static char BASED_CODE THIS_FILE[] = __FILE__;
 // Retrieve the global TAPI connection object
 //
 CTapiConnection* GetTAPIConnection()
-{                                   
+{
 	static CTapiConnection g_connTapi;
-    return &g_connTapi;
-    
-}// GetTAPIConnection
+	return &g_connTapi;
+
+} // GetTAPIConnection
 
 ////////////////////////////////////////////////////////////////////////////////////
 // _LineEventProc
 //
 // static CALLBACK function for LINE devices under TAPI
 //
-UINT _LineEventProc ( LPVOID pParam )
+UINT _LineEventProc(LPVOID pParam)
 {
-	CTapiConnection* pConn = (CTapiConnection*) pParam;
+	CTapiConnection* pConn = (CTapiConnection*)pParam;
 	pConn->LineEventProc();
 	return 0;
 
-}// _LineEventProc
+} // _LineEventProc
 
 ////////////////////////////////////////////////////////////////////////////////////
 // _PhoneEventProc
 //
 // static CALLBACK function for PHONE devices under TAPI
 //
-UINT _PhoneEventProc ( LPVOID pParam )
+UINT _PhoneEventProc(LPVOID pParam)
 {
-	CTapiConnection* pConn = (CTapiConnection*) pParam;
+	CTapiConnection* pConn = (CTapiConnection*)pParam;
 	pConn->PhoneEventProc();
 	return 0;
 
-}// _PhoneEventProc
+} // _PhoneEventProc
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::CTapiConnection
 //
 // Constructor for the TAPI connection class.
 //
-CTapiConnection::CTapiConnection() : m_hLineApp(0), m_hPhoneApp(0), 
-	m_pLineClass(0), m_pPhoneClass(0), m_pCallClass(0), m_pAddrClass(0),
-	m_iProviderPos(0), m_dwNumLines(0), m_dwNumPhones(0)
-{   
-}// CTapiConnection::CTapiConnection
+CTapiConnection::CTapiConnection()
+	: m_hLineApp(0)
+	, m_hPhoneApp(0)
+	, m_pLineClass(0)
+	, m_pPhoneClass(0)
+	, m_pCallClass(0)
+	, m_pAddrClass(0)
+	, m_iProviderPos(0)
+	, m_dwNumLines(0)
+	, m_dwNumPhones(0)
+{
+} // CTapiConnection::CTapiConnection
 
 ////////////////////////////////////////////////////////////////////////////////////
-// CTapiConnection::~CTapiConnection                     
+// CTapiConnection::~CTapiConnection
 //
 // Destructor for the TAPI connection
 //
 CTapiConnection::~CTapiConnection()
-{   
+{
 	Shutdown();
-    
-}// CTapiConnection::~CTapiConnection
+
+} // CTapiConnection::~CTapiConnection
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::Init
 //
 // Initialize the TAPI connection
 //
-LONG CTapiConnection::Init(LPCTSTR pszAppName, 
-                    CRuntimeClass* prtLine, CRuntimeClass* prtAddr,
-                    CRuntimeClass* prtCall, CRuntimeClass* prtPhone, 
-					DWORD dwAPIVersion)
+LONG CTapiConnection::Init(LPCTSTR pszAppName, CRuntimeClass* prtLine, CRuntimeClass* prtAddr, CRuntimeClass* prtCall, CRuntimeClass* prtPhone, DWORD dwAPIVersion)
 {
 	// If we are already initialized, return an error.
 	if (m_hLineApp != NULL || m_hPhoneApp != NULL)
 		return LINEERR_NOMULTIPLEINSTANCE;
-	
-    // Save off the runtime information needed for the line/call
-    m_pLineClass  = (prtLine)  ? prtLine  : RUNTIME_CLASS (CTapiLine);
-    m_pAddrClass  = (prtAddr)  ? prtAddr  : RUNTIME_CLASS (CTapiAddress);        
-    m_pCallClass  = (prtCall)  ? prtCall  : RUNTIME_CLASS (CTapiCall);
-	m_pPhoneClass = (prtPhone) ? prtPhone : RUNTIME_CLASS (CTapiPhone);
-    
-    // Initialize the LINE portion of our connection
+
+	// Save off the runtime information needed for the line/call
+	m_pLineClass = (prtLine) ? prtLine : RUNTIME_CLASS(CTapiLine);
+	m_pAddrClass = (prtAddr) ? prtAddr : RUNTIME_CLASS(CTapiAddress);
+	m_pCallClass = (prtCall) ? prtCall : RUNTIME_CLASS(CTapiCall);
+	m_pPhoneClass = (prtPhone) ? prtPhone : RUNTIME_CLASS(CTapiPhone);
+
+	// Initialize the LINE portion of our connection
 	LONG lResult = InitLines(pszAppName, dwAPIVersion);
 	if (lResult != 0)
 		return lResult;
@@ -116,8 +120,8 @@ LONG CTapiConnection::Init(LPCTSTR pszAppName,
 		Shutdown();
 
 	return lResult;
-    
-}// CTapiConnection::Init                    
+
+} // CTapiConnection::Init
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::InitLines
@@ -130,16 +134,15 @@ LONG CTapiConnection::InitLines(LPCTSTR pszAppName, DWORD dwAPIVersion)
 
 	// Initialize the line portion of TAPI..
 	LINEINITIALIZEEXPARAMS lip;
-	ZeroMemory (&lip, sizeof(LINEINITIALIZEEXPARAMS));
-    while (lResult != 0)
-    {
+	ZeroMemory(&lip, sizeof(LINEINITIALIZEEXPARAMS));
+	while (lResult != 0)
+	{
 		lip.dwTotalSize = sizeof(LINEINITIALIZEEXPARAMS);
 		lip.dwOptions = LINEINITIALIZEEXOPTION_USEEVENT;
-        lResult = lineInitializeEx (&m_hLineApp, AfxGetInstanceHandle(),
-                         NULL, pszAppName, &m_dwNumLines, &dwAPIVersion, &lip);
-        if (lResult != LINEERR_REINIT)
-            break;
-    }
+		lResult = lineInitializeEx(&m_hLineApp, AfxGetInstanceHandle(), NULL, pszAppName, &m_dwNumLines, &dwAPIVersion, &lip);
+		if (lResult != LINEERR_REINIT)
+			break;
+	}
 
 	// If we were unsuccessful then return an error
 	if (lResult != 0)
@@ -151,7 +154,7 @@ LONG CTapiConnection::InitLines(LPCTSTR pszAppName, DWORD dwAPIVersion)
 		return LINEERR_NOMEM;
 
 	// Create the thread which will monitor TAPI events.
-	m_pMonitorThread_L = AfxBeginThread((AFX_THREADPROC) _LineEventProc, (void*)this);
+	m_pMonitorThread_L = AfxBeginThread((AFX_THREADPROC)_LineEventProc, (void*)this);
 	if (m_pMonitorThread_L == NULL)
 	{
 		TRACE(_T("Failed to create monitor thread\r\n"));
@@ -160,21 +163,21 @@ LONG CTapiConnection::InitLines(LPCTSTR pszAppName, DWORD dwAPIVersion)
 		return LINEERR_OPERATIONFAILED;
 	}
 
-    // Now create the line objects
-    if (lResult == 0)
-    {   
-		CSingleLock Lock (&m_semLines, TRUE);
-        for (DWORD dwDeviceID = 0; dwDeviceID < m_dwNumLines; dwDeviceID++)
-        {
-            CTapiLine* pLine = (CTapiLine*) m_pLineClass->CreateObject();
-            pLine->Init (this, dwDeviceID);
-            m_arrLines.Add (pLine);
-        }             
-    }
+	// Now create the line objects
+	if (lResult == 0)
+	{
+		CSingleLock Lock(&m_semLines, TRUE);
+		for (DWORD dwDeviceID = 0; dwDeviceID < m_dwNumLines; dwDeviceID++)
+		{
+			CTapiLine* pLine = (CTapiLine*)m_pLineClass->CreateObject();
+			pLine->Init(this, dwDeviceID);
+			m_arrLines.Add(pLine);
+		}
+	}
 
-    return lResult;
+	return lResult;
 
-}// CTapiConnection::InitLines
+} // CTapiConnection::InitLines
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::InitPhones
@@ -187,16 +190,15 @@ LONG CTapiConnection::InitPhones(LPCTSTR pszAppName, DWORD dwAPIVersion)
 
 	// Initialize the phone portion of TAPI..
 	PHONEINITIALIZEEXPARAMS pip;
-	ZeroMemory (&pip, sizeof(PHONEINITIALIZEEXPARAMS));
-    while (lResult != 0)
-    {
+	ZeroMemory(&pip, sizeof(PHONEINITIALIZEEXPARAMS));
+	while (lResult != 0)
+	{
 		pip.dwTotalSize = sizeof(PHONEINITIALIZEEXPARAMS);
 		pip.dwOptions = PHONEINITIALIZEEXOPTION_USEEVENT;
-        lResult = phoneInitializeEx (&m_hPhoneApp, AfxGetInstanceHandle(),
-                         NULL, pszAppName, &m_dwNumPhones, &dwAPIVersion, &pip);
-        if (lResult != PHONEERR_REINIT)
-            break;
-    }
+		lResult = phoneInitializeEx(&m_hPhoneApp, AfxGetInstanceHandle(), NULL, pszAppName, &m_dwNumPhones, &dwAPIVersion, &pip);
+		if (lResult != PHONEERR_REINIT)
+			break;
+	}
 
 	// If we were unsuccessful then return an error
 	if (lResult != 0)
@@ -208,7 +210,7 @@ LONG CTapiConnection::InitPhones(LPCTSTR pszAppName, DWORD dwAPIVersion)
 		return PHONEERR_NOMEM;
 
 	// Create the thread which will monitor TAPI events.
-	m_pMonitorThread_P = AfxBeginThread((AFX_THREADPROC) _PhoneEventProc, (void*)this);
+	m_pMonitorThread_P = AfxBeginThread((AFX_THREADPROC)_PhoneEventProc, (void*)this);
 	if (m_pMonitorThread_P == NULL)
 	{
 		TRACE(_T("Failed to create monitor thread\r\n"));
@@ -217,21 +219,21 @@ LONG CTapiConnection::InitPhones(LPCTSTR pszAppName, DWORD dwAPIVersion)
 		return PHONEERR_OPERATIONFAILED;
 	}
 
-    // Now create the phone objects
-    if (lResult == 0)
-    {   
-		CSingleLock Lock (&m_semPhones, TRUE);
-        for (DWORD dwDeviceID = 0; dwDeviceID < m_dwNumPhones; dwDeviceID++)
-        {
-            CTapiPhone* pPhone = (CTapiPhone*) m_pPhoneClass->CreateObject();
-            pPhone->Init (this, dwDeviceID);
-            m_arrPhones.Add (pPhone);
-        }             
-    }
+	// Now create the phone objects
+	if (lResult == 0)
+	{
+		CSingleLock Lock(&m_semPhones, TRUE);
+		for (DWORD dwDeviceID = 0; dwDeviceID < m_dwNumPhones; dwDeviceID++)
+		{
+			CTapiPhone* pPhone = (CTapiPhone*)m_pPhoneClass->CreateObject();
+			pPhone->Init(this, dwDeviceID);
+			m_arrPhones.Add(pPhone);
+		}
+	}
 
-    return lResult;
+	return lResult;
 
-}// CTapiConnection::InitPhones
+} // CTapiConnection::InitPhones
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::Shutdown
@@ -243,13 +245,13 @@ LONG CTapiConnection::Shutdown()
 	// Kill any pending events - release all the threads
 	StopWaitingForAllRequests();
 
-    // Shutdown our TAPI line handle
+	// Shutdown our TAPI line handle
 	LONG lResult = 0L;
-    if (m_hLineApp != NULL)
-    {
-        lResult = lineShutdown(m_hLineApp);
-        m_hLineApp = NULL;
-    }
+	if (m_hLineApp != NULL)
+	{
+		lResult = lineShutdown(m_hLineApp);
+		m_hLineApp = NULL;
+	}
 
 	// Wait for our LINEEVENT thread.
 	if (m_pMonitorThread_L != NULL)
@@ -278,28 +280,28 @@ LONG CTapiConnection::Shutdown()
 		}
 	}
 
-    // Delete all our line objects
+	// Delete all our line objects
 	CSingleLock Lock(&m_semLines, TRUE);
 	int i = 0;
-    for (i = 0; i < m_arrLines.GetSize(); i++)
-    {
-        CTapiLine* pLine = (CTapiLine*) m_arrLines.GetAt(i);
-        delete pLine;
-    }
-    m_arrLines.RemoveAll();
+	for (i = 0; i < m_arrLines.GetSize(); i++)
+	{
+		CTapiLine* pLine = (CTapiLine*)m_arrLines.GetAt(i);
+		delete pLine;
+	}
+	m_arrLines.RemoveAll();
 
 	// And now our phone objects
-	CSingleLock Lock2 (&m_semPhones, TRUE);
-    for (i = 0; i < m_arrPhones.GetSize(); i++)
-    {
-        CTapiPhone* pPhone = (CTapiPhone*) m_arrPhones.GetAt(i);
-        delete pPhone;
-    }
-    m_arrPhones.RemoveAll();
+	CSingleLock Lock2(&m_semPhones, TRUE);
+	for (i = 0; i < m_arrPhones.GetSize(); i++)
+	{
+		CTapiPhone* pPhone = (CTapiPhone*)m_arrPhones.GetAt(i);
+		delete pPhone;
+	}
+	m_arrPhones.RemoveAll();
 
 	return lResult;
 
-}// CTapiConnection::Shutdown
+} // CTapiConnection::Shutdown
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::GetPendingRequestCount
@@ -308,13 +310,13 @@ LONG CTapiConnection::Shutdown()
 //
 unsigned int CTapiConnection::GetPendingRequestCount()
 {
-	CSingleLock keyReq (&m_semRequest);
+	CSingleLock keyReq(&m_semRequest);
 	if (keyReq.Lock() == TRUE)
 	{
 		int iCount = 0;
-		for (POSITION pos = m_arrWaitingRequests.GetHeadPosition(); pos != NULL; )
-		{   
-			CTapiRequest* pReq = (CTapiRequest*) m_arrWaitingRequests.GetNext(pos);
+		for (POSITION pos = m_arrWaitingRequests.GetHeadPosition(); pos != NULL;)
+		{
+			CTapiRequest* pReq = (CTapiRequest*)m_arrWaitingRequests.GetNext(pos);
 			if (pReq->IsPending())
 				iCount++;
 		}
@@ -322,7 +324,7 @@ unsigned int CTapiConnection::GetPendingRequestCount()
 	}
 	return 0;
 
-}// CTapiConnection::GetPendingRequestCount
+} // CTapiConnection::GetPendingRequestCount
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::StopWaitingForAllRequests
@@ -331,30 +333,30 @@ unsigned int CTapiConnection::GetPendingRequestCount()
 //
 void CTapiConnection::StopWaitingForAllRequests()
 {
-	CSingleLock keyReq (&m_semRequest);
+	CSingleLock keyReq(&m_semRequest);
 	if (keyReq.Lock() == TRUE)
 	{
 		// Delete any pending requests - release any waiting threads
-		for (POSITION pos = m_arrWaitingRequests.GetHeadPosition(); pos != NULL; )
-		{   
-			CTapiRequest* pReq = (CTapiRequest*) m_arrWaitingRequests.GetNext(pos);
+		for (POSITION pos = m_arrWaitingRequests.GetHeadPosition(); pos != NULL;)
+		{
+			CTapiRequest* pReq = (CTapiRequest*)m_arrWaitingRequests.GetNext(pos);
 			delete pReq;
 		}
 		m_arrWaitingRequests.RemoveAll();
 	}
 
-}// CTapiConnection::StopWaitingForAllRequests
-                    
+} // CTapiConnection::StopWaitingForAllRequests
+
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::GetLineDeviceCount
 //
 // Return the total number of line devices in the system.
 //
 unsigned int CTapiConnection::GetLineDeviceCount() const
-{                                      
-    return (unsigned int) m_dwNumLines;
+{
+	return (unsigned int)m_dwNumLines;
 
-}// CTapiConnection::GetLineDeviceCount
+} // CTapiConnection::GetLineDeviceCount
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::GetPhoneDeviceCount
@@ -362,10 +364,10 @@ unsigned int CTapiConnection::GetLineDeviceCount() const
 // Return the total number of phone devices in the system.
 //
 unsigned int CTapiConnection::GetPhoneDeviceCount() const
-{                                      
-    return (unsigned int) m_dwNumPhones;
+{
+	return (unsigned int)m_dwNumPhones;
 
-}// CTapiConnection::GetPhoneDeviceCount
+} // CTapiConnection::GetPhoneDeviceCount
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::GetLineAppHandle
@@ -373,10 +375,10 @@ unsigned int CTapiConnection::GetPhoneDeviceCount() const
 // Return the TAPI application handle
 //
 HLINEAPP CTapiConnection::GetLineAppHandle() const
-{                                 
-    return m_hLineApp;
+{
+	return m_hLineApp;
 
-}// CTapiConnection::GetLineAppHandle
+} // CTapiConnection::GetLineAppHandle
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::GetPhoneAppHandle
@@ -384,320 +386,314 @@ HLINEAPP CTapiConnection::GetLineAppHandle() const
 // Return the TAPI application handle
 //
 HPHONEAPP CTapiConnection::GetPhoneAppHandle() const
-{                                 
-    return m_hPhoneApp;
+{
+	return m_hPhoneApp;
 
-}// CTapiConnection::GetPhoneAppHandle
+} // CTapiConnection::GetPhoneAppHandle
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::GetLineFromDeviceID
 //
 // Return the line object from the device id
 //
-CTapiLine* CTapiConnection::GetLineFromDeviceID (DWORD dwDeviceID) const
-{                                       
-	CSingleLock Lock (&((CTapiConnection*)this)->m_semLines, TRUE);
-    if (dwDeviceID < m_dwNumLines)
-        return (CTapiLine*)(m_arrLines[dwDeviceID]);
-    return NULL;    
+CTapiLine* CTapiConnection::GetLineFromDeviceID(DWORD dwDeviceID) const
+{
+	CSingleLock Lock(&((CTapiConnection*)this)->m_semLines, TRUE);
+	if (dwDeviceID < m_dwNumLines)
+		return (CTapiLine*)(m_arrLines[dwDeviceID]);
+	return NULL;
 
-}// CTapiConnection::GetLineFromDeviceID
+} // CTapiConnection::GetLineFromDeviceID
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::GetPhoneFromDeviceID
 //
 // Return the phone object from the device id
 //
-CTapiPhone* CTapiConnection::GetPhoneFromDeviceID (DWORD dwDeviceID) const
-{                                       
-	CSingleLock Lock (&((CTapiConnection*)this)->m_semPhones, TRUE);
-    if (dwDeviceID < m_dwNumPhones)
-        return (CTapiPhone*)(m_arrPhones[dwDeviceID]);
-    return NULL;    
+CTapiPhone* CTapiConnection::GetPhoneFromDeviceID(DWORD dwDeviceID) const
+{
+	CSingleLock Lock(&((CTapiConnection*)this)->m_semPhones, TRUE);
+	if (dwDeviceID < m_dwNumPhones)
+		return (CTapiPhone*)(m_arrPhones[dwDeviceID]);
+	return NULL;
 
-}// CTapiConnection::GetPhoneFromDeviceID
+} // CTapiConnection::GetPhoneFromDeviceID
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::OpenLine
 //
 // Open a line using LINEMAPPER and a set of calling parameters.
 //
-LONG CTapiConnection::OpenLine (CTapiLine** pLine,
-                                DWORD dwPrivileges, DWORD dwMediaModes, 
-								DWORD dwAPIVersion, DWORD dwExtVersion,
-                                LPLINECALLPARAMS const lpCallParams)
-{                                                                  
-    HLINE hLine;
-    *pLine = NULL;
+LONG CTapiConnection::OpenLine(CTapiLine** pLine, DWORD dwPrivileges, DWORD dwMediaModes, DWORD dwAPIVersion, DWORD dwExtVersion, LPLINECALLPARAMS const lpCallParams)
+{
+	HLINE hLine;
+	*pLine = NULL;
 
 	// Use lowest known version if we aren't passed one.
-    if (dwAPIVersion == 0)
+	if (dwAPIVersion == 0)
 		dwAPIVersion = TAPIVER_13;
 
-    LONG lResult = lineOpen (GetLineAppHandle(), LINEMAPPER, &hLine, 
-                              dwAPIVersion, dwExtVersion, NULL, dwPrivileges, 
-							  dwMediaModes, lpCallParams);
-            
-    // If it was successfull, close the line and reopen it using our
-    // line object so we get notifications with the correct callback instance.
-    if (lResult == 0)
-    {   
-        LPVARSTRING lpVarString = (LPVARSTRING) new char[sizeof(VARSTRING)+20];
-        lpVarString->dwTotalSize = sizeof(VARSTRING)+20;
-        
-        lResult = ::lineGetID (hLine, 0, NULL, LINECALLSELECT_LINE, lpVarString, _T("tapi/line"));
-        lineClose (hLine);
+	LONG lResult = lineOpen(GetLineAppHandle(), LINEMAPPER, &hLine, dwAPIVersion, dwExtVersion, NULL, dwPrivileges, dwMediaModes, lpCallParams);
 
-        if (lResult == 0)
-        {                      
-            DWORD dwID = *((LPDWORD)((LPCSTR)lpVarString+lpVarString->dwStringOffset));
-            delete [] lpVarString;
-            lpVarString = NULL;
-            
-            CTapiLine* pMyLine = GetLineFromDeviceID(dwID);
-            if (pMyLine)
-            {
-                *pLine = pMyLine;
-                return pMyLine->Open (dwPrivileges, dwMediaModes, dwAPIVersion, 
-									  dwExtVersion, lpCallParams);
-            }
-            else
-                lResult = LINEERR_LINEMAPPERFAILED;
-        }
-        delete [] lpVarString;
-    }              
-    
-    return lResult;
+	// If it was successfull, close the line and reopen it using our
+	// line object so we get notifications with the correct callback instance.
+	if (lResult == 0)
+	{
+		LPVARSTRING lpVarString = (LPVARSTRING) new char[sizeof(VARSTRING) + 20];
+		lpVarString->dwTotalSize = sizeof(VARSTRING) + 20;
 
-}// CTapiConnection::OpenLine
+		lResult = ::lineGetID(hLine, 0, NULL, LINECALLSELECT_LINE, lpVarString, _T("tapi/line"));
+		lineClose(hLine);
+
+		if (lResult == 0)
+		{
+			DWORD dwID = *((LPDWORD)((LPCSTR)lpVarString + lpVarString->dwStringOffset));
+			delete[] lpVarString;
+			lpVarString = NULL;
+
+			CTapiLine* pMyLine = GetLineFromDeviceID(dwID);
+			if (pMyLine)
+			{
+				*pLine = pMyLine;
+				return pMyLine->Open(dwPrivileges, dwMediaModes, dwAPIVersion, dwExtVersion, lpCallParams);
+			}
+			else
+				lResult = LINEERR_LINEMAPPERFAILED;
+		}
+		delete[] lpVarString;
+	}
+
+	return lResult;
+
+} // CTapiConnection::OpenLine
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::GetFirstProvider
 //
 // This function returns the first provider in TAPI.
 //
-BOOL CTapiConnection::GetFirstProvider (LPTAPIPROVIDER lpProvider)
-{                                                      
-	CSingleLock Lock (&m_semProviders, TRUE);
+BOOL CTapiConnection::GetFirstProvider(LPTAPIPROVIDER lpProvider)
+{
+	CSingleLock Lock(&m_semProviders, TRUE);
 
-    // Remove any old provider listings.
+	// Remove any old provider listings.
 	int i = 0;
-    for (i = 0; i < m_arrProviders.GetSize(); i++)
-    {
-        LPTAPIPROVIDER lpMyProvider = (LPTAPIPROVIDER) m_arrProviders.GetAt(i);
-        delete lpMyProvider;
-    }                       
-    m_arrProviders.RemoveAll();
-    
-    // Grab a current list from TAPI
-    DWORD dwSize = sizeof(LINEPROVIDERLIST) + (sizeof(LINEPROVIDERENTRY) * 10);
-    LPLINEPROVIDERLIST lpProvList = NULL;
-    
-    while (TRUE)
-    {
-        lpProvList = (LPLINEPROVIDERLIST) new char [dwSize];
-        if (lpProvList == NULL)
+	for (i = 0; i < m_arrProviders.GetSize(); i++)
+	{
+		LPTAPIPROVIDER lpMyProvider = (LPTAPIPROVIDER)m_arrProviders.GetAt(i);
+		delete lpMyProvider;
+	}
+	m_arrProviders.RemoveAll();
+
+	// Grab a current list from TAPI
+	DWORD dwSize = sizeof(LINEPROVIDERLIST) + (sizeof(LINEPROVIDERENTRY) * 10);
+	LPLINEPROVIDERLIST lpProvList = NULL;
+
+	while (TRUE)
+	{
+		lpProvList = (LPLINEPROVIDERLIST) new char[dwSize];
+		if (lpProvList == NULL)
 			return FALSE;
-                
-        lpProvList->dwTotalSize = dwSize;
-        if (lineGetProviderList (TAPIVER_14, lpProvList) != 0)
-        {
-			delete [] lpProvList;
-            return FALSE;
+
+		lpProvList->dwTotalSize = dwSize;
+		if (lineGetProviderList(TAPIVER_14, lpProvList) != 0)
+		{
+			delete[] lpProvList;
+			return FALSE;
 		}
-        
-        if (lpProvList->dwNeededSize <= dwSize)
+
+		if (lpProvList->dwNeededSize <= dwSize)
 			break;
-        dwSize = lpProvList->dwNeededSize;
-        delete [] lpProvList;
-        lpProvList = NULL;
-    }        
+		dwSize = lpProvList->dwNeededSize;
+		delete[] lpProvList;
+		lpProvList = NULL;
+	}
 
-    // Now parse through the provider list and build all our structures.
-    LPLINEPROVIDERENTRY lpEntry = (LPLINEPROVIDERENTRY) ((LPSTR)lpProvList + lpProvList->dwProviderListOffset);
-    for (i = 0; i < (int) lpProvList->dwNumProviders; i++)
-    {
-        LPTAPIPROVIDER lpMyProvider = new TAPIPROVIDER;
-        lpMyProvider->dwPermanentProviderID = lpEntry->dwPermanentProviderID;
-        lpMyProvider->strProviderName = (LPCTSTR)((LPBYTE)lpProvList+lpEntry->dwProviderFilenameOffset);
-        lpEntry++;
-        m_arrProviders.Add(lpMyProvider);
-    }
+	// Now parse through the provider list and build all our structures.
+	LPLINEPROVIDERENTRY lpEntry = (LPLINEPROVIDERENTRY)((LPSTR)lpProvList + lpProvList->dwProviderListOffset);
+	for (i = 0; i < (int)lpProvList->dwNumProviders; i++)
+	{
+		LPTAPIPROVIDER lpMyProvider = new TAPIPROVIDER;
+		lpMyProvider->dwPermanentProviderID = lpEntry->dwPermanentProviderID;
+		lpMyProvider->strProviderName = (LPCTSTR)((LPBYTE)lpProvList + lpEntry->dwProviderFilenameOffset);
+		lpEntry++;
+		m_arrProviders.Add(lpMyProvider);
+	}
 
-    delete [] lpProvList;   
-    
-    // Return the first one.
-    m_iProviderPos = -1;
-    return GetNextProvider (lpProvider);
+	delete[] lpProvList;
 
-}// CTapiConnection::GetFirstProvider
+	// Return the first one.
+	m_iProviderPos = -1;
+	return GetNextProvider(lpProvider);
+
+} // CTapiConnection::GetFirstProvider
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::GetNextProvider
 //
 // Return the next provider from our list
 //
-BOOL CTapiConnection::GetNextProvider (LPTAPIPROVIDER lpProvider)
-{                                   
-	CSingleLock Lock (&m_semProviders, TRUE);
+BOOL CTapiConnection::GetNextProvider(LPTAPIPROVIDER lpProvider)
+{
+	CSingleLock Lock(&m_semProviders, TRUE);
 
-    m_iProviderPos++;
-    if (m_iProviderPos >= m_arrProviders.GetSize())
-    {
-        for (int i = 0 ; i < m_arrProviders.GetSize(); i++)
-        {
-            LPTAPIPROVIDER lpMyProvider = (LPTAPIPROVIDER) m_arrProviders.GetAt(i);
-            delete lpMyProvider;
-        }                       
-        m_arrProviders.RemoveAll();
-        return FALSE;
-    }
+	m_iProviderPos++;
+	if (m_iProviderPos >= m_arrProviders.GetSize())
+	{
+		for (int i = 0; i < m_arrProviders.GetSize(); i++)
+		{
+			LPTAPIPROVIDER lpMyProvider = (LPTAPIPROVIDER)m_arrProviders.GetAt(i);
+			delete lpMyProvider;
+		}
+		m_arrProviders.RemoveAll();
+		return FALSE;
+	}
 
-    LPTAPIPROVIDER lpMyProvider = (LPTAPIPROVIDER) m_arrProviders.GetAt(m_iProviderPos);
-    if (lpMyProvider)
-    {
-        lpProvider->dwPermanentProviderID = lpMyProvider->dwPermanentProviderID;
-        lpProvider->strProviderName = lpMyProvider->strProviderName;
-        return TRUE;
-    }               
-    return FALSE;
+	LPTAPIPROVIDER lpMyProvider = (LPTAPIPROVIDER)m_arrProviders.GetAt(m_iProviderPos);
+	if (lpMyProvider)
+	{
+		lpProvider->dwPermanentProviderID = lpMyProvider->dwPermanentProviderID;
+		lpProvider->strProviderName = lpMyProvider->strProviderName;
+		return TRUE;
+	}
+	return FALSE;
 
-}// CTapiConnection::GetNextProvider
+} // CTapiConnection::GetNextProvider
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::GetTranslateCaps
 //
 // Return the translation capabilities from TAPI
 //
-LONG CTapiConnection::GetTranslateCaps (LPLINETRANSLATECAPS lpTranslateCaps, DWORD dwTapiVersion)
-{                                    
-    return lineGetTranslateCaps (GetLineAppHandle(), dwTapiVersion, lpTranslateCaps);
+LONG CTapiConnection::GetTranslateCaps(LPLINETRANSLATECAPS lpTranslateCaps, DWORD dwTapiVersion)
+{
+	return lineGetTranslateCaps(GetLineAppHandle(), dwTapiVersion, lpTranslateCaps);
 
-}// CTapiConnection::GetTranslateCaps
+} // CTapiConnection::GetTranslateCaps
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::SetCurrentLocation
 //
-// This operation sets the location used as the context for address translation. 
+// This operation sets the location used as the context for address translation.
 //
-LONG CTapiConnection::SetCurrentLocation (DWORD dwLocation)
-{                                      
-    return lineSetCurrentLocation (GetLineAppHandle(), dwLocation);
+LONG CTapiConnection::SetCurrentLocation(DWORD dwLocation)
+{
+	return lineSetCurrentLocation(GetLineAppHandle(), dwLocation);
 
-}// CTapiConnection::SetCurrentLocation
+} // CTapiConnection::SetCurrentLocation
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::OnLineCreate
 //
 // A new line has been added to the system - add it to our array.
 //
-void CTapiConnection::OnLineCreate (DWORD dwDeviceID)
-{                                    
-    ASSERT (GetLineFromDeviceID(dwDeviceID) == NULL);
-    CTapiLine* pLine = (CTapiLine*) (m_pLineClass->CreateObject());
-    pLine->Init (this, dwDeviceID);
+void CTapiConnection::OnLineCreate(DWORD dwDeviceID)
+{
+	ASSERT(GetLineFromDeviceID(dwDeviceID) == NULL);
+	CTapiLine* pLine = (CTapiLine*)(m_pLineClass->CreateObject());
+	pLine->Init(this, dwDeviceID);
 
 	// Add it to our array
-	CSingleLock keyLine (&m_semLines, TRUE);
-    m_arrLines.Add (pLine);
+	CSingleLock keyLine(&m_semLines, TRUE);
+	m_arrLines.Add(pLine);
 	m_dwNumLines++;
 
 	// Tell the line.
 	pLine->OnDynamicCreate();
 
-}// CTapiConnection::OnLineCreate
+} // CTapiConnection::OnLineCreate
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::OnLineRemove
 //
 // A line has been removed to the system - mark it unavailable.
 //
-void CTapiConnection::OnLineRemove (DWORD dwDeviceID)
-{                                    
-    CTapiLine* pLine = GetLineFromDeviceID(dwDeviceID);
-    ASSERT (pLine != NULL);
+void CTapiConnection::OnLineRemove(DWORD dwDeviceID)
+{
+	CTapiLine* pLine = GetLineFromDeviceID(dwDeviceID);
+	ASSERT(pLine != NULL);
 
 	// Mark it unavailable.
 	pLine->m_iFlags |= CTapiLine::Removed;
 	pLine->OnDynamicRemove();
-	//m_dwNumLines--;
+	// m_dwNumLines--;
 
-}// CTapiConnection::OnLineRemove
+} // CTapiConnection::OnLineRemove
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::OnLineClose
 //
 // A line has been removed to the system - mark it unavailable.
 //
-void CTapiConnection::OnLineClose (DWORD dwDeviceID)
-{                                    
-    CTapiLine* pLine = GetLineFromDeviceID(dwDeviceID);
-    ASSERT (pLine != NULL);
+void CTapiConnection::OnLineClose(DWORD dwDeviceID)
+{
+	CTapiLine* pLine = GetLineFromDeviceID(dwDeviceID);
+	ASSERT(pLine != NULL);
 
 	// Mark it unavailable.
 	pLine->OnForceClose();
 
-}// CTapiConnection::OnLineClose
+} // CTapiConnection::OnLineClose
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::OnPhoneCreate
 //
 // A new line has been added to the system - add it to our array.
 //
-void CTapiConnection::OnPhoneCreate (DWORD dwDeviceID)
-{                                    
-    ASSERT (GetPhoneFromDeviceID(dwDeviceID) == NULL);
-    CTapiPhone* pPhone = (CTapiPhone*) (m_pPhoneClass->CreateObject());
-    pPhone->Init (this, dwDeviceID);
+void CTapiConnection::OnPhoneCreate(DWORD dwDeviceID)
+{
+	ASSERT(GetPhoneFromDeviceID(dwDeviceID) == NULL);
+	CTapiPhone* pPhone = (CTapiPhone*)(m_pPhoneClass->CreateObject());
+	pPhone->Init(this, dwDeviceID);
 
 	// Add it to our array
-	CSingleLock keyPhone (&m_semPhones, TRUE);
-    m_arrPhones.Add (pPhone);
+	CSingleLock keyPhone(&m_semPhones, TRUE);
+	m_arrPhones.Add(pPhone);
 	m_dwNumPhones++;
 
 	// Tell the phone.
 	pPhone->OnDynamicCreate();
 
-}// CTapiConnection::OnPhoneCreate
+} // CTapiConnection::OnPhoneCreate
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::OnPhoneRemove
 //
 // A line has been removed to the system - mark it unavailable.
 //
-void CTapiConnection::OnPhoneRemove (DWORD dwDeviceID)
-{                                    
-    CTapiPhone* pPhone = GetPhoneFromDeviceID(dwDeviceID);
-    ASSERT (pPhone != NULL);
+void CTapiConnection::OnPhoneRemove(DWORD dwDeviceID)
+{
+	CTapiPhone* pPhone = GetPhoneFromDeviceID(dwDeviceID);
+	ASSERT(pPhone != NULL);
 
 	// Mark it unavailable.
 	pPhone->m_iFlags |= CTapiPhone::Removed;
 	pPhone->OnDynamicRemove();
 	m_dwNumPhones--;
 
-}// CTapiConnection::OnPhoneRemove
+} // CTapiConnection::OnPhoneRemove
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::OnPhoneClose
 //
 // A line has been removed to the system - mark it unavailable.
 //
-void CTapiConnection::OnPhoneClose (DWORD dwDeviceID)
-{                                    
-    CTapiPhone* pPhone = GetPhoneFromDeviceID(dwDeviceID);
-    ASSERT (pPhone != NULL);
+void CTapiConnection::OnPhoneClose(DWORD dwDeviceID)
+{
+	CTapiPhone* pPhone = GetPhoneFromDeviceID(dwDeviceID);
+	ASSERT(pPhone != NULL);
 
 	// Mark it unavailable.
 	pPhone->OnForceClose();
 
-}// CTapiConnection::OnPhoneClose
+} // CTapiConnection::OnPhoneClose
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::OnRequestComplete
 //
 // Complete a tapi request
 //
-void CTapiConnection::OnRequestComplete (DWORD dwRequestID, LONG lResult)
+void CTapiConnection::OnRequestComplete(DWORD dwRequestID, LONG lResult)
 {
 	// Run through the lines and locate the request object.
 	CTapiRequest* pRequest = LocateRequest(dwRequestID);
@@ -710,24 +706,24 @@ void CTapiConnection::OnRequestComplete (DWORD dwRequestID, LONG lResult)
 		pRequest = AddRequest(dwRequestID);
 
 	// Complete the request.
-	ASSERT (pRequest->m_dwRequestID == dwRequestID);
+	ASSERT(pRequest->m_dwRequestID == dwRequestID);
 	pRequest->OnRequestComplete(lResult);
 
-}// CTapiConnection::OnRequestComplete
+} // CTapiConnection::OnRequestComplete
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::AddRequest
 //
 // Add a request block to our waiting list.
 //
-CTapiRequest* CTapiConnection::AddRequest (DWORD dwRequestID)
-{       
+CTapiRequest* CTapiConnection::AddRequest(DWORD dwRequestID)
+{
 	CTapiRequest* pReq = NULL;
 
 	// Add a new request for this request id.
-    if (!IsTapiError(dwRequestID) && dwRequestID > 0)
-    {   
-		CSingleLock Lock (&m_semRequest, TRUE);
+	if (!IsTapiError(dwRequestID) && dwRequestID > 0)
+	{
+		CSingleLock Lock(&m_semRequest, TRUE);
 
 		// Always check to see if the request already exists.
 		// If so, then it has already been completed so ignore
@@ -735,8 +731,8 @@ CTapiRequest* CTapiConnection::AddRequest (DWORD dwRequestID)
 		pReq = LocateRequest(dwRequestID);
 		if (pReq == NULL)
 		{
-			pReq = new CTapiRequest (dwRequestID);
-			m_arrWaitingRequests.AddTail (pReq);
+			pReq = new CTapiRequest(dwRequestID);
+			m_arrWaitingRequests.AddTail(pReq);
 		}
 		// Or if the request exists, verify that it isn't some old
 		// request we hadn't cleared yet (i.e. handle re-use by TAPI).
@@ -753,25 +749,25 @@ CTapiRequest* CTapiConnection::AddRequest (DWORD dwRequestID)
 
 	return pReq;
 
-}// CTapiConnection::AddRequest
+} // CTapiConnection::AddRequest
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::LocateRequest
 //
 // Determine if the specified request belongs to this tapi object
 //
-CTapiRequest* CTapiConnection::LocateRequest (DWORD dwRequestID)
+CTapiRequest* CTapiConnection::LocateRequest(DWORD dwRequestID)
 {
-	CSingleLock keyReq (&m_semRequest, TRUE);
+	CSingleLock keyReq(&m_semRequest, TRUE);
 	for (POSITION pos = m_arrWaitingRequests.GetHeadPosition(); pos != NULL;)
 	{
-		CTapiRequest* pReq = (CTapiRequest*) m_arrWaitingRequests.GetNext(pos);
+		CTapiRequest* pReq = (CTapiRequest*)m_arrWaitingRequests.GetNext(pos);
 		if (pReq->m_dwRequestID == dwRequestID)
 			return pReq;
 	}
 	return NULL;
 
-}// CTapiConnection::LocateRequest
+} // CTapiConnection::LocateRequest
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::PurgeRequests
@@ -779,17 +775,16 @@ CTapiRequest* CTapiConnection::LocateRequest (DWORD dwRequestID)
 // Run through our request list and remove any completed requests which
 // are older than the specified threshold.
 //
-void CTapiConnection::PurgeRequests (LONG lmSec)
+void CTapiConnection::PurgeRequests(LONG lmSec)
 {
-	CSingleLock keyReq (&m_semRequest);
+	CSingleLock keyReq(&m_semRequest);
 	if (keyReq.Lock() == TRUE)
 	{
-		for (POSITION pos = m_arrWaitingRequests.GetHeadPosition(); pos != NULL; )
-		{   
+		for (POSITION pos = m_arrWaitingRequests.GetHeadPosition(); pos != NULL;)
+		{
 			POSITION posCurr = pos;
-			CTapiRequest* pReq = (CTapiRequest*) m_arrWaitingRequests.GetNext(pos);
-			if (pReq->IsPending() == FALSE &&
-				(pReq->m_dwCompleteTime + lmSec) < GetTickCount())
+			CTapiRequest* pReq = (CTapiRequest*)m_arrWaitingRequests.GetNext(pos);
+			if (pReq->IsPending() == FALSE && (pReq->m_dwCompleteTime + lmSec) < GetTickCount())
 			{
 				m_arrWaitingRequests.RemoveAt(posCurr);
 				delete pReq;
@@ -797,14 +792,14 @@ void CTapiConnection::PurgeRequests (LONG lmSec)
 		}
 	}
 
-}// CTapiConnection::PurgeRequests
+} // CTapiConnection::PurgeRequests
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::WaitForReply
 //
 // Wait for a TAPI request to complete
 //
-LONG CTapiConnection::WaitForReply(DWORD dwRequestID, LONG lTimeout/*=INFINITE*/)
+LONG CTapiConnection::WaitForReply(DWORD dwRequestID, LONG lTimeout /*=INFINITE*/)
 {
 	if (dwRequestID == 0 || IsTapiError(dwRequestID))
 		return dwRequestID;
@@ -815,7 +810,7 @@ LONG CTapiConnection::WaitForReply(DWORD dwRequestID, LONG lTimeout/*=INFINITE*/
 
 	return pReq->GetResult(lTimeout);
 
-}// CTapiConnection::WaitForRequest
+} // CTapiConnection::WaitForRequest
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::LineEventProc
@@ -839,7 +834,7 @@ void CTapiConnection::LineEventProc()
 			// and then pass it down to the line.
 			if (lm.dwMessageID == LINE_REPLY)
 				OnRequestComplete((DWORD)lm.dwParam1, (long)lm.dwParam2);
-              
+
 			// If this is a LINE_CREATE message, then a new line has been dynamically
 			// added to TAPI (Plug&Play).  Manage it.
 			else if (lm.dwMessageID == LINE_CREATE)
@@ -854,9 +849,9 @@ void CTapiConnection::LineEventProc()
 
 			else // Line or call message.
 			{
-				CTapiLine* pLine = (CTapiLine*) lm.dwCallbackInstance;
+				CTapiLine* pLine = (CTapiLine*)lm.dwCallbackInstance;
 				if (pLine != NULL)
-					pLine->LineCallback (lm.hDevice, lm.dwMessageID, lm.dwParam1, lm.dwParam2, lm.dwParam3);
+					pLine->LineCallback(lm.hDevice, lm.dwMessageID, lm.dwParam1, lm.dwParam2, lm.dwParam3);
 			}
 		}
 
@@ -867,7 +862,7 @@ void CTapiConnection::LineEventProc()
 
 	m_pMonitorThread_L = NULL;
 
-}// CTapiConnection::LineEventProc
+} // CTapiConnection::LineEventProc
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiConnection::PhoneEventProc
@@ -890,30 +885,29 @@ void CTapiConnection::PhoneEventProc()
 			// If this is an asynch request completing, then mark it in our list
 			// and then pass it down to the line.
 			if (pm.dwMessageID == PHONE_REPLY)
-				OnRequestComplete ((DWORD)pm.dwParam1, (long)pm.dwParam2);
-              
+				OnRequestComplete((DWORD)pm.dwParam1, (long)pm.dwParam2);
+
 			// If this is a PHONE_CREATE message, then a new phone has been dynamically
 			// added to TAPI (Plug&Play).  Manage it.
 			else if (pm.dwMessageID == PHONE_CREATE)
-				OnPhoneCreate ((DWORD)pm.dwParam1);
+				OnPhoneCreate((DWORD)pm.dwParam1);
 
 			// If this is a PHONE_REMOVE message, then a phone has been removed from the system.
 			else if (pm.dwMessageID == PHONE_REMOVE)
-				OnPhoneRemove ((DWORD)pm.dwParam1);
+				OnPhoneRemove((DWORD)pm.dwParam1);
 
 			else if (pm.dwMessageID == PHONE_CLOSE)
-				OnPhoneClose ((DWORD)pm.dwParam1);
+				OnPhoneClose((DWORD)pm.dwParam1);
 
 			else // Other phone related message
 			{
-				CTapiPhone* pPhone = (CTapiPhone*) pm.dwCallbackInstance;
+				CTapiPhone* pPhone = (CTapiPhone*)pm.dwCallbackInstance;
 				if (pPhone != NULL)
-					pPhone->PhoneCallback (pm.hDevice, pm.dwMessageID, (DWORD)pm.dwParam1, (DWORD)pm.dwParam2, (DWORD)pm.dwParam3);
+					pPhone->PhoneCallback(pm.hDevice, pm.dwMessageID, (DWORD)pm.dwParam1, (DWORD)pm.dwParam2, (DWORD)pm.dwParam3);
 			}
 		}
-	}
-	while (lResult != PHONEERR_INVALAPPHANDLE);
+	} while (lResult != PHONEERR_INVALAPPHANDLE);
 
 	m_pMonitorThread_P = NULL;
 
-}// CTapiConnection::PhoneEventProc
+} // CTapiConnection::PhoneEventProc

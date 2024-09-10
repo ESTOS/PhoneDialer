@@ -3,19 +3,21 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #if !defined(AFX_PHONECAPSDLG_H__DC1CB9EA_C8C2_11D1_BBAB_006097D5EC19__INCLUDED_)
 #define AFX_PHONECAPSDLG_H__DC1CB9EA_C8C2_11D1_BBAB_006097D5EC19__INCLUDED_
+
+#include "resource.h"
 
 #if _MSC_VER >= 1000
 #pragma once
@@ -26,48 +28,50 @@
 
 class CPhoneCapsDlg : public CDialog
 {
-// Construction
+	// Construction
 public:
-	CPhoneCapsDlg(CWnd* pParent, CTapiPhone* pPhone);   // standard constructor
+	CPhoneCapsDlg(CWnd* pParent, CTapiPhone* pPhone); // standard constructor
 
-// Dialog Data
+	// Dialog Data
 	//{{AFX_DATA(CPhoneCapsDlg)
-	enum { IDD = IDD_PHONE };
-	CSliderCtrl	m_ctlVolRinger;
-	CComboBox	m_cbRingModes;
-	CButton	m_btnConfig;
-	CListBox	m_lbButtons;
-	CEdit	m_edtDisplay;
-	CSliderCtrl	m_ctlVolSpeaker;
-	CSliderCtrl	m_ctlVolHeadset;
-	CSliderCtrl	m_ctlVolHandset;
-	CButton	m_btnSetDisplay;
-	CButton	m_btnGetDisplay;
-	CSliderCtrl	m_ctlGainSpeaker;
-	CSliderCtrl	m_ctlGainHeadset;
-	CSliderCtrl	m_ctlGainHandset;
-	int		m_iHandset;
-	int		m_iHeadset;
-	int		m_iSpeaker;
+	enum
+	{
+		IDD = IDD_PHONE
+	};
+	CSliderCtrl m_ctlVolRinger;
+	CComboBox m_cbRingModes;
+	CButton m_btnConfig;
+	CListBox m_lbButtons;
+	CEdit m_edtDisplay;
+	CSliderCtrl m_ctlVolSpeaker;
+	CSliderCtrl m_ctlVolHeadset;
+	CSliderCtrl m_ctlVolHandset;
+	CButton m_btnSetDisplay;
+	CButton m_btnGetDisplay;
+	CSliderCtrl m_ctlGainSpeaker;
+	CSliderCtrl m_ctlGainHeadset;
+	CSliderCtrl m_ctlGainHandset;
+	int m_iHandset;
+	int m_iHeadset;
+	int m_iSpeaker;
 	CTapiPhone* m_pPhone;
-	CString	m_strDisplayXY;
-	CString	m_strButtonFunction;
-	CString	m_strButtonMode;
-	CString	m_strButtonText;
-	BOOL	m_fConnected;
-	CString	m_strLampMode;
-	BOOL	m_fSuspended;
+	CString m_strDisplayXY;
+	CString m_strButtonFunction;
+	CString m_strButtonMode;
+	CString m_strButtonText;
+	BOOL m_fConnected;
+	CString m_strLampMode;
+	BOOL m_fSuspended;
 	//}}AFX_DATA
 
-
-// Overrides
+	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CPhoneCapsDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
+													 //}}AFX_VIRTUAL
 
-// Implementation
+	// Implementation
 protected:
 	void InitPhone();
 	void OnChangeVolumeHandset(UINT nPos);

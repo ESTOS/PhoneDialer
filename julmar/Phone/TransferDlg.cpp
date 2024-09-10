@@ -3,20 +3,20 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
-#include "phone.h"
 #include "TransferDlg.h"
+#include "phone.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -26,7 +26,6 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTransferDlg dialog
-
 
 CTransferDlg::CTransferDlg(CWnd* pParent, CTapiCall* pCall)
 	: CDialog(CTransferDlg::IDD, pParent)
@@ -39,7 +38,6 @@ CTransferDlg::CTransferDlg(CWnd* pParent, CTapiCall* pCall)
 	m_pCall = pCall;
 	//}}AFX_DATA_INIT
 }
-
 
 void CTransferDlg::DoDataExchange(CDataExchange* pDX)
 {
@@ -54,7 +52,6 @@ void CTransferDlg::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-
 BEGIN_MESSAGE_MAP(CTransferDlg, CDialog)
 	//{{AFX_MSG_MAP(CTransferDlg)
 	ON_EN_CHANGE(IDC_NUMBER, OnChangeNumber)
@@ -64,17 +61,17 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CTransferDlg message handlers
 
-BOOL CTransferDlg::OnInitDialog() 
+BOOL CTransferDlg::OnInitDialog()
 {
-    // Reset the font to all be ANSI var.
-    CFont fntAnsi;
-    fntAnsi.CreateStockObject (ANSI_VAR_FONT);
-    CWnd* pwndChild = GetWindow (GW_CHILD);
-    while (pwndChild != NULL && IsChild(pwndChild))
-    {
-        pwndChild->SetFont(&fntAnsi);
-        pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
-    }
+	// Reset the font to all be ANSI var.
+	CFont fntAnsi;
+	fntAnsi.CreateStockObject(ANSI_VAR_FONT);
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild != NULL && IsChild(pwndChild))
+	{
+		pwndChild->SetFont(&fntAnsi);
+		pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
+	}
 
 	// Fill in the caller id information
 	if (m_pCall->GetCallInfo()->dwOrigin & LINECALLORIGIN_OUTBOUND)
@@ -108,14 +105,13 @@ BOOL CTransferDlg::OnInitDialog()
 	return TRUE;
 }
 
-void CTransferDlg::OnChangeNumber() 
+void CTransferDlg::OnChangeNumber()
 {
 	UpdateData(TRUE);
 	m_btnOK.EnableWindow(!m_strNumber.IsEmpty());
 }
 
-void CTransferDlg::OnOK() 
+void CTransferDlg::OnOK()
 {
 	CDialog::OnOK();
 }
-

@@ -104,6 +104,17 @@ PhoneDialer 4.4.0.5:
 PhoneDialer 4.4.0.6:
 - Rework the CallCompletion dialog. If the call announces completion modes in the LineCallFeatures2 take them from there. If there are not CompletionModesAnnounced but the LCF_COMPLETECALL is set take them from the addresscaps
 
+PhoneDialer 4.4.0.7:
+- Rework the Agent Dialog to handle AgentGroups (the groupid is set implicitly from the selected entry)
+
+PhoneDialer 4.4.0.8:
+- Rework showing address details. Formerly all properties the ECSTA provides were supposed to be set. Now any property provided will be added to the ui.
+- Show forward only and ACD group addresses (ECSTA for Starface)
+
+PhoneDialer 4.4.0.9:
+- Ensure that we update the address name in case we receive an LINEADDRESSSTATE_CAPSCHANGE
+- If we switch the lines and the new line is closed, update the caps of that line
+
 Sourcecode contains all modifications, and the required ATAPI lib also provided from JulMar Technology.
 
 Sourcecode is available for download from https://github.com/ESTOS/PhoneDialer

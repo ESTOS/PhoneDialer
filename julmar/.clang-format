@@ -1,0 +1,116 @@
+# Zentrale Coding Style Vorgaben. Änderungen an diesem Dokument bedürfen der GEMEINSAMEN Abstimmung da der Style für alle Verpflichtend ist
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+# 
+# Version 1.0 27.10.2017 JR
+#
+#
+---
+# We'll use defaults from the LLVM style
+BasedOnStyle: LLVM
+UseTab: Always
+IndentWidth: 4
+TabWidth: 4
+
+# Leider bietet clang 19 immer noch keine Möglichkeit die header guards anders zu interpretieren
+# Insofern würde ein Indent bei verwendung von Headers guards die folgenden pp anweisungne (includes) alle indenten was unschön ist
+# Wir hoffen daher mal darauf das die header guards irgendwann anders interpretiert werden bzw. das wir alles auf #pragma once umstellen
+IndentPPDirectives: None
+
+---
+Language: Cpp
+# Zusammenhaengende Assignments stehen immer untereinander auf gleicher Hoehe
+AlignConsecutiveAssignments: false
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+  
+# Constructor und Initializer sollten dem gleichen folgen
+BreakInheritanceList: BeforeColon
+BreakConstructorInitializers: BeforeComma
+PackConstructorInitializers: Never
+
+# public private protected ganz linksbündig 
+AccessModifierOffset: -4
+
+# Aligning:
+IndentCaseBlocks: true
+IndentCaseLabels: true
+NamespaceIndentation: All
+
+# Die Zeilen sind genau so lang wie der Entwickler es in dem Kontext in dem er sich gerade aufhält für nötig erachtet
+ColumnLimit: 5000
+
+# Mehrere Argumente in einer Methode die nicht in eine Zeile passen
+AlignAfterOpenBracket: Align
+
+# Kommentare
+AlignTrailingComments: true
+
+# Klammersetzung, bei uns Ausnahmslos immer in neuer Zeile
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterEnum: true
+  AfterStruct: true
+  AfterFunction: true
+  AfterClass: true
+  AfterNamespace: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeElse: true
+  BeforeCatch: true
+  AfterControlStatement: true
+  SplitEmptyFunction: true
+
+# Keine Empty lines am Anfang und Ende von Dateien und am Anfang eines Blocks
+KeepEmptyLinesAtEOF: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# Ab Version 19 (noch nicht released)
+# KeepEmptyLines:
+#  AtEndOfFile: false
+#  AtStartOfBlock: false
+#  AtStartOfFile: false
+
+# Keine Klammern um one liner statements
+RemoveBracesLLVM: true
+
+# Pointer und Referenzen stehen immer neben dem Type int* variable, CStdString& strData
+PointerAlignment: Left
+
+# Alle Singleliner verbieten
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+
+# Sorting von Headern deaktivieren
+SortIncludes: CaseInsensitive
+IncludeCategories:
+  - Regex:        'stdafx.h|pch.h'
+    Priority:     -100
+  - Regex:        'wincrypt.h|softpub.h'
+    Priority:     100
+  - Regex:        'WinSock2.h'
+    Priority:     10
+    SortPriority: 2
+  - Regex:        'Iphlpapi.h'
+    Priority:     10
+    SortPriority: 3
+  - Regex:        'Icmpapi.h'
+    Priority:     10
+    SortPriority: 4
+  - Regex:        '^<(.*)/|^<(.*)\\'
+    Priority:     10
+    SortPriority: 1
+  - Regex:        '^<'
+    Priority:     10
+    SortPriority: 5
+  - Regex:        '\.\.'
+    Priority:     20
+  - Regex:        '.*'
+    Priority:     30
+
+MacroBlockBegin: "^BEGIN_MESSAGE_MAP$"
+MacroBlockEnd: "^END_MESSAGE_MAP$"

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "resource.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CECSTAAgentGroupStateDlg dialog
 
@@ -16,15 +18,18 @@ public:
 
 class CECSTAAgentGroupStateDlg : public CDialog
 {
-// Construction
+	// Construction
 public:
 	CECSTAAgentGroupStateDlg(CWnd* pParent, CTapiLine* pLine, CTapiAddress* pAddr, const DWORD dwECSTACapabilites);
 
-	enum { IDD = IDD_ECSTAAGENTSTATE };
+	enum
+	{
+		IDD = IDD_ECSTAAGENTSTATE
+	};
 
 protected:
 	virtual BOOL OnInitDialog();
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
 	afx_msg void OnListItemchanged(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnBnClickedCmdagentlogin();
 	afx_msg void OnBnClickedCmdagentready();
@@ -44,7 +49,7 @@ protected:
 	void ShowState(ECSTA150DEVSPECIFIC20F* pState);
 
 	std::list<ECSTA150DEVSPECIFIC20F> m_groups;
-	
+
 	int m_nListIndex = 0;
 	int m_nLastAgentStateIndex = -1;
 	ECSTA150DEVSPECIFIC20F m_VisibleState;
@@ -61,4 +66,3 @@ protected:
 public:
 	afx_msg void OnEnChangeTxtId();
 };
-

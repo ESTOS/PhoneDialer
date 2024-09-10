@@ -3,20 +3,20 @@
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
-#include "Phone.h"
 #include "UUIDlg.h"
+#include "Phone.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -27,7 +27,6 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CUUIDlg dialog
 
-
 CUUIDlg::CUUIDlg(CWnd* pParent, CTapiCall* pCall)
 	: CDialog(CUUIDlg::IDD, pParent)
 {
@@ -36,7 +35,6 @@ CUUIDlg::CUUIDlg(CWnd* pParent, CTapiCall* pCall)
 	m_pCall = pCall;
 	//}}AFX_DATA_INIT
 }
-
 
 void CUUIDlg::DoDataExchange(CDataExchange* pDX)
 {
@@ -47,7 +45,6 @@ void CUUIDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_CALLDATA, m_strUUI);
 	//}}AFX_DATA_MAP
 }
-
 
 BEGIN_MESSAGE_MAP(CUUIDlg, CDialog)
 	//{{AFX_MSG_MAP(CUUIDlg)
@@ -60,7 +57,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CUUIDlg message handlers
 
-void CUUIDlg::OnReleaseUUI() 
+void CUUIDlg::OnReleaseUUI()
 {
 	// Set the call data in the call.
 	LONG lResult = m_pCall->SetPrivilege(LINECALLPRIVILEGE_OWNER);
@@ -80,14 +77,14 @@ void CUUIDlg::OnReleaseUUI()
 	LPLINECALLINFO lpCallInfo = m_pCall->GetCallInfo();
 	if (lpCallInfo->dwUserUserInfoSize > 0)
 	{
-		LPVOID lpBuff = (LPVOID) ((LPBYTE)lpCallInfo + lpCallInfo->dwUserUserInfoOffset);
+		LPVOID lpBuff = (LPVOID)((LPBYTE)lpCallInfo + lpCallInfo->dwUserUserInfoOffset);
 		m_edtHex.SetData(lpBuff, lpCallInfo->dwUserUserInfoSize);
 	}
 	else
 		m_edtHex.SetData(NULL, 0);
 }
 
-void CUUIDlg::OnSend() 
+void CUUIDlg::OnSend()
 {
 	UpdateData(TRUE);
 
@@ -97,31 +94,30 @@ void CUUIDlg::OnSend()
 		ShowError("lineSetCallPrivilege", lResult);
 	else
 	{
-		#ifdef _UNICODE
-			char szData[1000] = {0};
-			WideCharToMultiByte(CP_ACP, 0, (const WCHAR*)m_strUUI, -1, szData, 999, NULL, NULL);
-			lResult = GetTAPIConnection()->WaitForReply(m_pCall->SendUserUserInfo(szData, (DWORD)strlen(szData)+1));
-		#else
-			lResult = GetTAPIConnection()->WaitForReply(m_pCall->SendUserUserInfo(m_strUUI, m_strUUI.GetLength()+1));
-		#endif
-		
-		
+#ifdef _UNICODE
+		char szData[1000] = {0};
+		WideCharToMultiByte(CP_ACP, 0, (const WCHAR*)m_strUUI, -1, szData, 999, NULL, NULL);
+		lResult = GetTAPIConnection()->WaitForReply(m_pCall->SendUserUserInfo(szData, (DWORD)strlen(szData) + 1));
+#else
+		lResult = GetTAPIConnection()->WaitForReply(m_pCall->SendUserUserInfo(m_strUUI, m_strUUI.GetLength() + 1));
+#endif
+
 		if (lResult != 0)
 			ShowError("lineSendUserUserInfo", lResult);
 	}
 }
 
-BOOL CUUIDlg::OnInitDialog() 
+BOOL CUUIDlg::OnInitDialog()
 {
-    // Reset the font to all be ANSI var.
-    CFont fntAnsi;
-    fntAnsi.CreateStockObject (ANSI_VAR_FONT);
-    CWnd* pwndChild = GetWindow (GW_CHILD);
-    while (pwndChild != NULL && IsChild(pwndChild))
-    {
-        pwndChild->SetFont(&fntAnsi);
-        pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
-    }
+	// Reset the font to all be ANSI var.
+	CFont fntAnsi;
+	fntAnsi.CreateStockObject(ANSI_VAR_FONT);
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild != NULL && IsChild(pwndChild))
+	{
+		pwndChild->SetFont(&fntAnsi);
+		pwndChild = pwndChild->GetWindow(GW_HWNDNEXT);
+	}
 
 	m_edtHex.Init(GetDlgItem(IDC_HEXDATA)->GetSafeHwnd());
 
@@ -129,7 +125,7 @@ BOOL CUUIDlg::OnInitDialog()
 	LPLINECALLINFO lpCallInfo = m_pCall->GetCallInfo();
 	if (lpCallInfo->dwUserUserInfoSize > 0)
 	{
-		LPVOID lpBuff = (LPVOID) ((LPBYTE)lpCallInfo + lpCallInfo->dwUserUserInfoOffset);
+		LPVOID lpBuff = (LPVOID)((LPBYTE)lpCallInfo + lpCallInfo->dwUserUserInfoOffset);
 		m_edtHex.SetData(lpBuff, lpCallInfo->dwUserUserInfoSize);
 	}
 	else
@@ -150,7 +146,7 @@ BOOL CUUIDlg::OnInitDialog()
 	return TRUE;
 }
 
-void CUUIDlg::OnChange() 
+void CUUIDlg::OnChange()
 {
 	UpdateData(TRUE);
 	m_btnSend.EnableWindow(!m_strUUI.IsEmpty());

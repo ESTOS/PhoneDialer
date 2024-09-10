@@ -1,19 +1,19 @@
 // TAPICALL.CPP
 //
 // This file contains the call-level functions for the class library.
-// 
+//
 // This is a part of the TAPI Applications Classes C++ library.
 // Original Copyright © 1995-2004 JulMar Entertainment Technology, Inc. All rights reserved.
 //
-// "This program is free software; you can redistribute it and/or modify it under the terms of 
+// "This program is free software; you can redistribute it and/or modify it under the terms of
 // the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+// even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with this program; if not, write 
-// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
-// Or, contact: JulMar Technology, Inc. at: info@julmar.com." 
+// You should have received a copy of the GNU General Public License along with this program; if not, write
+// to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Or, contact: JulMar Technology, Inc. at: info@julmar.com."
 //
 
 #include "stdafx.h"
@@ -21,18 +21,23 @@
 #include "ecstaext.h"
 #include "tapistr.h"
 
-IMPLEMENT_DYNCREATE (CTapiCall, CTapiObject)
+IMPLEMENT_DYNCREATE(CTapiCall, CTapiObject)
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::CTapiCall
 //
 // Constructor for the TAPI call appearance
 //
-CTapiCall::CTapiCall() : m_pLine(NULL), m_hCall(0), 
-	m_lpCallInfo(NULL), m_lpCallStatus(NULL), m_dwState(0), m_dwWasNonIdle(0)
+CTapiCall::CTapiCall()
+	: m_pLine(NULL)
+	, m_hCall(0)
+	, m_lpCallInfo(NULL)
+	, m_lpCallStatus(NULL)
+	, m_dwState(0)
+	, m_dwWasNonIdle(0)
 {
 	m_bWaitingForFeature = false;
-}// CTapiCall::CTapiCall
+} // CTapiCall::CTapiCall
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::~CTapiCall
@@ -41,27 +46,27 @@ CTapiCall::CTapiCall() : m_pLine(NULL), m_hCall(0),
 //
 CTapiCall::~CTapiCall()
 {
-    Drop();
+	Drop();
 	Deallocate();
 
 	if (m_lpCallInfo)
-		FreeMem (m_lpCallInfo);
+		FreeMem(m_lpCallInfo);
 	if (m_lpCallStatus)
-		FreeMem (m_lpCallStatus);
+		FreeMem(m_lpCallStatus);
 
-}// CTapiCall::~CTapiCall
-    
+} // CTapiCall::~CTapiCall
+
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::Init
 //
 // Initialize the call appearance from a line device.
 //
-void CTapiCall::Init (CTapiLine* pLine, HCALL hCall)
-{                  
-    m_pLine = pLine;
-    m_hCall = hCall;
+void CTapiCall::Init(CTapiLine* pLine, HCALL hCall)
+{
+	m_pLine = pLine;
+	m_hCall = hCall;
 
-}// CTapiCall::Init
+} // CTapiCall::Init
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetLineOwner
@@ -69,10 +74,10 @@ void CTapiCall::Init (CTapiLine* pLine, HCALL hCall)
 // Return the line owner for this call
 //
 CTapiLine* CTapiCall::GetLineOwner() const
-{                             
-    return m_pLine;
+{
+	return m_pLine;
 
-}// CTapiCall::GetLineOwner
+} // CTapiCall::GetLineOwner
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetCallState
@@ -80,18 +85,18 @@ CTapiLine* CTapiCall::GetLineOwner() const
 // Return the current state of this call appearance
 //
 DWORD CTapiCall::GetCallState()
-{                         
-	if (m_dwState == 0)	
+{
+	if (m_dwState == 0)
 	{
 		const LPLINECALLSTATUS lpStat = GetCallStatus();
 		if (lpStat != NULL)
 			m_dwState = lpStat->dwCallState;
-		else 
+		else
 			m_dwState = LINECALLSTATE_UNKNOWN;
 	}
 	return m_dwState;
 
-}// CTapiCall::GetCallState
+} // CTapiCall::GetCallState
 
 DWORD CTapiCall::GetCallWasNonIdle() const
 {
@@ -103,132 +108,132 @@ DWORD CTapiCall::GetCallWasNonIdle() const
 //
 // Virtual function called when the call appearance information changes.
 //
-void CTapiCall::OnInfoChange (DWORD /*dwInfoState*/)
-{                          
+void CTapiCall::OnInfoChange(DWORD /*dwInfoState*/)
+{
 	// Re-get our callinfo record
 	if (m_lpCallInfo != NULL)
 		GetCallInfo(TRUE);
 
-}// CTapiCall::OnInfoChange
+} // CTapiCall::OnInfoChange
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnStateChange
 //
 // Virtual function called when the call appearance state changes.
 //
-void CTapiCall::OnStateChange (DWORD dwState, DWORD dwStateDetail, DWORD /*dwPrivilege*/)
+void CTapiCall::OnStateChange(DWORD dwState, DWORD dwStateDetail, DWORD /*dwPrivilege*/)
 {
 	m_dwState = dwState;
-	if(m_dwState != LINECALLSTATE_IDLE)
+	if (m_dwState != LINECALLSTATE_IDLE)
 		m_dwWasNonIdle = 1;
 
-    switch (dwState)
-    {
-        case LINECALLSTATE_IDLE:
-            OnCallStateIdle();
-            break;
-        case LINECALLSTATE_OFFERING:
-            OnCallStateOffering(dwStateDetail);
-            break;
-        case LINECALLSTATE_ACCEPTED:
-            OnCallStateAccepted();
-            break;
-        case LINECALLSTATE_DIALTONE:
-            OnCallStateDialtone(dwStateDetail);
-            break;
-        case LINECALLSTATE_DIALING:
-            OnCallStateDialing();
-            break;
-        case LINECALLSTATE_RINGBACK:
-            OnCallStateRingback();
-            break;     
-        case LINECALLSTATE_BUSY:
-            OnCallStateBusy(dwStateDetail);
-            break;
-        case LINECALLSTATE_CONNECTED:
-            OnCallStateConnected(dwStateDetail);
-            break;            
-        case LINECALLSTATE_PROCEEDING:
-            OnCallStateProceeding();
-            break;
-        case LINECALLSTATE_ONHOLD:
-            OnCallStateHold();
-            break;
-        case LINECALLSTATE_ONHOLDPENDCONF:
-            OnCallStateHoldPendingConference();
-            break;
-        case LINECALLSTATE_ONHOLDPENDTRANSFER:
-            OnCallStateHoldPendingTransfer();
-            break;
-        case LINECALLSTATE_SPECIALINFO:
-            OnCallStateSpecialInfo(dwStateDetail);
-            break;
-        case LINECALLSTATE_DISCONNECTED:
-            OnCallStateDisconnected(dwStateDetail);
-            break;
-        case LINECALLSTATE_CONFERENCED:
-            OnCallStateConferenced();
-            break;
-        default:
-            break;
-    }
+	switch (dwState)
+	{
+		case LINECALLSTATE_IDLE:
+			OnCallStateIdle();
+			break;
+		case LINECALLSTATE_OFFERING:
+			OnCallStateOffering(dwStateDetail);
+			break;
+		case LINECALLSTATE_ACCEPTED:
+			OnCallStateAccepted();
+			break;
+		case LINECALLSTATE_DIALTONE:
+			OnCallStateDialtone(dwStateDetail);
+			break;
+		case LINECALLSTATE_DIALING:
+			OnCallStateDialing();
+			break;
+		case LINECALLSTATE_RINGBACK:
+			OnCallStateRingback();
+			break;
+		case LINECALLSTATE_BUSY:
+			OnCallStateBusy(dwStateDetail);
+			break;
+		case LINECALLSTATE_CONNECTED:
+			OnCallStateConnected(dwStateDetail);
+			break;
+		case LINECALLSTATE_PROCEEDING:
+			OnCallStateProceeding();
+			break;
+		case LINECALLSTATE_ONHOLD:
+			OnCallStateHold();
+			break;
+		case LINECALLSTATE_ONHOLDPENDCONF:
+			OnCallStateHoldPendingConference();
+			break;
+		case LINECALLSTATE_ONHOLDPENDTRANSFER:
+			OnCallStateHoldPendingTransfer();
+			break;
+		case LINECALLSTATE_SPECIALINFO:
+			OnCallStateSpecialInfo(dwStateDetail);
+			break;
+		case LINECALLSTATE_DISCONNECTED:
+			OnCallStateDisconnected(dwStateDetail);
+			break;
+		case LINECALLSTATE_CONFERENCED:
+			OnCallStateConferenced();
+			break;
+		default:
+			break;
+	}
 
-}// CTapiCall::OnStateChange
+} // CTapiCall::OnStateChange
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnGatherDigitsComplete
 //
 // Digit gathering is complete for some reason
 //
-void CTapiCall::OnGatherDigitsComplete (DWORD /*dwReason*/)
+void CTapiCall::OnGatherDigitsComplete(DWORD /*dwReason*/)
 {
-    /* Do nothing */
-    
-}// CTapiCall::OnGatherDigitsComplete
+	/* Do nothing */
+
+} // CTapiCall::OnGatherDigitsComplete
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnGenerateComplete
 //
 // Tone generation is complete for some reason
 //
-void CTapiCall::OnGenerateComplete (DWORD /*dwReason*/)
+void CTapiCall::OnGenerateComplete(DWORD /*dwReason*/)
 {
-    /* Do nothing */
-    
-}// CTapiCall::OnGenerateComplete
+	/* Do nothing */
+
+} // CTapiCall::OnGenerateComplete
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnDigitDetected
 //
 // A digit has been detected
 //
-void CTapiCall::OnDigitDetected (DWORD /*dwDigit*/, DWORD /*dwDigitMode*/)
-{                             
-    /* Do nothing */
+void CTapiCall::OnDigitDetected(DWORD /*dwDigit*/, DWORD /*dwDigitMode*/)
+{
+	/* Do nothing */
 
-}// CTapiCall::OnDigitDetected
+} // CTapiCall::OnDigitDetected
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnMediaModeChange
 //
 // The media mode for this call has changed.
 //
-void CTapiCall::OnMediaModeChange (DWORD /*dwMediaMode*/)
+void CTapiCall::OnMediaModeChange(DWORD /*dwMediaMode*/)
 {
-    /* Do nothing */
-    
-}// CTapiCall::OnMediaModeChange
+	/* Do nothing */
+
+} // CTapiCall::OnMediaModeChange
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnToneDetected
 //
 // A tone has been detected
 //
-void CTapiCall::OnToneDetected (DWORD /*dwAppSpecific*/)
-{                             
-    /* Do nothing */
+void CTapiCall::OnToneDetected(DWORD /*dwAppSpecific*/)
+{
+	/* Do nothing */
 
-}// CTapiCall::OnToneDetected
+} // CTapiCall::OnToneDetected
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::Drop
@@ -236,13 +241,13 @@ void CTapiCall::OnToneDetected (DWORD /*dwAppSpecific*/)
 // Drop the current call appearance.
 //
 LONG CTapiCall::Drop(LPCSTR lpszUserToUser, DWORD dwSize)
-{   
-    // Only drop a call appearance in NON idle state.
-    if (m_dwState != LINECALLSTATE_IDLE) 
-        return ManageAsynchRequest(lineDrop (m_hCall, lpszUserToUser, dwSize));
-    return 0;
+{
+	// Only drop a call appearance in NON idle state.
+	if (m_dwState != LINECALLSTATE_IDLE)
+		return ManageAsynchRequest(lineDrop(m_hCall, lpszUserToUser, dwSize));
+	return 0;
 
-}// CTapiCall::Drop
+} // CTapiCall::Drop
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::Deallocate
@@ -250,12 +255,12 @@ LONG CTapiCall::Drop(LPCSTR lpszUserToUser, DWORD dwSize)
 // Deallocate this call appearance.
 //
 LONG CTapiCall::Deallocate()
-{       
+{
 	LONG lResult = 0;
 
 	if (GetCallHandle() != NULL)
 	{
-		lResult = lineDeallocateCall (GetCallHandle());
+		lResult = lineDeallocateCall(GetCallHandle());
 		if (lResult == 0)
 		{
 			m_hCall = NULL;
@@ -266,51 +271,51 @@ LONG CTapiCall::Deallocate()
 	// Call appearance has been deleted!!
 	return lResult;
 
-}// CTapiCall::Deallocate
+} // CTapiCall::Deallocate
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::Answer
 //
 // Answer this pending call.  The call appearance MUST be in the OFFERING state.
 //
-LONG CTapiCall::Answer (LPCSTR lpszUserToUser, DWORD dwSize)
-{                    
-    return ManageAsynchRequest(lineAnswer (m_hCall, lpszUserToUser, dwSize));
-    
-}// CTapiCall::Answer
+LONG CTapiCall::Answer(LPCSTR lpszUserToUser, DWORD dwSize)
+{
+	return ManageAsynchRequest(lineAnswer(m_hCall, lpszUserToUser, dwSize));
+
+} // CTapiCall::Answer
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::BlindTransfer
 //
 // Transfer this call appearance to a blind station
 //
-LONG CTapiCall::BlindTransfer (LPCTSTR lpszDestAddr, DWORD dwCountryCode)
-{                           
-    return ManageAsynchRequest(lineBlindTransfer (m_hCall, lpszDestAddr, dwCountryCode));
+LONG CTapiCall::BlindTransfer(LPCTSTR lpszDestAddr, DWORD dwCountryCode)
+{
+	return ManageAsynchRequest(lineBlindTransfer(m_hCall, lpszDestAddr, dwCountryCode));
 
-}// CTapiCall::BlindTransfer
+} // CTapiCall::BlindTransfer
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetID
 //
 // Return the specified ID for the the call handle
 //
-LONG CTapiCall::GetID (LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass)
-{                      
-    return lineGetID (NULL, 0L, m_hCall, LINECALLSELECT_CALL, lpDeviceID, lpszDeviceClass);
+LONG CTapiCall::GetID(LPVARSTRING lpDeviceID, LPCTSTR lpszDeviceClass)
+{
+	return lineGetID(NULL, 0L, m_hCall, LINECALLSELECT_CALL, lpDeviceID, lpszDeviceClass);
 
-}// CTapiCall::GetID
+} // CTapiCall::GetID
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::Dial
 //
 // Dial a number on the call appearance
 //
-LONG CTapiCall::Dial (LPCTSTR lpszDestAddr, DWORD dwCountryCode)
-{                           
-    return ManageAsynchRequest(lineDial (m_hCall, lpszDestAddr, dwCountryCode));
+LONG CTapiCall::Dial(LPCTSTR lpszDestAddr, DWORD dwCountryCode)
+{
+	return ManageAsynchRequest(lineDial(m_hCall, lpszDestAddr, dwCountryCode));
 
-}// CTapiCall::Dial
+} // CTapiCall::Dial
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetCallInfo
@@ -318,44 +323,44 @@ LONG CTapiCall::Dial (LPCTSTR lpszDestAddr, DWORD dwCountryCode)
 // Return call information buffer
 //
 const LPLINECALLINFO CTapiCall::GetCallInfo(BOOL fForceGet)
-{                         
+{
 	// If it is cached, return it.
 	if (m_lpCallInfo && !fForceGet)
 		return m_lpCallInfo;
 
-    // If we have no call handle, exit.
+	// If we have no call handle, exit.
 	if (m_hCall == NULL)
 		return NULL;
 
-    // Allocate a buffer for the call information
-    DWORD dwSize = (m_lpCallInfo) ? m_lpCallInfo->dwTotalSize : sizeof (LINECALLINFO) + 1024;
-    while (TRUE)
-    {   
+	// Allocate a buffer for the call information
+	DWORD dwSize = (m_lpCallInfo) ? m_lpCallInfo->dwTotalSize : sizeof(LINECALLINFO) + 1024;
+	while (TRUE)
+	{
 		// Allocate it if necessary.  We try to not allocate everytime.
 		if (m_lpCallInfo == NULL)
 		{
-			m_lpCallInfo = (LPLINECALLINFO) AllocMem( dwSize);
+			m_lpCallInfo = (LPLINECALLINFO)AllocMem(dwSize);
 			if (m_lpCallInfo == NULL)
 				return NULL;
 		}
-        
-        // Mark the size we are sending.
-        ((LPVARSTRING)m_lpCallInfo)->dwTotalSize = dwSize;
-        
-        if (lineGetCallInfo (m_hCall, m_lpCallInfo) != 0)
-            return NULL;
-        
-        // If we didn't get it all, then reallocate the buffer and retry it.
-        if (m_lpCallInfo->dwNeededSize <= dwSize)
+
+		// Mark the size we are sending.
+		((LPVARSTRING)m_lpCallInfo)->dwTotalSize = dwSize;
+
+		if (lineGetCallInfo(m_hCall, m_lpCallInfo) != 0)
+			return NULL;
+
+		// If we didn't get it all, then reallocate the buffer and retry it.
+		if (m_lpCallInfo->dwNeededSize <= dwSize)
 			return m_lpCallInfo;
 
 		// Otherwise, reallocate the structure.
-        dwSize = m_lpCallInfo->dwNeededSize;
+		dwSize = m_lpCallInfo->dwNeededSize;
 		FreeMem(m_lpCallInfo);
-        m_lpCallInfo = NULL;
-    }    
-    
-}// CTapiCall::GetCallInfo
+		m_lpCallInfo = NULL;
+	}
+
+} // CTapiCall::GetCallInfo
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetCallHandle
@@ -363,10 +368,10 @@ const LPLINECALLINFO CTapiCall::GetCallInfo(BOOL fForceGet)
 // Return our call handle
 //
 HCALL CTapiCall::GetCallHandle() const
-{                           
-    return m_hCall;
+{
+	return m_hCall;
 
-}// CTapiCall::GetCallHandle
+} // CTapiCall::GetCallHandle
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetCallStatus
@@ -374,34 +379,34 @@ HCALL CTapiCall::GetCallHandle() const
 // Return call status buffer
 //
 const LPLINECALLSTATUS CTapiCall::GetCallStatus()
-{   
-    // Allocate a buffer for the call information
-    DWORD dwSize = (m_lpCallStatus) ? m_lpCallStatus->dwTotalSize : sizeof (LINECALLSTATUS) + 1024;
-    while (TRUE)
-    {   
+{
+	// Allocate a buffer for the call information
+	DWORD dwSize = (m_lpCallStatus) ? m_lpCallStatus->dwTotalSize : sizeof(LINECALLSTATUS) + 1024;
+	while (TRUE)
+	{
 		if (m_lpCallStatus == NULL)
 		{
-			m_lpCallStatus = (LPLINECALLSTATUS) AllocMem( dwSize);
+			m_lpCallStatus = (LPLINECALLSTATUS)AllocMem(dwSize);
 			if (m_lpCallStatus == NULL)
 				return NULL;
 		}
-        
-        // Mark the size we are sending.
-        ((LPVARSTRING)m_lpCallStatus)->dwTotalSize = dwSize;
-        LONG lResult = lineGetCallStatus (m_hCall, m_lpCallStatus);
+
+		// Mark the size we are sending.
+		((LPVARSTRING)m_lpCallStatus)->dwTotalSize = dwSize;
+		LONG lResult = lineGetCallStatus(m_hCall, m_lpCallStatus);
 		if (lResult != 0)
-            return NULL;
-        
-        // If we didn't get it all, then reallocate the buffer and retry it.
-        if (m_lpCallStatus->dwNeededSize <= dwSize)
+			return NULL;
+
+		// If we didn't get it all, then reallocate the buffer and retry it.
+		if (m_lpCallStatus->dwNeededSize <= dwSize)
 			return m_lpCallStatus;
 
-        dwSize = m_lpCallStatus->dwNeededSize;
+		dwSize = m_lpCallStatus->dwNeededSize;
 		FreeMem(m_lpCallStatus);
-        m_lpCallStatus = NULL;
-    }    
-    
-}// CTapiCall::GetCallStatus
+		m_lpCallStatus = NULL;
+	}
+
+} // CTapiCall::GetCallStatus
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::Hold
@@ -409,10 +414,10 @@ const LPLINECALLSTATUS CTapiCall::GetCallStatus()
 // Place this call on hold
 //
 LONG CTapiCall::Hold()
-{                  
-    return ManageAsynchRequest(lineHold (m_hCall));
+{
+	return ManageAsynchRequest(lineHold(m_hCall));
 
-}// CTapiCall::Hold
+} // CTapiCall::Hold
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::Unhold
@@ -420,44 +425,43 @@ LONG CTapiCall::Hold()
 // Release this call from hold
 //
 LONG CTapiCall::Unhold()
-{                  
-    return ManageAsynchRequest(lineUnhold (m_hCall));
+{
+	return ManageAsynchRequest(lineUnhold(m_hCall));
 
-}// CTapiCall::Unhold
+} // CTapiCall::Unhold
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::SetCallParams
 //
 // Set the call parameters for this call appearance.
 //
-LONG CTapiCall::SetCallParams (DWORD dwBearerMode, DWORD dwMinRate, DWORD dwMaxRate,
-                               LPLINEDIALPARAMS const lpDialParams)
-{   
-    return ManageAsynchRequest(lineSetCallParams (m_hCall, dwBearerMode, dwMinRate, dwMaxRate, lpDialParams));
+LONG CTapiCall::SetCallParams(DWORD dwBearerMode, DWORD dwMinRate, DWORD dwMaxRate, LPLINEDIALPARAMS const lpDialParams)
+{
+	return ManageAsynchRequest(lineSetCallParams(m_hCall, dwBearerMode, dwMinRate, dwMaxRate, lpDialParams));
 
-}// CTapiCall::SetCallParams
+} // CTapiCall::SetCallParams
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::SetPrivilege
 //
 // Set the privilege for this call appearance.
 //
-LONG CTapiCall::SetPrivilege (DWORD dwCallPrivilege)
-{                          
-    return lineSetCallPrivilege (m_hCall, dwCallPrivilege);
+LONG CTapiCall::SetPrivilege(DWORD dwCallPrivilege)
+{
+	return lineSetCallPrivilege(m_hCall, dwCallPrivilege);
 
-}// CTapiCall::SetPrivilege 
+} // CTapiCall::SetPrivilege
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::SetMediaMode
 //
 // Set the media mode for this call appearance.
 //
-LONG CTapiCall::SetMediaMode (DWORD dwMediaMode)
-{                          
-    return lineSetMediaMode (m_hCall, dwMediaMode);
+LONG CTapiCall::SetMediaMode(DWORD dwMediaMode)
+{
+	return lineSetMediaMode(m_hCall, dwMediaMode);
 
-}// CTapiCall::SetMediaMode
+} // CTapiCall::SetMediaMode
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateIdle
@@ -465,21 +469,21 @@ LONG CTapiCall::SetMediaMode (DWORD dwMediaMode)
 // Default virtual method
 //
 void CTapiCall::OnCallStateIdle()
-{   
+{
 	/* Do nothing */
 
-}// CTapiCall::OnCallStateIdle
+} // CTapiCall::OnCallStateIdle
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateOffering
 //
 // Default virtual method
 //
-void CTapiCall::OnCallStateOffering (DWORD /*dwOfferingMode*/)
-{                
-    /* Do nothing */
+void CTapiCall::OnCallStateOffering(DWORD /*dwOfferingMode*/)
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStateOffering
+} // CTapiCall::OnCallStateOffering
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateAccepted
@@ -487,21 +491,21 @@ void CTapiCall::OnCallStateOffering (DWORD /*dwOfferingMode*/)
 // Default virtual method
 //
 void CTapiCall::OnCallStateAccepted()
-{                
-    /* Do nothing */
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStateAccepted
+} // CTapiCall::OnCallStateAccepted
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateDialtone
 //
 // Default virtual method
 //
-void CTapiCall::OnCallStateDialtone (DWORD /*dwToneMode*/)
-{                
-    /* Do nothing */
+void CTapiCall::OnCallStateDialtone(DWORD /*dwToneMode*/)
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStateDialtone
+} // CTapiCall::OnCallStateDialtone
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateDialing
@@ -509,10 +513,10 @@ void CTapiCall::OnCallStateDialtone (DWORD /*dwToneMode*/)
 // Default virtual method
 //
 void CTapiCall::OnCallStateDialing()
-{                
-    /* Do nothing */
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStateDialing
+} // CTapiCall::OnCallStateDialing
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateRingback
@@ -520,32 +524,32 @@ void CTapiCall::OnCallStateDialing()
 // Default virtual method
 //
 void CTapiCall::OnCallStateRingback()
-{                
-    /* Do nothing */
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStateRingback
+} // CTapiCall::OnCallStateRingback
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateBusy
 //
 // Default virtual method
 //
-void CTapiCall::OnCallStateBusy (DWORD /*dwBusyMode*/)
-{                
-    /* Do nothing */
+void CTapiCall::OnCallStateBusy(DWORD /*dwBusyMode*/)
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStateBusy
+} // CTapiCall::OnCallStateBusy
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateConnected
 //
 // Default virtual method
 //
-void CTapiCall::OnCallStateConnected (DWORD /*dwConnectMode*/)
-{                
-    /* Do nothing */
+void CTapiCall::OnCallStateConnected(DWORD /*dwConnectMode*/)
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStateConnected
+} // CTapiCall::OnCallStateConnected
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateProceeding
@@ -553,10 +557,10 @@ void CTapiCall::OnCallStateConnected (DWORD /*dwConnectMode*/)
 // Default virtual method
 //
 void CTapiCall::OnCallStateProceeding()
-{                
-    /* Do nothing */
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStateProceeding
+} // CTapiCall::OnCallStateProceeding
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateHold
@@ -564,10 +568,10 @@ void CTapiCall::OnCallStateProceeding()
 // Default virtual method
 //
 void CTapiCall::OnCallStateHold()
-{                
-    /* Do nothing */
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStateHold
+} // CTapiCall::OnCallStateHold
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateHoldPendingConference
@@ -575,10 +579,10 @@ void CTapiCall::OnCallStateHold()
 // Default virtual method
 //
 void CTapiCall::OnCallStateHoldPendingConference()
-{                
-    /* Do nothing */
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStatePendingConference
+} // CTapiCall::OnCallStatePendingConference
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStatePendingTransfer
@@ -586,10 +590,10 @@ void CTapiCall::OnCallStateHoldPendingConference()
 // Default virtual method
 //
 void CTapiCall::OnCallStateHoldPendingTransfer()
-{                
-    /* Do nothing */
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStatePendingTransfer
+} // CTapiCall::OnCallStatePendingTransfer
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateSpecialInfo
@@ -597,10 +601,10 @@ void CTapiCall::OnCallStateHoldPendingTransfer()
 // Default virtual method
 //
 void CTapiCall::OnCallStateSpecialInfo(DWORD /*dwInfo*/)
-{                
-    /* Do nothing */
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStateSpecialInfo
+} // CTapiCall::OnCallStateSpecialInfo
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateDisconnected
@@ -608,10 +612,10 @@ void CTapiCall::OnCallStateSpecialInfo(DWORD /*dwInfo*/)
 // Default virtual method
 //
 void CTapiCall::OnCallStateDisconnected(DWORD /*dwDisconnectMode*/)
-{                
-    /* Do nothing */
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStateDisconnected
+} // CTapiCall::OnCallStateDisconnected
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::OnCallStateConferenced
@@ -619,10 +623,10 @@ void CTapiCall::OnCallStateDisconnected(DWORD /*dwDisconnectMode*/)
 // Default virtual method
 //
 void CTapiCall::OnCallStateConferenced()
-{                
-    /* Do nothing */
+{
+	/* Do nothing */
 
-}// CTapiCall::OnCallStateConferenced
+} // CTapiCall::OnCallStateConferenced
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetAddressInfo
@@ -632,58 +636,53 @@ void CTapiCall::OnCallStateConferenced()
 // conference calls and intermediate transfer handles.
 //
 CTapiAddress* CTapiCall::GetAddressInfo()
-{                            
-    const LPLINECALLINFO lpInfo = GetCallInfo();                         
-    if (lpInfo)
-        return (CTapiAddress*) m_pLine->GetAddress(lpInfo->dwAddressID);
-    return NULL;        
+{
+	const LPLINECALLINFO lpInfo = GetCallInfo();
+	if (lpInfo)
+		return (CTapiAddress*)m_pLine->GetAddress(lpInfo->dwAddressID);
+	return NULL;
 
-}// CTapiCall::GetAddressInfo
+} // CTapiCall::GetAddressInfo
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::Accept
 //
-// Accepts the specified offered call. It may optionally send 
+// Accepts the specified offered call. It may optionally send
 // the specified user-to-user information to the calling party.
 //
-LONG CTapiCall::Accept (LPCSTR lpszUserToUser, DWORD dwSize)
-{                    
-    return ManageAsynchRequest(lineAccept (m_hCall, lpszUserToUser, dwSize));
+LONG CTapiCall::Accept(LPCSTR lpszUserToUser, DWORD dwSize)
+{
+	return ManageAsynchRequest(lineAccept(m_hCall, lpszUserToUser, dwSize));
 
-}// CTapiCall::Accept
+} // CTapiCall::Accept
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::CompleteCall
-// 
-// Specifies how a call that could not be connected normally should be 
-// completed instead. The network or switch may not be able to complete a 
-// call because network resources are busy or the remote station is busy 
-// or doesn't answer. The application can request that the call be 
-// completed in one of a number of ways. 
 //
-LONG CTapiCall::CompleteCall (LPDWORD lpdwCompletionID, DWORD dwCompletionMode, 
-                              DWORD dwMessageID)
-{                          
-    return ManageAsynchRequest(lineCompleteCall (m_hCall, lpdwCompletionID, dwCompletionMode, dwMessageID));
+// Specifies how a call that could not be connected normally should be
+// completed instead. The network or switch may not be able to complete a
+// call because network resources are busy or the remote station is busy
+// or doesn't answer. The application can request that the call be
+// completed in one of a number of ways.
+//
+LONG CTapiCall::CompleteCall(LPDWORD lpdwCompletionID, DWORD dwCompletionMode, DWORD dwMessageID)
+{
+	return ManageAsynchRequest(lineCompleteCall(m_hCall, lpdwCompletionID, dwCompletionMode, dwMessageID));
 
-}// CTapiCall::CompleteCall
+} // CTapiCall::CompleteCall
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GatherDigits
 //
-// Initiates the buffered gathering of digits on the specified call. 
-// The application specifies a buffer in which to place the digits 
+// Initiates the buffered gathering of digits on the specified call.
+// The application specifies a buffer in which to place the digits
 // and the maximum number of digits to be collected.
-//                         
-LONG CTapiCall::GatherDigits(DWORD dwDigitModes, LPTSTR lpsDigits, 
-                             DWORD dwNumDigits, LPCTSTR lpszTerminationDigits, 
-                             DWORD dwFirstDigitTimeout, DWORD dwInterDigitTimeout)
+//
+LONG CTapiCall::GatherDigits(DWORD dwDigitModes, LPTSTR lpsDigits, DWORD dwNumDigits, LPCTSTR lpszTerminationDigits, DWORD dwFirstDigitTimeout, DWORD dwInterDigitTimeout)
 {
-    return ManageAsynchRequest(lineGatherDigits (m_hCall, dwDigitModes, lpsDigits,
-                                     dwNumDigits, lpszTerminationDigits,
-                                     dwFirstDigitTimeout, dwInterDigitTimeout));
+	return ManageAsynchRequest(lineGatherDigits(m_hCall, dwDigitModes, lpsDigits, dwNumDigits, lpszTerminationDigits, dwFirstDigitTimeout, dwInterDigitTimeout));
 
-}// CTapiCall::GatherDigits
+} // CTapiCall::GatherDigits
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::CancelGatherDigits
@@ -692,22 +691,21 @@ LONG CTapiCall::GatherDigits(DWORD dwDigitModes, LPTSTR lpsDigits,
 //
 LONG CTapiCall::CancelGatherDigits()
 {
-    return ManageAsynchRequest(lineGatherDigits (m_hCall, LINEDIGITMODE_DTMF, NULL, 0, NULL, 0, 0));
+	return ManageAsynchRequest(lineGatherDigits(m_hCall, LINEDIGITMODE_DTMF, NULL, 0, NULL, 0, 0));
 
-}// CTapiCall::CancelGatherDigits
+} // CTapiCall::CancelGatherDigits
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GenerateDigits
 //
-// Initiates the generation of the specified digits on the specified 
-// call as inband tones using the specified signaling mode. 
-// 
-LONG CTapiCall::GenerateDigits (DWORD dwDigitMode, LPCTSTR lpszDigits, 
-                                DWORD dwDuration)
-{                            
-    return ManageAsynchRequest(lineGenerateDigits (m_hCall, dwDigitMode, lpszDigits, dwDuration));
+// Initiates the generation of the specified digits on the specified
+// call as inband tones using the specified signaling mode.
+//
+LONG CTapiCall::GenerateDigits(DWORD dwDigitMode, LPCTSTR lpszDigits, DWORD dwDuration)
+{
+	return ManageAsynchRequest(lineGenerateDigits(m_hCall, dwDigitMode, lpszDigits, dwDuration));
 
-}// CTapiCall::GenerateDigits
+} // CTapiCall::GenerateDigits
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::CancelGenerateDigits
@@ -715,253 +713,236 @@ LONG CTapiCall::GenerateDigits (DWORD dwDigitMode, LPCTSTR lpszDigits,
 // Cancel any current digit generation which has not completed.
 //
 LONG CTapiCall::CancelGenerateDigits()
-{                                  
-    return ManageAsynchRequest(lineGenerateDigits (m_hCall, LINEDIGITMODE_DTMF, NULL, 0));
+{
+	return ManageAsynchRequest(lineGenerateDigits(m_hCall, LINEDIGITMODE_DTMF, NULL, 0));
 
-}// CTapiCall::CancelGenerateDigits
+} // CTapiCall::CancelGenerateDigits
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GenerateTone
 //
-// Generates the specified inband tone over the specified call. 
-// 
-LONG CTapiCall::GenerateTone (DWORD dwToneMode, DWORD dwDuration, 
-                              DWORD dwNumTones, LPLINEGENERATETONE const lpTones)
-{                          
-    return ManageAsynchRequest(lineGenerateTone (m_hCall, dwToneMode, dwDuration, dwNumTones, lpTones));
+// Generates the specified inband tone over the specified call.
+//
+LONG CTapiCall::GenerateTone(DWORD dwToneMode, DWORD dwDuration, DWORD dwNumTones, LPLINEGENERATETONE const lpTones)
+{
+	return ManageAsynchRequest(lineGenerateTone(m_hCall, dwToneMode, dwDuration, dwNumTones, lpTones));
 
-}// CTapiCall::GenerateTone
-    
+} // CTapiCall::GenerateTone
+
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::CancelGenerateTone
 //
 // Cancels any tone generation being performed on the call.
-// 
-LONG CTapiCall::CancelGenerateTone ()
-{                          
-    return ManageAsynchRequest(lineGenerateTone (m_hCall, 0, 0, 0, NULL));
+//
+LONG CTapiCall::CancelGenerateTone()
+{
+	return ManageAsynchRequest(lineGenerateTone(m_hCall, 0, 0, 0, NULL));
 
-}// CTapiCall::CancelGenerateTone
+} // CTapiCall::CancelGenerateTone
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::Handoff
 //
-// Gives ownership of the specified call to another application. 
-// The application can be either specified directly by its file name or 
-// indirectly as the highest priority application that handles calls of 
+// Gives ownership of the specified call to another application.
+// The application can be either specified directly by its file name or
+// indirectly as the highest priority application that handles calls of
 // the specified media mode.
 //
-LONG CTapiCall::Handoff (LPCTSTR lpszFilename, DWORD dwMediaMode)
+LONG CTapiCall::Handoff(LPCTSTR lpszFilename, DWORD dwMediaMode)
 {
-    return ManageAsynchRequest(lineHandoff (m_hCall, lpszFilename, dwMediaMode));
+	return ManageAsynchRequest(lineHandoff(m_hCall, lpszFilename, dwMediaMode));
 
-}// CTapiCall::Handoff
+} // CTapiCall::Handoff
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::MonitorDigits
 //
-// Enables the unbuffered detection of digits received on the call. 
-// Each time a digit of the specified digit mode(s) is detected, 
+// Enables the unbuffered detection of digits received on the call.
+// Each time a digit of the specified digit mode(s) is detected,
 // a message is sent to the application indicating which digit has been detected.
 //
-LONG CTapiCall::MonitorDigits (DWORD dwDigitModes)
+LONG CTapiCall::MonitorDigits(DWORD dwDigitModes)
 {
-    return ManageAsynchRequest(lineMonitorDigits (m_hCall, dwDigitModes));
+	return ManageAsynchRequest(lineMonitorDigits(m_hCall, dwDigitModes));
 
-}// CTapiCall::MonitorDigits
+} // CTapiCall::MonitorDigits
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::CancelMonitorDigits
 //
-// Disables the unbuffered detection of digits received on the call. 
+// Disables the unbuffered detection of digits received on the call.
 //
 LONG CTapiCall::CancelMonitorDigits()
 {
-    return ManageAsynchRequest(lineMonitorDigits (m_hCall, 0L));
+	return ManageAsynchRequest(lineMonitorDigits(m_hCall, 0L));
 
-}// CTapiCall::CancelMonitorDigits
+} // CTapiCall::CancelMonitorDigits
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::MonitorMedia
 //
-// Enables the detection of media modes on the specified call. 
+// Enables the detection of media modes on the specified call.
 // When a media mode is detected, a message is sent to the application.
 //
-LONG CTapiCall::MonitorMedia (DWORD dwMediaModes)
+LONG CTapiCall::MonitorMedia(DWORD dwMediaModes)
 {
-    return ManageAsynchRequest(lineMonitorMedia (m_hCall, dwMediaModes));
-    
-}// CTapiCall::MonitorMedia
+	return ManageAsynchRequest(lineMonitorMedia(m_hCall, dwMediaModes));
+
+} // CTapiCall::MonitorMedia
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::CancelMonitorMedia
 //
-// Disables the detection of media modes on the specified call. 
+// Disables the detection of media modes on the specified call.
 //
 LONG CTapiCall::CancelMonitorMedia()
-{                   
-    return ManageAsynchRequest(lineMonitorMedia (m_hCall, 0L));
+{
+	return ManageAsynchRequest(lineMonitorMedia(m_hCall, 0L));
 
-}// CTapiCall::CancelMonitorMedia
+} // CTapiCall::CancelMonitorMedia
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::MonitorTones
 //
-// Enables the detection of inband tones on the call. 
-// Each time a specified tone is detected, a message is sent to the application. 
+// Enables the detection of inband tones on the call.
+// Each time a specified tone is detected, a message is sent to the application.
 //
-LONG CTapiCall::MonitorTones (LPLINEMONITORTONE const lpToneList, DWORD dwNumEntries)
+LONG CTapiCall::MonitorTones(LPLINEMONITORTONE const lpToneList, DWORD dwNumEntries)
 {
-    return ManageAsynchRequest(lineMonitorTones (m_hCall, lpToneList, dwNumEntries));
+	return ManageAsynchRequest(lineMonitorTones(m_hCall, lpToneList, dwNumEntries));
 
-}// CTapiCall::MonitorTones
+} // CTapiCall::MonitorTones
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::CancelMonitorTones
 //
-// Disables the detection of inband tones on the call. 
+// Disables the detection of inband tones on the call.
 //
 LONG CTapiCall::CancelMonitorTones()
 {
-    return ManageAsynchRequest(lineMonitorTones (m_hCall, NULL, 0L));
+	return ManageAsynchRequest(lineMonitorTones(m_hCall, NULL, 0L));
 
-}// CTapiCall::CancelMonitorTones
+} // CTapiCall::CancelMonitorTones
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::Park
 //
 // Parks the specified call according to the specified park mode.
 //
-LONG CTapiCall::Park (DWORD dwParkMode, LPCTSTR lpszDestAddr, LPTSTR lpszReturnBuff, 
-                      DWORD dwSize)
-{                  
-    LPVARSTRING lpVarString = (LPVARSTRING) AllocMem( sizeof(VARSTRING)+dwSize);
-    if (lpVarString == NULL)
-        return LINEERR_NOMEM;
+LONG CTapiCall::Park(DWORD dwParkMode, LPCTSTR lpszDestAddr, LPTSTR lpszReturnBuff, DWORD dwSize)
+{
+	LPVARSTRING lpVarString = (LPVARSTRING)AllocMem(sizeof(VARSTRING) + dwSize);
+	if (lpVarString == NULL)
+		return LINEERR_NOMEM;
 
-	#ifdef _UNICODE 
-		lpVarString->dwStringFormat = STRINGFORMAT_UNICODE;
-	#else
-		lpVarString->dwStringFormat = STRINGFORMAT_ASCII;
-	#endif
-    lpVarString->dwTotalSize = sizeof(VARSTRING)+dwSize;
-    lpVarString->dwStringSize = 0L;
-    
-    memset (lpszReturnBuff, 0, (size_t) dwSize);
-    LONG lResult = ManageAsynchRequest(linePark (m_hCall, dwParkMode, lpszDestAddr, lpVarString));
-    if (!IsTapiError(lResult) && GetTAPIConnection()->WaitForReply(lResult) == 0)
-    {              
-        memcpy(lpszReturnBuff, ((LPBYTE)lpVarString)+lpVarString->dwStringOffset, 
-                (size_t)lpVarString->dwStringSize);
-    }
+#ifdef _UNICODE
+	lpVarString->dwStringFormat = STRINGFORMAT_UNICODE;
+#else
+	lpVarString->dwStringFormat = STRINGFORMAT_ASCII;
+#endif
+	lpVarString->dwTotalSize = sizeof(VARSTRING) + dwSize;
+	lpVarString->dwStringSize = 0L;
 
-    FreeMem(lpVarString);
-    return lResult;
-    
-}// CTapiCall::Park
+	memset(lpszReturnBuff, 0, (size_t)dwSize);
+	LONG lResult = ManageAsynchRequest(linePark(m_hCall, dwParkMode, lpszDestAddr, lpVarString));
+	if (!IsTapiError(lResult) && GetTAPIConnection()->WaitForReply(lResult) == 0)
+		memcpy(lpszReturnBuff, ((LPBYTE)lpVarString) + lpVarString->dwStringOffset, (size_t)lpVarString->dwStringSize);
+
+	FreeMem(lpVarString);
+	return lResult;
+
+} // CTapiCall::Park
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::Redirect
 //
 // Redirects the specified offering call to the specified destination address.
 //
-LONG CTapiCall::Redirect (LPCTSTR lpszDialableAddr, DWORD dwCountryCode)
+LONG CTapiCall::Redirect(LPCTSTR lpszDialableAddr, DWORD dwCountryCode)
 {
-    return ManageAsynchRequest(lineRedirect (m_hCall, lpszDialableAddr, dwCountryCode));
+	return ManageAsynchRequest(lineRedirect(m_hCall, lpszDialableAddr, dwCountryCode));
 
-}// CTapiCall::Redirect
+} // CTapiCall::Redirect
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::ReleaseUserUserInfo
 //
-// Informs the service provider that the application has processed the 
-// user-user information contained in the LINECALLINFO structure, and 
-// that subsequently received user-user information can now be written into 
+// Informs the service provider that the application has processed the
+// user-user information contained in the LINECALLINFO structure, and
+// that subsequently received user-user information can now be written into
 // that structure.
 //
-// The service provider will send a LINE_CALLINFO message 
+// The service provider will send a LINE_CALLINFO message
 // indicating LINECALLINFOSTATE_USERUSERINFO when new information is available.
 //
 LONG CTapiCall::ReleaseUserUserInfo()
 {
-    return ManageAsynchRequest(lineReleaseUserUserInfo(m_hCall));
+	return ManageAsynchRequest(lineReleaseUserUserInfo(m_hCall));
 
-}// CTapiCall::ReleaseUserUserInfo
+} // CTapiCall::ReleaseUserUserInfo
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::SecureCall
 //
-// Secures the call from any interruptions or interference that may 
+// Secures the call from any interruptions or interference that may
 // affect the call's media stream.
 //
 LONG CTapiCall::SecureCall()
-{                        
-    return ManageAsynchRequest(lineSecureCall (m_hCall));
+{
+	return ManageAsynchRequest(lineSecureCall(m_hCall));
 
-}// CTapiCall::SecureCall
+} // CTapiCall::SecureCall
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::SendUserUserInfo
 //
 // Send user-to-user information to the remote party on the specified call.
 //
-LONG CTapiCall::SendUserUserInfo (LPCSTR lpszUserInfo, DWORD dwSize)
-{                              
-    return ManageAsynchRequest(lineSendUserUserInfo (m_hCall, lpszUserInfo, dwSize));
+LONG CTapiCall::SendUserUserInfo(LPCSTR lpszUserInfo, DWORD dwSize)
+{
+	return ManageAsynchRequest(lineSendUserUserInfo(m_hCall, lpszUserInfo, dwSize));
 
-}// CTapiCall::SendUserUserInfo
+} // CTapiCall::SendUserUserInfo
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::SetAppSpecificData
 //
-// This operation enables an application to set the application-specific 
+// This operation enables an application to set the application-specific
 // field of the specified call's call-information record
-//    
-LONG CTapiCall::SetAppSpecificData (DWORD dwData)
-{                                
-    return lineSetAppSpecific (m_hCall, dwData);
+//
+LONG CTapiCall::SetAppSpecificData(DWORD dwData)
+{
+	return lineSetAppSpecific(m_hCall, dwData);
 
-}// CTapiCall::SetAppSpecificData
+} // CTapiCall::SetAppSpecificData
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::SetMediaControl
 //
-// Enables and disables control actions on the media stream associated 
-// with the specified call. Media control actions can be triggered 
-// by the detection of specified digits, media modes, custom tones, 
+// Enables and disables control actions on the media stream associated
+// with the specified call. Media control actions can be triggered
+// by the detection of specified digits, media modes, custom tones,
 // and call states.
 //
-LONG CTapiCall::SetMediaControl (LPLINEMEDIACONTROLDIGIT const lpDigitList, 
-                                 DWORD dwDigitNumEntries, 
-                                 LPLINEMEDIACONTROLMEDIA const lpMediaList, 
-                                 DWORD dwMediaNumEntries, 
-                                 LPLINEMEDIACONTROLTONE const lpToneList, 
-                                 DWORD dwToneNumEntries, 
-                                 LPLINEMEDIACONTROLCALLSTATE const lpCallStateList,
-                                 DWORD dwCallStateNumEntries)
-{                             
-    return lineSetMediaControl (NULL, 0, m_hCall, LINECALLSELECT_CALL,
-                               lpDigitList, dwDigitNumEntries,
-                               lpMediaList, dwMediaNumEntries,
-                               lpToneList, dwToneNumEntries,
-                               lpCallStateList, dwCallStateNumEntries);
-    
-}// CTapiCall::SetMediaControl
-    
+LONG CTapiCall::SetMediaControl(LPLINEMEDIACONTROLDIGIT const lpDigitList, DWORD dwDigitNumEntries, LPLINEMEDIACONTROLMEDIA const lpMediaList, DWORD dwMediaNumEntries, LPLINEMEDIACONTROLTONE const lpToneList, DWORD dwToneNumEntries, LPLINEMEDIACONTROLCALLSTATE const lpCallStateList, DWORD dwCallStateNumEntries)
+{
+	return lineSetMediaControl(NULL, 0, m_hCall, LINECALLSELECT_CALL, lpDigitList, dwDigitNumEntries, lpMediaList, dwMediaNumEntries, lpToneList, dwToneNumEntries, lpCallStateList, dwCallStateNumEntries);
+
+} // CTapiCall::SetMediaControl
+
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::SetTerminal
 //
-// Enables an application to specify which terminal information related to the 
-// specified call is to be routed. lineSetTerminal can be used while calls 
-// are in progress on the line to allow an application to route these events 
+// Enables an application to specify which terminal information related to the
+// specified call is to be routed. lineSetTerminal can be used while calls
+// are in progress on the line to allow an application to route these events
 // to different devices as required.
 //
-LONG CTapiCall::SetTerminal (DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEnable)
-{                         
-    return ManageAsynchRequest(lineSetTerminal (NULL, 0, m_hCall, LINECALLSELECT_CALL,
-                                      dwTerminalMode, dwTerminalID, (DWORD)fEnable));
-    
-}// CTapiCall::SetTerminal
+LONG CTapiCall::SetTerminal(DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEnable)
+{
+	return ManageAsynchRequest(lineSetTerminal(NULL, 0, m_hCall, LINECALLSELECT_CALL, dwTerminalMode, dwTerminalID, (DWORD)fEnable));
+
+} // CTapiCall::SetTerminal
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::SetupTransfer
@@ -969,56 +950,51 @@ LONG CTapiCall::SetTerminal (DWORD dwTerminalMode, DWORD dwTerminalID, BOOL fEna
 // Begin a consultation transfer call by setting up a consultation call
 // appearance for this transfer event.
 //
-LONG CTapiCall::SetupTransfer (CTapiCall** pXferCall, LPLINECALLPARAMS const lpCallParams)
-{                                       
-    HCALL hCall = NULL;
-    *pXferCall = NULL;
-    
-    LONG lResult = ManageAsynchRequest(lineSetupTransfer (m_hCall, &hCall, lpCallParams));
-    if (GetTAPIConnection()->WaitForReply(lResult) == 0)
+LONG CTapiCall::SetupTransfer(CTapiCall** pXferCall, LPLINECALLPARAMS const lpCallParams)
+{
+	HCALL hCall = NULL;
+	*pXferCall = NULL;
+
+	LONG lResult = ManageAsynchRequest(lineSetupTransfer(m_hCall, &hCall, lpCallParams));
+	if (GetTAPIConnection()->WaitForReply(lResult) == 0)
 		*pXferCall = m_pLine->CreateNewCall(hCall);
-    return lResult;
-    
-}// CTapiCall::SetupTransfer
+	return lResult;
+
+} // CTapiCall::SetupTransfer
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::CompleteTransfer
 //
-// Completes the transfer of the specified call to the party connected 
+// Completes the transfer of the specified call to the party connected
 // in the consultation call.
 //
-LONG CTapiCall::CompleteTransfer(CTapiCall* pDestCall, CTapiCall** pConfCall, 
-                                 DWORD dwTransferMode)
-{                              
-    HCALL hCall = NULL;
-    *pConfCall = NULL;
-    
-    LONG lResult = ManageAsynchRequest(
-		lineCompleteTransfer (m_hCall, pDestCall->GetCallHandle(),
-                                         &hCall, dwTransferMode));
-    if (!GetTAPIConnection()->WaitForReply(lResult) &&
-         dwTransferMode == LINETRANSFERMODE_CONFERENCE)
-        *pConfCall = m_pLine->CreateNewCall(hCall);
-    return lResult;
+LONG CTapiCall::CompleteTransfer(CTapiCall* pDestCall, CTapiCall** pConfCall, DWORD dwTransferMode)
+{
+	HCALL hCall = NULL;
+	*pConfCall = NULL;
 
-}// CTapiCall::CompleteTransfer
-    
+	LONG lResult = ManageAsynchRequest(lineCompleteTransfer(m_hCall, pDestCall->GetCallHandle(), &hCall, dwTransferMode));
+	if (!GetTAPIConnection()->WaitForReply(lResult) && dwTransferMode == LINETRANSFERMODE_CONFERENCE)
+		*pConfCall = m_pLine->CreateNewCall(hCall);
+	return lResult;
+
+} // CTapiCall::CompleteTransfer
+
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::DevSpecific
 //
-// Enables service providers to provide access to features not offered 
-// by other TAPI functions. The meaning of the extensions are device specific, 
-// and taking advantage of these extensions requires the application to be 
+// Enables service providers to provide access to features not offered
+// by other TAPI functions. The meaning of the extensions are device specific,
+// and taking advantage of these extensions requires the application to be
 // fully aware of them.
 //
-LONG CTapiCall::DevSpecific (LPVOID lpParams, DWORD dwSize)
+LONG CTapiCall::DevSpecific(LPVOID lpParams, DWORD dwSize)
 {
-    CTapiAddress* pAddr = GetAddressInfo();
-    DWORD dwAddress = (pAddr) ? pAddr->GetAddressID() : 0L;
-    return  ManageAsynchRequest(
-		lineDevSpecific (m_pLine->GetLineHandle(), dwAddress, m_hCall, lpParams, dwSize));
+	CTapiAddress* pAddr = GetAddressInfo();
+	DWORD dwAddress = (pAddr) ? pAddr->GetAddressID() : 0L;
+	return ManageAsynchRequest(lineDevSpecific(m_pLine->GetLineHandle(), dwAddress, m_hCall, lpParams, dwSize));
 
-}// CTapiCall::DevSpecific
+} // CTapiCall::DevSpecific
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::AddToConference
@@ -1026,11 +1002,11 @@ LONG CTapiCall::DevSpecific (LPVOID lpParams, DWORD dwSize)
 // Add the specified call appearance to this conference call.  The current
 // call appearance MUST be a conference call handle returned by SetupConference.
 //
-LONG CTapiCall::AddToConference (CTapiCall* pCall)
-{                             
-    return ManageAsynchRequest(lineAddToConference (m_hCall, pCall->GetCallHandle()));
+LONG CTapiCall::AddToConference(CTapiCall* pCall)
+{
+	return ManageAsynchRequest(lineAddToConference(m_hCall, pCall->GetCallHandle()));
 
-}// CTapiCall::AddToConference
+} // CTapiCall::AddToConference
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetConferenceRelatedCalls
@@ -1038,67 +1014,65 @@ LONG CTapiCall::AddToConference (CTapiCall* pCall)
 // This function returns the list of calls related to this conference call.
 // Then current call appearance object MUST be a conference call handle.
 //
-LONG CTapiCall::GetConferenceRelatedCalls (CObList& lstCalls)
-{                                       
-    DWORD dwSize = sizeof (LINECALLLIST) + 1024;
-    LPLINECALLLIST lpCallList = NULL;
-    
-    while (TRUE)
-    {
-		lpCallList = (LPLINECALLLIST) AllocMem( dwSize);
-        if (lpCallList == NULL)
-			return LINEERR_NOMEM;
-    
-		lpCallList->dwTotalSize = dwSize;
-        LONG lResult = lineGetConfRelatedCalls (m_hCall, lpCallList);
-        if (lResult != 0)
-        {
-			FreeMem(lpCallList);
-            return lResult;
-        }                        
-            
-        // If we didn't get them all, then reallocate and try again.
-        if (lpCallList->dwNeededSize <= dwSize)
-			break;
-        dwSize = lpCallList->dwNeededSize;
-		FreeMem(lpCallList);
-        lpCallList = NULL;
-    }
-    
-    // Now go through the call list and create call handles for each.
-    LPHCALL lphCall = (LPHCALL) ((BYTE*)lpCallList + lpCallList->dwCallsOffset);
-    for (DWORD i = 0; i < lpCallList->dwCallsNumEntries; i++)
-    {
-        CTapiCall* pCall = m_pLine->CreateNewCall(*lphCall);
-        if (pCall)
-            lstCalls.AddTail(pCall);
-        lphCall++;
-    }        
-    
-	FreeMem(lpCallList);
-    return 0L;
+LONG CTapiCall::GetConferenceRelatedCalls(CObList& lstCalls)
+{
+	DWORD dwSize = sizeof(LINECALLLIST) + 1024;
+	LPLINECALLLIST lpCallList = NULL;
 
-}// CTapiCall::GetConferenceRelatedCalls
-    
+	while (TRUE)
+	{
+		lpCallList = (LPLINECALLLIST)AllocMem(dwSize);
+		if (lpCallList == NULL)
+			return LINEERR_NOMEM;
+
+		lpCallList->dwTotalSize = dwSize;
+		LONG lResult = lineGetConfRelatedCalls(m_hCall, lpCallList);
+		if (lResult != 0)
+		{
+			FreeMem(lpCallList);
+			return lResult;
+		}
+
+		// If we didn't get them all, then reallocate and try again.
+		if (lpCallList->dwNeededSize <= dwSize)
+			break;
+		dwSize = lpCallList->dwNeededSize;
+		FreeMem(lpCallList);
+		lpCallList = NULL;
+	}
+
+	// Now go through the call list and create call handles for each.
+	LPHCALL lphCall = (LPHCALL)((BYTE*)lpCallList + lpCallList->dwCallsOffset);
+	for (DWORD i = 0; i < lpCallList->dwCallsNumEntries; i++)
+	{
+		CTapiCall* pCall = m_pLine->CreateNewCall(*lphCall);
+		if (pCall)
+			lstCalls.AddTail(pCall);
+		lphCall++;
+	}
+
+	FreeMem(lpCallList);
+	return 0L;
+
+} // CTapiCall::GetConferenceRelatedCalls
+
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::PrepareAddToConference
 //
 // Prepares an existing conference call for the addition of another party.
 // The current object MUST be a conference call appearance.
-//    
-LONG CTapiCall::PrepareAddToConference (CTapiCall** pCall, 
-                                        LPLINECALLPARAMS const lpCallParams)
-{                                                         
-    HCALL hCall = NULL;
-    *pCall = NULL;
-    
-    LONG lResult = ManageAsynchRequest(
-		linePrepareAddToConference (m_hCall, &hCall, lpCallParams));
-    if (!GetTAPIConnection()->WaitForReply(lResult))
-        *pCall = m_pLine->CreateNewCall(hCall);
-    return lResult;
+//
+LONG CTapiCall::PrepareAddToConference(CTapiCall** pCall, LPLINECALLPARAMS const lpCallParams)
+{
+	HCALL hCall = NULL;
+	*pCall = NULL;
 
-}// CTapiCall::PrepareAddToConference
+	LONG lResult = ManageAsynchRequest(linePrepareAddToConference(m_hCall, &hCall, lpCallParams));
+	if (!GetTAPIConnection()->WaitForReply(lResult))
+		*pCall = m_pLine->CreateNewCall(hCall);
+	return lResult;
+
+} // CTapiCall::PrepareAddToConference
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::RemoveFromConference
@@ -1107,56 +1081,53 @@ LONG CTapiCall::PrepareAddToConference (CTapiCall** pCall,
 // part of.
 //
 LONG CTapiCall::RemoveFromConference()
-{                                  
-    return ManageAsynchRequest(lineRemoveFromConference (m_hCall));
+{
+	return ManageAsynchRequest(lineRemoveFromConference(m_hCall));
 
-}// CTapiCall::RemoveFromConference
+} // CTapiCall::RemoveFromConference
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::SetupConference
 //
 // Setup a call appearance to manage a conference
 //
-LONG CTapiCall::SetupConference (CTapiCall** pConfCall, CTapiCall** pConstCall,
-                                 DWORD dwNumParties, 
-                                 LPLINECALLPARAMS const lpCallParams)
-{                             
-    HCALL hCall1 = NULL;
-    HCALL hCall2 = NULL;
-    *pConfCall = NULL;
-    *pConstCall = NULL;
-    
-    LONG lResult = ManageAsynchRequest(
-		lineSetupConference (m_hCall, NULL, &hCall1, &hCall2, dwNumParties, lpCallParams));
-    if (!GetTAPIConnection()->WaitForReply(lResult))
-    {
-        *pConfCall = m_pLine->CreateNewCall (hCall1);
-        *pConstCall = m_pLine->CreateNewCall (hCall2);
-    }
-    return lResult;
+LONG CTapiCall::SetupConference(CTapiCall** pConfCall, CTapiCall** pConstCall, DWORD dwNumParties, LPLINECALLPARAMS const lpCallParams)
+{
+	HCALL hCall1 = NULL;
+	HCALL hCall2 = NULL;
+	*pConfCall = NULL;
+	*pConstCall = NULL;
 
-}// CTapiCall::SetupConference
+	LONG lResult = ManageAsynchRequest(lineSetupConference(m_hCall, NULL, &hCall1, &hCall2, dwNumParties, lpCallParams));
+	if (!GetTAPIConnection()->WaitForReply(lResult))
+	{
+		*pConfCall = m_pLine->CreateNewCall(hCall1);
+		*pConstCall = m_pLine->CreateNewCall(hCall2);
+	}
+	return lResult;
+
+} // CTapiCall::SetupConference
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetCommHandle
 //
 // Return a handle to the COMM port (datamodem) for this call appearance.
 //
-HANDLE CTapiCall::GetCommHandle ()
-{                         
-    LPVARSTRING lpVarString = (LPVARSTRING) AllocMem( sizeof(VARSTRING)+1024);
-    if (lpVarString == NULL)
-        return NULL;
-    lpVarString->dwTotalSize = sizeof(VARSTRING)+1024;
-    
-    HANDLE hCommFile = NULL;
-    if (GetID (lpVarString, _T("comm/datamodem")) == 0)
-        hCommFile = *((LPHANDLE)((LPBYTE)lpVarString+lpVarString->dwStringOffset));
+HANDLE CTapiCall::GetCommHandle()
+{
+	LPVARSTRING lpVarString = (LPVARSTRING)AllocMem(sizeof(VARSTRING) + 1024);
+	if (lpVarString == NULL)
+		return NULL;
+	lpVarString->dwTotalSize = sizeof(VARSTRING) + 1024;
+
+	HANDLE hCommFile = NULL;
+	if (GetID(lpVarString, _T("comm/datamodem")) == 0)
+		hCommFile = *((LPHANDLE)((LPBYTE)lpVarString + lpVarString->dwStringOffset));
 
 	FreeMem(lpVarString);
-    return hCommFile;
-    
-}// CTapiCall::GetCommFile
+	return hCommFile;
+
+} // CTapiCall::GetCommFile
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetCommDevice
@@ -1165,19 +1136,19 @@ HANDLE CTapiCall::GetCommHandle ()
 //
 CString CTapiCall::GetCommDevice()
 {
-    LPVARSTRING lpVarString = (LPVARSTRING) AllocMem( sizeof(VARSTRING)+1024);
-    if (lpVarString == NULL)
-        return "";
-    lpVarString->dwTotalSize = sizeof(VARSTRING)+1024;
-    
+	LPVARSTRING lpVarString = (LPVARSTRING)AllocMem(sizeof(VARSTRING) + 1024);
+	if (lpVarString == NULL)
+		return "";
+	lpVarString->dwTotalSize = sizeof(VARSTRING) + 1024;
+
 	CString strBuff;
-    if (GetID (lpVarString, _T("comm")) == 0)
-        strBuff = *((LPCTSTR)((LPBYTE)lpVarString+lpVarString->dwStringOffset));
+	if (GetID(lpVarString, _T("comm")) == 0)
+		strBuff = *((LPCTSTR)((LPBYTE)lpVarString + lpVarString->dwStringOffset));
 
 	FreeMem(lpVarString);
-    return strBuff;
+	return strBuff;
 
-}// CTapiCall::GetCommDevice
+} // CTapiCall::GetCommDevice
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetWaveInDeviceID
@@ -1186,20 +1157,20 @@ CString CTapiCall::GetCommDevice()
 // passed to "waveInOpen" to get a HWAVE handle.
 //
 DWORD CTapiCall::GetWaveInDeviceID()
-{                         
-    LPVARSTRING lpVarString = (LPVARSTRING) AllocMem( sizeof(VARSTRING)+1024);
-    if (lpVarString == NULL)
-        return NULL;
-    lpVarString->dwTotalSize = sizeof(VARSTRING)+10;
-    
-    DWORD dwID = 0L;
-    if (GetID (lpVarString, _T("wave/in")) == 0)
-        dwID = *((LPDWORD)((LPBYTE)lpVarString+lpVarString->dwStringOffset));
+{
+	LPVARSTRING lpVarString = (LPVARSTRING)AllocMem(sizeof(VARSTRING) + 1024);
+	if (lpVarString == NULL)
+		return NULL;
+	lpVarString->dwTotalSize = sizeof(VARSTRING) + 10;
+
+	DWORD dwID = 0L;
+	if (GetID(lpVarString, _T("wave/in")) == 0)
+		dwID = *((LPDWORD)((LPBYTE)lpVarString + lpVarString->dwStringOffset));
 
 	FreeMem(lpVarString);
-    return dwID;
-    
-}// CTapiCall::GetWaveInDeviceID
+	return dwID;
+
+} // CTapiCall::GetWaveInDeviceID
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetWaveOutDeviceID
@@ -1208,20 +1179,20 @@ DWORD CTapiCall::GetWaveInDeviceID()
 // passed to "waveInOpen" to get a HWAVE handle.
 //
 DWORD CTapiCall::GetWaveOutDeviceID()
-{                         
-    LPVARSTRING lpVarString = (LPVARSTRING) AllocMem( sizeof(VARSTRING)+1024);
-    if (lpVarString == NULL)
-        return NULL;
-    lpVarString->dwTotalSize = sizeof(VARSTRING)+10;
-    
-    DWORD dwID = 0L;
-    if (GetID (lpVarString, _T("wave/out")) == 0)
-        dwID = *((LPDWORD)((LPBYTE)lpVarString+lpVarString->dwStringOffset));
+{
+	LPVARSTRING lpVarString = (LPVARSTRING)AllocMem(sizeof(VARSTRING) + 1024);
+	if (lpVarString == NULL)
+		return NULL;
+	lpVarString->dwTotalSize = sizeof(VARSTRING) + 10;
+
+	DWORD dwID = 0L;
+	if (GetID(lpVarString, _T("wave/out")) == 0)
+		dwID = *((LPDWORD)((LPBYTE)lpVarString + lpVarString->dwStringOffset));
 
 	FreeMem(lpVarString);
-    return dwID;
-    
-}// CTapiCall::GetWaveOutDeviceID
+	return dwID;
+
+} // CTapiCall::GetWaveOutDeviceID
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetMidiInDeviceID
@@ -1230,20 +1201,20 @@ DWORD CTapiCall::GetWaveOutDeviceID()
 // passed to "midiInOpen" to get a HMIDI handle.
 //
 DWORD CTapiCall::GetMidiInDeviceID()
-{                         
-    LPVARSTRING lpVarString = (LPVARSTRING) AllocMem( sizeof(VARSTRING)+1024);
-    if (lpVarString == NULL)
-        return NULL;
-    lpVarString->dwTotalSize = sizeof(VARSTRING)+10;
-    
-    DWORD dwID = 0L;
-    if (GetID (lpVarString, _T("midi/in")) == 0)
-        dwID = *((LPDWORD)((LPBYTE)lpVarString+lpVarString->dwStringOffset));
+{
+	LPVARSTRING lpVarString = (LPVARSTRING)AllocMem(sizeof(VARSTRING) + 1024);
+	if (lpVarString == NULL)
+		return NULL;
+	lpVarString->dwTotalSize = sizeof(VARSTRING) + 10;
+
+	DWORD dwID = 0L;
+	if (GetID(lpVarString, _T("midi/in")) == 0)
+		dwID = *((LPDWORD)((LPBYTE)lpVarString + lpVarString->dwStringOffset));
 
 	FreeMem(lpVarString);
-    return dwID;
-    
-}// CTapiCall::GetMidiInDeviceID
+	return dwID;
+
+} // CTapiCall::GetMidiInDeviceID
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetMidiOutDeviceID
@@ -1252,20 +1223,20 @@ DWORD CTapiCall::GetMidiInDeviceID()
 // passed to "midiInOpen" to get a HMIDI handle.
 //
 DWORD CTapiCall::GetMidiOutDeviceID()
-{                         
-    LPVARSTRING lpVarString = (LPVARSTRING) AllocMem( sizeof(VARSTRING)+1024);
-    if (lpVarString == NULL)
-        return NULL;
-    lpVarString->dwTotalSize = sizeof(VARSTRING)+10;
-    
-    DWORD dwID = 0L;
-    if (GetID (lpVarString, _T("midi/out")) == 0)
-        dwID = *((LPDWORD)((LPBYTE)lpVarString+lpVarString->dwStringOffset));
+{
+	LPVARSTRING lpVarString = (LPVARSTRING)AllocMem(sizeof(VARSTRING) + 1024);
+	if (lpVarString == NULL)
+		return NULL;
+	lpVarString->dwTotalSize = sizeof(VARSTRING) + 10;
+
+	DWORD dwID = 0L;
+	if (GetID(lpVarString, _T("midi/out")) == 0)
+		dwID = *((LPDWORD)((LPBYTE)lpVarString + lpVarString->dwStringOffset));
 
 	FreeMem(lpVarString);
-    return dwID;
-    
-}// CTapiCall::GetMidiOutDeviceID
+	return dwID;
+
+} // CTapiCall::GetMidiOutDeviceID
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetCallStateString
@@ -1277,134 +1248,164 @@ CString CTapiCall::GetCallStateString()
 	CString strState = TAPISTR_LCS_UNKNOWN;
 	switch (GetCallState())
 	{
-		case LINECALLSTATE_IDLE: strState = TAPISTR_LCS_IDLE; break;
-		case LINECALLSTATE_OFFERING: strState = TAPISTR_LCS_OFFERING; break;
-		case LINECALLSTATE_ACCEPTED: strState = TAPISTR_LCS_ACCEPTED; break;
-		case LINECALLSTATE_DIALTONE: strState = TAPISTR_LCS_DIALTONE; break;
-		case LINECALLSTATE_DIALING:	strState = TAPISTR_LCS_DIALING; break;
-		case LINECALLSTATE_RINGBACK: strState = TAPISTR_LCS_RINGBACK; break;
-		case LINECALLSTATE_BUSY: strState = TAPISTR_LCS_BUSY; break;
-		case LINECALLSTATE_SPECIALINFO: strState = TAPISTR_LCS_SPECIALINFO; break;
-		case LINECALLSTATE_CONNECTED: strState = TAPISTR_LCS_CONNECTED; break;
-		case LINECALLSTATE_PROCEEDING: strState = TAPISTR_LCS_PROCEEDING; break;
-		case LINECALLSTATE_ONHOLD: strState = TAPISTR_LCS_ONHOLD; break;
-		case LINECALLSTATE_CONFERENCED:	strState = TAPISTR_LCS_CONFERENCED; break;
-		case LINECALLSTATE_ONHOLDPENDCONF: strState = TAPISTR_LCS_ONHOLDPENDCONF; break;
-		case LINECALLSTATE_ONHOLDPENDTRANSFER: strState = TAPISTR_LCS_ONHOLDPENDXFER; break;
-		case LINECALLSTATE_DISCONNECTED: strState = TAPISTR_LCS_DISCONNECTED; break;
+		case LINECALLSTATE_IDLE:
+			strState = TAPISTR_LCS_IDLE;
+			break;
+		case LINECALLSTATE_OFFERING:
+			strState = TAPISTR_LCS_OFFERING;
+			break;
+		case LINECALLSTATE_ACCEPTED:
+			strState = TAPISTR_LCS_ACCEPTED;
+			break;
+		case LINECALLSTATE_DIALTONE:
+			strState = TAPISTR_LCS_DIALTONE;
+			break;
+		case LINECALLSTATE_DIALING:
+			strState = TAPISTR_LCS_DIALING;
+			break;
+		case LINECALLSTATE_RINGBACK:
+			strState = TAPISTR_LCS_RINGBACK;
+			break;
+		case LINECALLSTATE_BUSY:
+			strState = TAPISTR_LCS_BUSY;
+			break;
+		case LINECALLSTATE_SPECIALINFO:
+			strState = TAPISTR_LCS_SPECIALINFO;
+			break;
+		case LINECALLSTATE_CONNECTED:
+			strState = TAPISTR_LCS_CONNECTED;
+			break;
+		case LINECALLSTATE_PROCEEDING:
+			strState = TAPISTR_LCS_PROCEEDING;
+			break;
+		case LINECALLSTATE_ONHOLD:
+			strState = TAPISTR_LCS_ONHOLD;
+			break;
+		case LINECALLSTATE_CONFERENCED:
+			strState = TAPISTR_LCS_CONFERENCED;
+			break;
+		case LINECALLSTATE_ONHOLDPENDCONF:
+			strState = TAPISTR_LCS_ONHOLDPENDCONF;
+			break;
+		case LINECALLSTATE_ONHOLDPENDTRANSFER:
+			strState = TAPISTR_LCS_ONHOLDPENDXFER;
+			break;
+		case LINECALLSTATE_DISCONNECTED:
+			strState = TAPISTR_LCS_DISCONNECTED;
+			break;
 	}
-	
+
 	strState += _T(" ") + GetCallStateModeString();
 
 	return strState;
 
-}// CTapiCall::GetCallStateString
+} // CTapiCall::GetCallStateString
 
 CString CTapiCall::GetCallFeaturesString()
 {
 	LPLINECALLSTATUS lpCallStatus = GetCallStatus();
-	
+
 	int iValue = 0;
 
-	if(lpCallStatus)
+	if (lpCallStatus)
 		iValue = lpCallStatus->dwCallFeatures;
 
 	CString strOutput;
 
-	if(iValue == 0x00000000)
+	if (iValue == 0x00000000)
 		strOutput += _T("LCF_NONE\r\n");
-	if(iValue & 0x00000001)
+	if (iValue & 0x00000001)
 		strOutput += _T("LCF_ACCEPT\r\n");
-	if(iValue & 0x00000002)
+	if (iValue & 0x00000002)
 		strOutput += _T("LCF_ADDTOCONF\r\n");
-	if(iValue & 0x00000004)
+	if (iValue & 0x00000004)
 		strOutput += _T("LCF_ANSWER\r\n");
-	if(iValue & 0x00000008)
+	if (iValue & 0x00000008)
 		strOutput += _T("LCF_BLINDTRANSFER\r\n");
-	if(iValue & 0x00000010)
+	if (iValue & 0x00000010)
 		strOutput += _T("LCF_COMPLETECALL\r\n");
-	if(iValue & 0x00000020)
+	if (iValue & 0x00000020)
 		strOutput += _T("LCF_COMPLETETRANSF\r\n");
-	if(iValue & 0x00000040)
+	if (iValue & 0x00000040)
 		strOutput += _T("LCF_DIAL\r\n");
-	if(iValue & 0x00000080)
+	if (iValue & 0x00000080)
 		strOutput += _T("LCF_DROP\r\n");
-	if(iValue & 0x00000100)
+	if (iValue & 0x00000100)
 		strOutput += _T("LCF_GATHERDIGITS\r\n");
-	if(iValue & 0x00000200)
+	if (iValue & 0x00000200)
 		strOutput += _T("LCF_GENERATEDIGITS\r\n");
-	if(iValue & 0x00000400)
+	if (iValue & 0x00000400)
 		strOutput += _T("LCF_GENERATETONE\r\n");
-	if(iValue & 0x00000800)
+	if (iValue & 0x00000800)
 		strOutput += _T("LCF_HOLD\r\n");
-	if(iValue & 0x00001000)
+	if (iValue & 0x00001000)
 		strOutput += _T("LCF_MONITORDIGITS\r\n");
-	if(iValue & 0x00002000)
+	if (iValue & 0x00002000)
 		strOutput += _T("LCF_MONITORMEDIA\r\n");
-	if(iValue & 0x00004000)
+	if (iValue & 0x00004000)
 		strOutput += _T("LCF_MONITORTONES\r\n");
-	if(iValue & 0x00008000)
+	if (iValue & 0x00008000)
 		strOutput += _T("LCF_PARK\r\n");
-	if(iValue & 0x00010000)
+	if (iValue & 0x00010000)
 		strOutput += _T("LCF_PREPAREADDCONF\r\n");
-	if(iValue & 0x00020000)
+	if (iValue & 0x00020000)
 		strOutput += _T("LCF_REDIRECT\r\n");
-	if(iValue & 0x00040000)
+	if (iValue & 0x00040000)
 		strOutput += _T("LCF_REMOVEFROMCONF\r\n");
-	if(iValue & 0x00080000)
+	if (iValue & 0x00080000)
 		strOutput += _T("LCF_SECURECALL\r\n");
-	if(iValue & 0x00100000)
+	if (iValue & 0x00100000)
 		strOutput += _T("LCF_SENDUSERUSER\r\n");
-	if(iValue & 0x00200000)
+	if (iValue & 0x00200000)
 		strOutput += _T("LCF_SETCALLPARAMS\r\n");
-	if(iValue & 0x00400000)
+	if (iValue & 0x00400000)
 		strOutput += _T("LCF_SETMEDIACONTROL\r\n");
-	if(iValue & 0x00800000)
+	if (iValue & 0x00800000)
 		strOutput += _T("LCF_SETTERMINAL\r\n");
-	if(iValue & 0x01000000)
+	if (iValue & 0x01000000)
 		strOutput += _T("LCF_SETUPCONF\r\n");
-	if(iValue & 0x02000000)
+	if (iValue & 0x02000000)
 		strOutput += _T("LCF_SETUPTRANSFER\r\n");
-	if(iValue & 0x04000000)
+	if (iValue & 0x04000000)
 		strOutput += _T("LCF_SWAPHOLD\r\n");
-	if(iValue & 0x08000000)
+	if (iValue & 0x08000000)
 		strOutput += _T("LCF_UNHOLD\r\n");
-	if(iValue & 0x10000000)
+	if (iValue & 0x10000000)
 		strOutput += _T("LCF_RELEASEUSERUSERINFO\r\n");
-	if(iValue & 0x20000000)
+	if (iValue & 0x20000000)
 		strOutput += _T("LCF_SETTREATMENT\r\n");
-	if(iValue & 0x40000000)
+	if (iValue & 0x40000000)
 		strOutput += _T("LCF_SETQOS\r\n");
-	if(iValue & 0x80000000)
+	if (iValue & 0x80000000)
 		strOutput += _T("LCF_SETCALLDATA\r\n");
 
 	strOutput += _T("\r\n");
 
 	iValue = 0;
-	if(lpCallStatus)
+	if (lpCallStatus)
 		iValue = lpCallStatus->dwCallFeatures2;
-	
-	if(iValue == 0x00000000)
+
+	if (iValue == 0x00000000)
 		strOutput += _T("LCF2_NONE\r\n");
-	if(iValue & LINECALLFEATURE2_NOHOLDCONFERENCE)
+	if (iValue & LINECALLFEATURE2_NOHOLDCONFERENCE)
 		strOutput += _T("LCF2_NOHOLDCONFERENCE\r\n");
-	if(iValue & LINECALLFEATURE2_ONESTEPTRANSFER)
+	if (iValue & LINECALLFEATURE2_ONESTEPTRANSFER)
 		strOutput += _T("LCF2_ONESTEPTRANSFER\r\n");
-	if(iValue & LINECALLFEATURE2_COMPLCAMPON)
+	if (iValue & LINECALLFEATURE2_COMPLCAMPON)
 		strOutput += _T("LCF2_COMPLCAMPON\r\n");
-	if(iValue & LINECALLFEATURE2_COMPLCALLBACK)
+	if (iValue & LINECALLFEATURE2_COMPLCALLBACK)
 		strOutput += _T("LCF2_COMPLCALLBACK\r\n");
-	if(iValue & LINECALLFEATURE2_COMPLINTRUDE)
+	if (iValue & LINECALLFEATURE2_COMPLINTRUDE)
 		strOutput += _T("LCF2_COMPLINTRUDE\r\n");
-	if(iValue & LINECALLFEATURE2_COMPLMESSAGE)
+	if (iValue & LINECALLFEATURE2_COMPLMESSAGE)
 		strOutput += _T("LCF2_COMPLMESSAGE\r\n");
-	if(iValue & LINECALLFEATURE2_TRANSFERNORM)
+	if (iValue & LINECALLFEATURE2_TRANSFERNORM)
 		strOutput += _T("LCF2_TRANSFERNORM\r\n");
-	if(iValue & LINECALLFEATURE2_TRANSFERCONF)
+	if (iValue & LINECALLFEATURE2_TRANSFERCONF)
 		strOutput += _T("LCF2_TRANSFERCONF\r\n");
-	if(iValue & LINECALLFEATURE2_PARKDIRECT)
+	if (iValue & LINECALLFEATURE2_PARKDIRECT)
 		strOutput += _T("LCF2_PARKDIRECT\r\n");
-	if(iValue & LINECALLFEATURE2_PARKNONDIRECT)
+	if (iValue & LINECALLFEATURE2_PARKNONDIRECT)
 		strOutput += _T("LCF2_PARKNONDIRECT\r\n");
 
 	return strOutput;
@@ -1426,24 +1427,42 @@ CString CTapiCall::GetCallStateModeString()
 	{
 		switch (lpCall->dwCallStateMode)
 		{
-			case LINEDISCONNECTMODE_NORMAL: return _T("(Normal)");
-			case LINEDISCONNECTMODE_REJECT: return _T("(Reject)");
-			case LINEDISCONNECTMODE_PICKUP: return _T("(Pickup)");
-			case LINEDISCONNECTMODE_FORWARDED: return _T("(Fwd)");
-			case LINEDISCONNECTMODE_BUSY: return _T("(Busy)");
-			case LINEDISCONNECTMODE_NOANSWER: return _T("(NoAnswer)");
-			case LINEDISCONNECTMODE_BADADDRESS: return _T("(BadAddress)");
-			case LINEDISCONNECTMODE_UNREACHABLE: return _T("(Unreachable)");
-			case LINEDISCONNECTMODE_CONGESTION: return _T("(Congestion)");
-			case LINEDISCONNECTMODE_INCOMPATIBLE: return _T("(Incompatible)");
-			case LINEDISCONNECTMODE_NODIALTONE: return _T("(No Dialtone)");
-			case LINEDISCONNECTMODE_NUMBERCHANGED: return _T("(Number Changed)");
-			case LINEDISCONNECTMODE_OUTOFORDER: return _T("(Out of Order)");
-			case LINEDISCONNECTMODE_TEMPFAILURE: return _T("(Temp Failure)");
-			case LINEDISCONNECTMODE_QOSUNAVAIL: return _T("(QOS Unavalable)");
-			case LINEDISCONNECTMODE_BLOCKED: return _T("(Blocked)");
-			case LINEDISCONNECTMODE_DONOTDISTURB: return _T("(Do Not Disturb)");
-			case LINEDISCONNECTMODE_CANCELLED: return _T("(Canceled)");
+			case LINEDISCONNECTMODE_NORMAL:
+				return _T("(Normal)");
+			case LINEDISCONNECTMODE_REJECT:
+				return _T("(Reject)");
+			case LINEDISCONNECTMODE_PICKUP:
+				return _T("(Pickup)");
+			case LINEDISCONNECTMODE_FORWARDED:
+				return _T("(Fwd)");
+			case LINEDISCONNECTMODE_BUSY:
+				return _T("(Busy)");
+			case LINEDISCONNECTMODE_NOANSWER:
+				return _T("(NoAnswer)");
+			case LINEDISCONNECTMODE_BADADDRESS:
+				return _T("(BadAddress)");
+			case LINEDISCONNECTMODE_UNREACHABLE:
+				return _T("(Unreachable)");
+			case LINEDISCONNECTMODE_CONGESTION:
+				return _T("(Congestion)");
+			case LINEDISCONNECTMODE_INCOMPATIBLE:
+				return _T("(Incompatible)");
+			case LINEDISCONNECTMODE_NODIALTONE:
+				return _T("(No Dialtone)");
+			case LINEDISCONNECTMODE_NUMBERCHANGED:
+				return _T("(Number Changed)");
+			case LINEDISCONNECTMODE_OUTOFORDER:
+				return _T("(Out of Order)");
+			case LINEDISCONNECTMODE_TEMPFAILURE:
+				return _T("(Temp Failure)");
+			case LINEDISCONNECTMODE_QOSUNAVAIL:
+				return _T("(QOS Unavalable)");
+			case LINEDISCONNECTMODE_BLOCKED:
+				return _T("(Blocked)");
+			case LINEDISCONNECTMODE_DONOTDISTURB:
+				return _T("(Do Not Disturb)");
+			case LINEDISCONNECTMODE_CANCELLED:
+				return _T("(Canceled)");
 		}
 	}
 
@@ -1451,11 +1470,16 @@ CString CTapiCall::GetCallStateModeString()
 	{
 		switch (lpCall->dwCallStateMode)
 		{
-			case LINECONNECTEDMODE_ACTIVE: return _T("(Active)");
-			case LINECONNECTEDMODE_INACTIVE: return _T("(Inactive)");
-			case LINECONNECTEDMODE_ACTIVEHELD: return _T("(ActiveHeld)");
-			case LINECONNECTEDMODE_INACTIVEHELD: return _T("(InactiveHeld)");
-			case LINECONNECTEDMODE_CONFIRMED: return _T("(Confirmed)");
+			case LINECONNECTEDMODE_ACTIVE:
+				return _T("(Active)");
+			case LINECONNECTEDMODE_INACTIVE:
+				return _T("(Inactive)");
+			case LINECONNECTEDMODE_ACTIVEHELD:
+				return _T("(ActiveHeld)");
+			case LINECONNECTEDMODE_INACTIVEHELD:
+				return _T("(InactiveHeld)");
+			case LINECONNECTEDMODE_CONFIRMED:
+				return _T("(Confirmed)");
 		}
 	}
 
@@ -1463,17 +1487,21 @@ CString CTapiCall::GetCallStateModeString()
 	{
 		switch (lpCall->dwCallStateMode)
 		{
-			case LINEBUSYMODE_STATION: return _T("(Station)");
-			case LINEBUSYMODE_TRUNK: return _T("(Trunk)");
-		}		
+			case LINEBUSYMODE_STATION:
+				return _T("(Station)");
+			case LINEBUSYMODE_TRUNK:
+				return _T("(Trunk)");
+		}
 	}
 
 	else if (dwState == LINECALLSTATE_OFFERING)
 	{
 		switch (lpCall->dwCallStateMode)
 		{
-			case LINEOFFERINGMODE_ACTIVE: return _T("(Active)");
-			case LINEOFFERINGMODE_INACTIVE: return _T("(Inactive)");
+			case LINEOFFERINGMODE_ACTIVE:
+				return _T("(Active)");
+			case LINEOFFERINGMODE_INACTIVE:
+				return _T("(Inactive)");
 		}
 	}
 
@@ -1481,16 +1509,20 @@ CString CTapiCall::GetCallStateModeString()
 	{
 		switch (lpCall->dwCallStateMode)
 		{
-			case LINEDIALTONEMODE_NORMAL: return _T("(Normal)");
-			case LINEDIALTONEMODE_SPECIAL: return _T("(Special)");
-			case LINEDIALTONEMODE_INTERNAL: return _T("(Internal)");
-			case LINEDIALTONEMODE_EXTERNAL: return _T("(External)");
+			case LINEDIALTONEMODE_NORMAL:
+				return _T("(Normal)");
+			case LINEDIALTONEMODE_SPECIAL:
+				return _T("(Special)");
+			case LINEDIALTONEMODE_INTERNAL:
+				return _T("(Internal)");
+			case LINEDIALTONEMODE_EXTERNAL:
+				return _T("(External)");
 		}
 	}
 
 	return _T("");
 
-}// CTapiCall::GetCallStateModeString
+} // CTapiCall::GetCallStateModeString
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetCallerIDNumber
@@ -1500,15 +1532,14 @@ CString CTapiCall::GetCallStateModeString()
 CString CTapiCall::GetCallerIDNumber()
 {
 	const LPLINECALLINFO pCallInfo = GetCallInfo();
-	if (pCallInfo->dwCallerIDFlags & LINECALLPARTYID_ADDRESS &&
-		pCallInfo->dwCallerIDSize > 0)
+	if (pCallInfo->dwCallerIDFlags & LINECALLPARTYID_ADDRESS && pCallInfo->dwCallerIDSize > 0)
 	{
 		CString strNumber = (LPCTSTR)((LPBYTE)pCallInfo + pCallInfo->dwCallerIDOffset);
 		return strNumber;
 	}
 	return "";
 
-}// CTapiCall::GetCallerIDNumber
+} // CTapiCall::GetCallerIDNumber
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetCallerIDName
@@ -1518,15 +1549,14 @@ CString CTapiCall::GetCallerIDNumber()
 CString CTapiCall::GetCallerIDName()
 {
 	const LPLINECALLINFO pCallInfo = GetCallInfo();
-	if (pCallInfo->dwCallerIDFlags & LINECALLPARTYID_NAME &&
-		pCallInfo->dwCallerIDNameSize > 0)
+	if (pCallInfo->dwCallerIDFlags & LINECALLPARTYID_NAME && pCallInfo->dwCallerIDNameSize > 0)
 	{
 		CString strName = (LPCTSTR)((LPBYTE)pCallInfo + pCallInfo->dwCallerIDNameOffset);
 		return strName;
 	}
 	return "";
 
-}// CTapiCall::GetCallerIDName
+} // CTapiCall::GetCallerIDName
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetConnectedIDNumber
@@ -1536,15 +1566,14 @@ CString CTapiCall::GetCallerIDName()
 CString CTapiCall::GetConnectedIDNumber()
 {
 	const LPLINECALLINFO pCallInfo = GetCallInfo();
-	if (pCallInfo->dwConnectedIDFlags & LINECALLPARTYID_ADDRESS &&
-		pCallInfo->dwConnectedIDSize > 0)
+	if (pCallInfo->dwConnectedIDFlags & LINECALLPARTYID_ADDRESS && pCallInfo->dwConnectedIDSize > 0)
 	{
 		CString strNumber = (LPCTSTR)((LPBYTE)pCallInfo + pCallInfo->dwConnectedIDOffset);
 		return strNumber;
 	}
 	return "";
 
-}// CTapiCall::GetConnectedIDNumber
+} // CTapiCall::GetConnectedIDNumber
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetConnectedIDName
@@ -1554,15 +1583,14 @@ CString CTapiCall::GetConnectedIDNumber()
 CString CTapiCall::GetConnectedIDName()
 {
 	const LPLINECALLINFO pCallInfo = GetCallInfo();
-	if (pCallInfo->dwConnectedIDFlags & LINECALLPARTYID_NAME &&
-		pCallInfo->dwConnectedIDNameSize > 0)
+	if (pCallInfo->dwConnectedIDFlags & LINECALLPARTYID_NAME && pCallInfo->dwConnectedIDNameSize > 0)
 	{
 		CString strName = (LPCTSTR)((LPBYTE)pCallInfo + pCallInfo->dwConnectedIDNameOffset);
 		return strName;
 	}
 	return "";
 
-}// CTapiCall::GetConnectedIDName
+} // CTapiCall::GetConnectedIDName
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetCalledIDNumber
@@ -1572,15 +1600,14 @@ CString CTapiCall::GetConnectedIDName()
 CString CTapiCall::GetCalledIDNumber()
 {
 	const LPLINECALLINFO pCallInfo = GetCallInfo();
-	if (pCallInfo->dwCalledIDFlags & LINECALLPARTYID_ADDRESS &&
-		pCallInfo->dwCalledIDSize > 0)
+	if (pCallInfo->dwCalledIDFlags & LINECALLPARTYID_ADDRESS && pCallInfo->dwCalledIDSize > 0)
 	{
 		CString strNumber = (LPCTSTR)((LPBYTE)pCallInfo + pCallInfo->dwCalledIDOffset);
 		return strNumber;
 	}
 	return "";
 
-}// CTapiCall::GetCalledIDNumber
+} // CTapiCall::GetCalledIDNumber
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetCalledIDName
@@ -1590,15 +1617,14 @@ CString CTapiCall::GetCalledIDNumber()
 CString CTapiCall::GetCalledIDName()
 {
 	const LPLINECALLINFO pCallInfo = GetCallInfo();
-	if (pCallInfo->dwCalledIDFlags & LINECALLPARTYID_NAME &&
-		pCallInfo->dwCalledIDNameSize > 0)
+	if (pCallInfo->dwCalledIDFlags & LINECALLPARTYID_NAME && pCallInfo->dwCalledIDNameSize > 0)
 	{
 		CString strName = (LPCTSTR)((LPBYTE)pCallInfo + pCallInfo->dwCalledIDNameOffset);
 		return strName;
 	}
 	return "";
 
-}// CTapiCall::GetCalledIDName
+} // CTapiCall::GetCalledIDName
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetRedirectingIDNumber
@@ -1608,15 +1634,14 @@ CString CTapiCall::GetCalledIDName()
 CString CTapiCall::GetRedirectingIDNumber()
 {
 	const LPLINECALLINFO pCallInfo = GetCallInfo();
-	if (pCallInfo->dwRedirectingIDFlags & LINECALLPARTYID_ADDRESS &&
-		pCallInfo->dwRedirectingIDSize > 0)
+	if (pCallInfo->dwRedirectingIDFlags & LINECALLPARTYID_ADDRESS && pCallInfo->dwRedirectingIDSize > 0)
 	{
 		CString strNumber = (LPCTSTR)((LPBYTE)pCallInfo + pCallInfo->dwRedirectingIDOffset);
 		return strNumber;
 	}
 	return "";
 
-}// CTapiCall::GetRedirectingIDNumber
+} // CTapiCall::GetRedirectingIDNumber
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetRedirectingIDName
@@ -1626,15 +1651,14 @@ CString CTapiCall::GetRedirectingIDNumber()
 CString CTapiCall::GetRedirectingIDName()
 {
 	const LPLINECALLINFO pCallInfo = GetCallInfo();
-	if (pCallInfo->dwRedirectingIDFlags & LINECALLPARTYID_NAME &&
-		pCallInfo->dwRedirectingIDNameSize > 0)
+	if (pCallInfo->dwRedirectingIDFlags & LINECALLPARTYID_NAME && pCallInfo->dwRedirectingIDNameSize > 0)
 	{
 		CString strName = (LPCTSTR)((LPBYTE)pCallInfo + pCallInfo->dwRedirectingIDNameOffset);
 		return strName;
 	}
 	return "";
 
-}// CTapiCall::GetRedirectingIDName
+} // CTapiCall::GetRedirectingIDName
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetRedirectedFromIDNumber
@@ -1644,15 +1668,14 @@ CString CTapiCall::GetRedirectingIDName()
 CString CTapiCall::GetRedirectedFromIDNumber()
 {
 	const LPLINECALLINFO pCallInfo = GetCallInfo();
-	if (pCallInfo->dwRedirectionIDFlags & LINECALLPARTYID_ADDRESS &&
-		pCallInfo->dwRedirectionIDSize > 0)
+	if (pCallInfo->dwRedirectionIDFlags & LINECALLPARTYID_ADDRESS && pCallInfo->dwRedirectionIDSize > 0)
 	{
 		CString strNumber = (LPCTSTR)((LPBYTE)pCallInfo + pCallInfo->dwRedirectionIDOffset);
 		return strNumber;
 	}
 	return "";
 
-}// CTapiCall::GetRedirectedFromIDNumber
+} // CTapiCall::GetRedirectedFromIDNumber
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::GetRedirectedFromIDName
@@ -1662,42 +1685,41 @@ CString CTapiCall::GetRedirectedFromIDNumber()
 CString CTapiCall::GetRedirectedFromIDName()
 {
 	const LPLINECALLINFO pCallInfo = GetCallInfo();
-	if (pCallInfo->dwRedirectionIDFlags & LINECALLPARTYID_NAME &&
-		pCallInfo->dwRedirectionIDNameSize > 0)
+	if (pCallInfo->dwRedirectionIDFlags & LINECALLPARTYID_NAME && pCallInfo->dwRedirectionIDNameSize > 0)
 	{
 		CString strName = (LPCTSTR)((LPBYTE)pCallInfo + pCallInfo->dwRedirectionIDNameOffset);
 		return strName;
 	}
 	return "";
 
-}// CTapiCall::GetRedirectedFromIDName
+} // CTapiCall::GetRedirectedFromIDName
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::SetCallData
 //
 // Sets the CALLDATA field of the call object
-//    
+//
 LONG CTapiCall::SetCallData(LPVOID lpBuff, DWORD dwSize)
-{                                                         
-    return ManageAsynchRequest(lineSetCallData(m_hCall, lpBuff, dwSize));
-}// CTapiCall::SetCallData
+{
+	return ManageAsynchRequest(lineSetCallData(m_hCall, lpBuff, dwSize));
+} // CTapiCall::SetCallData
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::SetQualityOfService
 //
 // Sets the QOS fields of the call object
-//    
+//
 LONG CTapiCall::SetQualityOfService(LPVOID lpvSendingFlowSpec, DWORD dwSFSize, LPVOID lpvRcvFlowSpec, DWORD dwRFSize)
-{                                                         
-    return ManageAsynchRequest(lineSetCallQualityOfService(m_hCall, lpvSendingFlowSpec, dwSFSize, lpvRcvFlowSpec, dwRFSize));
+{
+	return ManageAsynchRequest(lineSetCallQualityOfService(m_hCall, lpvSendingFlowSpec, dwSFSize, lpvRcvFlowSpec, dwRFSize));
 
-}// CTapiCall::SetCallData
+} // CTapiCall::SetCallData
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CTapiCall::WaitForFeature
 //
 // Wait for a call feature to show up.
-//    
+//
 bool CTapiCall::WaitForFeature(DWORD dwFeature, DWORD dwTimeout)
 {
 	bool bRetVal = false;
@@ -1707,10 +1729,8 @@ bool CTapiCall::WaitForFeature(DWORD dwFeature, DWORD dwTimeout)
 	while (dwTickCount + dwTimeout > GetTickCount())
 	{
 		LPLINECALLSTATUS plcs = GetCallStatus();
-		if(plcs == 0)
-		{
+		if (plcs == 0)
 			break;
-		}
 		if (((plcs->dwCallFeatures & dwFeature) == dwFeature))
 		{
 			bRetVal = true;
@@ -1725,7 +1745,7 @@ bool CTapiCall::WaitForFeature(DWORD dwFeature, DWORD dwTimeout)
 	m_bWaitingForFeature = false;
 
 	return bRetVal;
-}// CTapiCall::WaitForFeature
+} // CTapiCall::WaitForFeature
 
 void CTapiCall::CancelWaitForFeature()
 {
@@ -1749,9 +1769,7 @@ DWORD CTapiCall::GetECSTACallFeatures()
 			if (pList->elements[iCount].dwElementID == ECSTADEVSPECIFICELEMENT_ECSTACALLFEATURES)
 			{
 				if (pList->elements[iCount].dwSize == 4)
-				{
 					dwECSTAFeatures = *(DWORD*)(((LPBYTE)m_lpCallStatus) + pList->elements[iCount].dwOffset);
-				}
 				break;
 			}
 		}
@@ -1759,4 +1777,3 @@ DWORD CTapiCall::GetECSTACallFeatures()
 
 	return dwECSTAFeatures;
 }
-

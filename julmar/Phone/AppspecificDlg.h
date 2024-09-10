@@ -7,33 +7,36 @@
 // AppspecificDlg.h : header file
 //
 
+#include "resource.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CAppspecificDlg dialog
 
 class CAppspecificDlg : public CDialog
 {
-// Construction
+	// Construction
 public:
-	CAppspecificDlg(CWnd* pParent = NULL);   // standard constructor
+	CAppspecificDlg(CWnd* pParent = NULL); // standard constructor
 
 	DWORD m_dwData;
-// Dialog Data
+	// Dialog Data
 	//{{AFX_DATA(CAppspecificDlg)
-	enum { IDD = IDD_APPSPECIFIC };
-		// NOTE: the ClassWizard will add data members here
+	enum
+	{
+		IDD = IDD_APPSPECIFIC
+	};
+	// NOTE: the ClassWizard will add data members here
 	//}}AFX_DATA
 
-
-// Overrides
+	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CAppspecificDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
-
-// Implementation
 protected:
+	virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
+													 //}}AFX_VIRTUAL
 
+	// Implementation
+protected:
 	// Generated message map functions
 	//{{AFX_MSG(CAppspecificDlg)
 	virtual BOOL OnInitDialog();

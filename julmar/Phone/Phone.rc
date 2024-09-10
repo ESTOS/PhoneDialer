@@ -710,12 +710,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "estos GmbH"
             VALUE "FileDescription", "estos Phone Dialer"
-            VALUE "FileVersion", "4.4.0.8"
+            VALUE "FileVersion", "4.4.0.9"
             VALUE "InternalName", "EPHONE.EXE"
             VALUE "LegalCopyright", "Copyright (C) 2024 estos GmbH"
             VALUE "OriginalFilename", "EPhone.EXE"
             VALUE "ProductName", "Phone Application"
-            VALUE "ProductVersion", "4.4.0.8"
+            VALUE "ProductVersion", "4.4.0.9"
         END
     END
     BLOCK "VarFileInfo"

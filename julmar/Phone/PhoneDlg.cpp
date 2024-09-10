@@ -813,6 +813,12 @@ void CPhoneDlg::OnChangeLine()
 
 		bool bUpdateAdresses = true;
 
+		if (!pLine->IsOpen())
+		{
+			pLine->GetLineCaps(0, 0, TRUE);
+			pLine->GatherAddressInformation();
+		}
+
 		if (m_cbAddress.GetCount() == (int)pLine->GetAddressCount())
 		{
 			bUpdateAdresses = false;

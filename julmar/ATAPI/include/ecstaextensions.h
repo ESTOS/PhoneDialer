@@ -571,15 +571,17 @@ typedef struct _ECSTADEVSPECIFICELEMENTLISTV2
 #define ECSTA_ADDRESSFLAG_CALLADDRESSINVALID				0x00000002
 //! Diese Adresse kann mit setactiveAddress an die PBX (NSX) weitergegeben werden
 #define ECSTA_ADDRESSFLAG_ALLOWACTIVEADDRESS				0x00000004
-//! Ist diese Adresse ist die ActiveAddress (NSX)
+//! Diese Adresse ist die ActiveAddress (NSX)
 #define ECSTA_ADDRESSFLAG_IS_ACTIVEADDRESS					0x00000008
-//! Ist diese Adresse ist eine Adresse alleine für Rufumleitungen
+//! Diese Adresse ist eine Adresse alleine für Rufumleitungen
 #define ECSTA_ADDRESSFLAG_SUPPORTS_FORWARDS_ONLY			0x00000010
-//! Ist diese Adresse ist eine Gruppenrufnummer
+//! Diese Adresse ist eine Gruppenrufnummer
 #define ECSTA_ADDRESSFLAG_IS_ACD_GROUP_ADDRESS				0x00000020
+//! Diese Adresse ist eine zusätzliche Gruppenrufnummer
+#define ECSTA_ADDRESSFLAG_IS_ACD_GROUP_ADDITIONAL_ADDRESS	0x00000040
 
 // ALTE KONSTANTEN (11.07.2024 Jan Fellner)
-#ifdef ECSTA_LEGACY_ADDRESSFLAGS
+#ifndef NO_ECSTA_LEGACY_ADDRESSFLAGS
 #define ECSTADEVSPECIFICELEMENT_ACTIVEADDRESSFLAGS			ECSTADEVSPECIFICELEMENT_ADDRESSFLAGS
 #define ECSTA_ACTIVEADDRESSFLAG_DYNAMIC_ADDRESS				ECSTA_ADDRESSFLAG_DYNAMIC_ADDRESS
 #define ECSTA_ACTIVEADDRESSFLAG_CALLADDRESSINVALID			ECSTA_ADDRESSFLAG_CALLADDRESSINVALID

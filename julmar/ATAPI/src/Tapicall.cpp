@@ -98,6 +98,18 @@ DWORD CTapiCall::GetCallState()
 
 } // CTapiCall::GetCallState
 
+// Re-read LINECALLSTATUS and LINECALLINFO for this call.
+// phone.exe calls this on F5 so the window shows the TSP's current state
+// without waiting for LINE_CALLSTATE. Replaces the cached state and call info.
+void CTapiCall::RefreshStateFromLine()
+{
+	const LPLINECALLSTATUS lpStatus = GetCallStatus();
+	if (lpStatus != NULL)
+		m_dwState = lpStatus->dwCallState;
+
+	GetCallInfo(TRUE);
+}
+
 DWORD CTapiCall::GetCallWasNonIdle() const
 {
 	return m_dwWasNonIdle;

@@ -118,6 +118,9 @@ PhoneDialer 4.4.0.9:
 PhoneDialer 4.4.0.10:
 - Ensure that the forwarding list is updated no matter on which address the forwarding was notified
 
+PhoneDialer 4.4.0.11:
+- F5 re-reads the active call from TAPI and reports on the status line whether the shown data changed
+
 Sourcecode contains all modifications, and the required ATAPI lib also provided from JulMar Technology.
 
 Sourcecode is available for download from https://github.com/ESTOS/PhoneDialer

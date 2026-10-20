@@ -1,5 +1,5 @@
 PhoneDialer original copyright (c) 1995-2004 by JulMar Technology - http://www.julmar.com
-PhoneDialer 4.0 copyright (c) 2016-2024 estos GmbH / Starnberg - http://www.estos.de
+PhoneDialer 4.0 copyright (c) 2016-2026 estos GmbH / Starnberg - http://www.estos.de
 
 PhoneDialer 3.x/4.x extends the original JulMar phone dialer with additional features:
 

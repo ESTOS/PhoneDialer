@@ -26,7 +26,6 @@
 #include "DialDlg.h"
 #include "ECallFeatures.h"
 #include "ECSTAAgentGroupStateDlg.h"
-#include "ForwardDlg.h"
 #include "ForwardList.h"
 #include "ISDNInfo.h"
 #include "MakeCallExtended.h"
@@ -1768,10 +1767,6 @@ void CPhoneDlg::OnAddressChange()
 	int iMaxCalls = (int)(lpCaps->dwMaxNumActiveCalls + lpCaps->dwMaxNumOnHoldCalls + lpCaps->dwMaxNumOnHoldPendingCalls);
 	m_strMaxCalls.Format(_T("%d"), iMaxCalls);
 	UpdateData(FALSE);
-
-	if (m_pForwardList)
-		m_pForwardList->UpdateList();
-
 } // CPhoneDlg::OnAddressChange
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1891,6 +1886,10 @@ LRESULT CPhoneDlg::i_OnAddressChange(WPARAM wParam, LPARAM lParam)
 		if (dwState == LINEADDRESSSTATE_CAPSCHANGE)
 			OnChangeLine();
 	}
+
+	if (m_pForwardList)
+		m_pForwardList->UpdateList();
+
 	return 0;
 
 } // CPhoneDlg::i_OnAddressChange

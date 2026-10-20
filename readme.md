@@ -115,6 +115,9 @@ PhoneDialer 4.4.0.9:
 - Ensure that we update the address name in case we receive an LINEADDRESSSTATE_CAPSCHANGE
 - If we switch the lines and the new line is closed, update the caps of that line
 
+PhoneDialer 4.4.0.10:
+- Ensure that the forwarding list is updated no matter on which address the forwarding was notified
+
 Sourcecode contains all modifications, and the required ATAPI lib also provided from JulMar Technology.
 
 Sourcecode is available for download from https://github.com/ESTOS/PhoneDialer

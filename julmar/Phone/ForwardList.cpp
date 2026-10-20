@@ -146,6 +146,7 @@ void CForwardList::UpdateList()
 		}
 	}
 }
+
 void CForwardList::OnBnClickedCmdadd()
 {
 	CForwardDlg dlg(this, m_pLine);

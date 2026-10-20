@@ -578,6 +578,7 @@ public:
 	CTapiLine* GetLineOwner() const;
 	HCALL GetCallHandle() const;
 	DWORD GetCallState();
+	void RefreshStateFromLine();
 	DWORD GetCallWasNonIdle() const;
 	CTapiAddress* GetAddressInfo();
 	CString GetCallStateString();

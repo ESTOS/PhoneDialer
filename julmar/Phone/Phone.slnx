@@ -1,0 +1,10 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="DebugUnicode" />
+    <BuildType Name="ReleaseUnicode" />
+    <Platform Name="Win32" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="../ATAPI/src/Atapi.vcxproj" />
+  <Project Path="Phone.vcxproj" />
+</Solution>

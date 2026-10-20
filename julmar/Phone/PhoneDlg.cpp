@@ -26,7 +26,6 @@
 #include "DialDlg.h"
 #include "ECallFeatures.h"
 #include "ECSTAAgentGroupStateDlg.h"
-#include "ForwardDlg.h"
 #include "ForwardList.h"
 #include "ISDNInfo.h"
 #include "MakeCallExtended.h"
@@ -387,6 +386,7 @@ void ErrorMsg(LPCSTR pszBuff, ...)
 	if (pDlg->GetSafeHwnd() && ::IsWindow(pDlg->GetSafeHwnd()))
 	{
 		::SetDlgItemTextA(pDlg->m_hWnd, IDC_STATUS, szBuff);
+		pDlg->m_bF5StatusHeld = false;
 		g_dwLastError = GetTickCount();
 	}
 
@@ -405,6 +405,7 @@ void ErrorMsg(LPCWSTR pszBuff, ...)
 	if (pDlg->GetSafeHwnd() && ::IsWindow(pDlg->GetSafeHwnd()))
 	{
 		::SetDlgItemTextW(pDlg->m_hWnd, IDC_STATUS, szBuff);
+		pDlg->m_bF5StatusHeld = false;
 		g_dwLastError = GetTickCount();
 	}
 
@@ -477,6 +478,7 @@ CPhoneDlg::CPhoneDlg(CWnd* pParent)
 
 	m_uiTimerRefresh = 0;
 	m_uiTimerReposition = 0;
+	m_bF5StatusHeld = false;
 
 } // CPhoneDlg::CPhoneDlg
 
@@ -1698,8 +1700,8 @@ void CPhoneDlg::OnTimer(UINT_PTR nIDEvent)
 		m_strCurrentTime = time.Format("%d.%m.%Y - %H:%M:%S");
 		UpdateData(FALSE);
 
-		// Clear the error line periodically
-		if ((g_dwLastError + 10000) < GetTickCount())
+		// Clear the error line periodically. An F5 result stays until the next action.
+		if (!m_bF5StatusHeld && (g_dwLastError + 10000) < GetTickCount())
 			ClearErrors();
 	}
 	else if (nIDEvent == m_uiTimerReposition)
@@ -1768,10 +1770,6 @@ void CPhoneDlg::OnAddressChange()
 	int iMaxCalls = (int)(lpCaps->dwMaxNumActiveCalls + lpCaps->dwMaxNumOnHoldCalls + lpCaps->dwMaxNumOnHoldPendingCalls);
 	m_strMaxCalls.Format(_T("%d"), iMaxCalls);
 	UpdateData(FALSE);
-
-	if (m_pForwardList)
-		m_pForwardList->UpdateList();
-
 } // CPhoneDlg::OnAddressChange
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1891,6 +1889,10 @@ LRESULT CPhoneDlg::i_OnAddressChange(WPARAM wParam, LPARAM lParam)
 		if (dwState == LINEADDRESSSTATE_CAPSCHANGE)
 			OnChangeLine();
 	}
+
+	if (m_pForwardList)
+		m_pForwardList->UpdateList();
+
 	return 0;
 
 } // CPhoneDlg::i_OnAddressChange
@@ -3598,9 +3600,78 @@ void CPhoneDlg::OnBnClickedCompleteAsConference()
 
 } // CPhoneDlg::OnBnClickedCompleteAsConference
 
+// Re-read the active call from TAPI and say on the status line whether the
+// values already on screen changed. Called from F5. Does nothing to the call.
+void CPhoneDlg::RefreshActiveCallFromLine()
+{
+	CTapiCall* pCall = GetActiveCall();
+	if (pCall == NULL)
+	{
+		ShowF5Status(_T("F5: no active call"));
+		return;
+	}
+
+	CString strState = m_strCallState;
+	CString strCallID = m_strCallID;
+	CString strRelatedCallID = m_strRelatedCallID;
+	CString strOrigin = m_strOrigin;
+	CString strCallerID = m_strCallerID;
+	CString strCallerIDName = m_strCallerIDName;
+	CString strCalledID = m_strCalledID;
+	CString strCalledIDName = m_strCalledIDName;
+	CString strConnectedID = m_strConnectedID;
+	CString strConnectedIDName = m_strConnectedIDName;
+	CString strFeatures = m_strCallFeatures;
+	CString strReason = m_strReason;
+
+	pCall->RefreshStateFromLine();
+	MoveToCall(m_iCall);
+
+	CString strChanged;
+	if (strState != m_strCallState)
+		strChanged += _T("state, ");
+	if (strCallID != m_strCallID)
+		strChanged += _T("call id, ");
+	if (strRelatedCallID != m_strRelatedCallID)
+		strChanged += _T("related id, ");
+	if (strOrigin != m_strOrigin)
+		strChanged += _T("origin, ");
+	if (strCallerID != m_strCallerID || strCallerIDName != m_strCallerIDName)
+		strChanged += _T("caller, ");
+	if (strCalledID != m_strCalledID || strCalledIDName != m_strCalledIDName)
+		strChanged += _T("called, ");
+	if (strConnectedID != m_strConnectedID || strConnectedIDName != m_strConnectedIDName)
+		strChanged += _T("connected, ");
+	if (strFeatures != m_strCallFeatures)
+		strChanged += _T("features, ");
+	if (strReason != m_strReason)
+		strChanged += _T("reason, ");
+
+	if (strChanged.IsEmpty())
+	{
+		ShowF5Status(_T("F5: no change"));
+		return;
+	}
+
+	strChanged.TrimRight(_T(", "));
+	ShowF5Status(_T("F5: changed: ") + strChanged);
+}
+
+// Show text on the bottom status line and keep the error timer from clearing it.
+void CPhoneDlg::ShowF5Status(const CString& strText)
+{
+	SetDlgItemText(IDC_STATUS, strText);
+	m_bF5StatusHeld = true;
+}
+
 BOOL CPhoneDlg::PreTranslateMessage(MSG* pMsg)
 {
 	// TODO: Add your specialized code here and/or call the base class
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_F5 && (pMsg->lParam & 0x40000000) == 0)
+	{
+		RefreshActiveCallFromLine();
+		return TRUE;
+	}
 	if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_KEYUP)
 	{
 		static bool bControlPressed = false;

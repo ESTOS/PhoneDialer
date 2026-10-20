@@ -1,5 +1,5 @@
 PhoneDialer original copyright (c) 1995-2004 by JulMar Technology - http://www.julmar.com
-PhoneDialer 4.0 copyright (c) 2016-2024 estos GmbH / Starnberg - http://www.estos.de
+PhoneDialer 4.0 copyright (c) 2016-2026 estos GmbH / Starnberg - http://www.estos.de
 
 PhoneDialer 3.x/4.x extends the original JulMar phone dialer with additional features:
 
@@ -114,6 +114,12 @@ PhoneDialer 4.4.0.8:
 PhoneDialer 4.4.0.9:
 - Ensure that we update the address name in case we receive an LINEADDRESSSTATE_CAPSCHANGE
 - If we switch the lines and the new line is closed, update the caps of that line
+
+PhoneDialer 4.4.0.10:
+- Ensure that the forwarding list is updated no matter on which address the forwarding was notified
+
+PhoneDialer 4.4.0.11:
+- F5 re-reads the active call from TAPI and reports on the status line whether the shown data changed
 
 Sourcecode contains all modifications, and the required ATAPI lib also provided from JulMar Technology.
 

@@ -1,7 +1,7 @@
 #ifndef _ECSTAEXTGLOBAL_H
 #define _ECSTAEXTGLOBAL_H
 
-// DevCaps die von anderen Applikationen verwenden werden (CCG ProCall etc. pp) in eigenen Header im global ausgelagert damit diese überall gleich sind
+// DevCaps used by other applications (CCG ProCall etc.) extracted into a separate global header so they are identical everywhere
 #include "ecstalinedevcaps.h"
 
 //Extension Interface definitions for 
@@ -13,7 +13,7 @@
 #define ECSTA150_EXTID2 0x9ee500e0
 #define ECSTA150_EXTID3 0x292539c9
 
-//ExtID 3 für die Control Line
+//ExtID 3 for the Control Line
 #define ECSTA150_EXTID3CONTROL 	0x292539c8
 #define ECSTA150_EXTID3PARK 	0x292539c7
 #define ECSTA150_EXTID3QUE 		0x292539c6
@@ -140,7 +140,7 @@ lineDevSpecificFeature(hLine, ECSTA150_FEATURE_DISPLAY, &Display, sizeof(ECSTA15
 */
 
 /********************************************************************/
-//Feature Set Absent Message und Presence No
+//Feature Set Absent Message and Presence No
 //This Feature allows to set the PresenceNo and AbsentMessage (for Panasonic)
 //Returns: LINEERR_OPERATIONFAILED
 //or	   NO_ERROR
@@ -411,23 +411,28 @@ ECSTACONTROLDEVSPECIFIC contains a ECSTACONTROLDATA_GETLINECONFIG
 The Offset is always related to the beginning of the ECSTACONTROLDEVSPECIFIC struct*/
 #define ECSTACONTROL_QUERYDEVICEAGENTCAPABILITY		0x80000016
 
+/* Set UCServer Auto Create Lines Mode
+ECSTACONTROLDEVSPECIFIC contains nothing
+dwControlResultDetail is set to 0 (auto create lines off) or 1 (auto create lines on) */
+#define ECSTACONTROL_UCSERVERAUTOCREATELINES		0x80000017
+
 enum class EAGENTCAPABILITY
 {
-	// Gerät gibt es nicht
+	// Device does not exist
 	DEVICE_DOES_NOT_EXIST = -1,
-	// ACD nicht möglich
+	// ACD not possible
 	DEVICE_IS_NOT_ACD_CAPABLE = 0,
-	// ACD möglich
+	// ACD possible
 	DEVICE_IS_ACD_CAPABLE = 1,
-	// Eine Agenten Leitung
+	// An agent line
 	DEVICE_IS_AN_AGENT = 2,
-	// Eine Supervisor Leitung
+	// A supervisor line
 	DEVICE_IS_A_SUPERVISOR = 3,
-	// Anderer Wert den die PBX liefert der nicht weiter aufgeschlüsselt werden konnte
+	// Other value provided by the PBX that could not be decoded further
 	OTHER = 0xff
 };
 
-//Error Codes for dwControlResult und für Devspecific return error codes (z.B. lineopen)
+//Error Codes for dwControlResult and for Devspecific return error codes (e.g. lineopen)
 //not enough licenses available
 #define ECSTAERR_OUTOFLICENSES		0xC0000001
 #define ECSTAERR_CONNECTFAILED		0xC0000002
@@ -456,7 +461,7 @@ typedef struct _ECSTACONTROLDATA_GETLINECONFIGLIST
 
 typedef struct _ECSTACONTROLDATA_GETLINECONFIGV3
 {
-	DWORD       dwLineConfigNumberOffset;		//Rufnummer, as in Configuration (123;1;44)
+	DWORD       dwLineConfigNumberOffset;		//Phone number as in Configuration (123;1;44)
 	DWORD       dwLineConfigNumberSize;
 	DWORD       dwLineNameOffset;
 	DWORD       dwLineNameSize;
@@ -475,13 +480,13 @@ typedef struct _ECSTACONTROLDATA_GETLINECONFIGLISTV3
 /* Line DevCaps Devspecific extension */
 typedef struct _ESNOMLINEDEVCAPS
 {
-	//Extended Version dieses ECSTA (ECSTACAPSEXTVERSION1)
+	//Extended version of this ECSTA (ECSTACAPSEXTVERSION1)
 	DWORD       dwCapsExtVersion;
-	//Permanent Provider ID dieser Line
+	//Permanent Provider ID of this line
 	DWORD       dwPermanentProviderID;
-	//UUID der Provider Instanz z.B. {08124B5B-1D7F-49fe-80D0-BFC22B365982}
-	//bleibt konstant solange der Treiber installiert ist.
-	//Dient zur Zuordnung der Leitungen zu der jeweiligen Control Line
+	//UUID of the provider instance e.g. {08124B5B-1D7F-49fe-80D0-BFC22B365982}
+	//remains constant as long as the driver is installed.
+	//used to assign lines to the respective control line
 	wchar_t     szControlUUID[50];
 } ESNOMLINEDEVCAPS;
 
@@ -519,7 +524,7 @@ typedef struct _ECSTADEVSPECIFICELEMENTLIST
 } ECSTADEVSPECIFICELEMENTLIST;
 
 
-// Neue Liste um eine Version in der Liste zu haben und einen Magic Identifier
+// New list to include a version field and a magic identifier
 typedef struct _ECSTADEVSPECIFICELEMENTLISTV2
 {
 	DWORD       dwTotalSize;
@@ -541,13 +546,13 @@ typedef struct _ECSTADEVSPECIFICELEMENTLISTV2
 #define ECSTADEVSPECIFICELEMENT_GETSTATUSINFORMATION		0x00000001
 //String - "unknown" "deskphone" "dect" "mobile"
 #define ECSTADEVSPECIFICELEMENT_ADDRESSDEVICETYPE			0x00000002
-//String - Name of Device z.b. Model Name
+//String - Name of Device e.g. Model Name
 #define ECSTADEVSPECIFICELEMENT_ADDRESSDEVICENAME			0x00000003
-//String - ID of Device (z.b. MAC oder IP)
+//String - ID of Device (e.g. MAC or IP)
 #define ECSTADEVSPECIFICELEMENT_ADDRESSDEVICEID				0x00000004
-//DWORD (size = 4) Transport von weiteren Adressflags (siehe ECSTA_ADDRESSFLAG_)
+//DWORD (size = 4) carries additional address flags (see ECSTA_ADDRESSFLAG_)
 #define ECSTADEVSPECIFICELEMENT_ADDRESSFLAGS				0x00000005
-//DWORD (dwSize = 4) der ECSTA Call Features (In lineGetCallStatus)
+//DWORD (dwSize = 4) the ECSTA call features (in lineGetCallStatus)
 #define ECSTADEVSPECIFICELEMENT_ECSTACALLFEATURES			0x00000006
 //ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS ECSTA Custom Call Command (In lineDevspecific)
 #define ECSTADEVSPECIFICELEMENT_CALLRECORDINGSTART			0x00000007
@@ -562,25 +567,25 @@ typedef struct _ECSTADEVSPECIFICELEMENTLISTV2
 #define ECSTADEVSPECIFICELEMENTLISTV2_MAGICVALUE			0x07072018
 #define ECSTADEVSPECIFICELEMENTLISTV2_VERSION				1
 
-//Call Link Data der CSTA Schnittstelle für einen Call
+//Call link data of the CSTA interface for a call
 #define ECSTADEVSPECIFICELEMENT_CALLLINKAGEID				0x00000000A
 
-//! Ist dies eine Dynamische Adresse (ECSTA MX-ONE oder NSX) - ProCall zeigt Leitungsbuttons für diese Adresse
+//! Whether this is a dynamic address (ECSTA MX-ONE or NSX) - ProCall shows line buttons for this address
 #define ECSTA_ADDRESSFLAG_DYNAMIC_ADDRESS					0x00000001
-//! Die Calls auf der Adresse 0 sind nicht zwingend auf dieser Adresse(Gerät) - ProCall zeigt immer alle Stati auf allen AddressButtons
+//! Calls on address 0 are not necessarily on this address (device) - ProCall always shows all states on all address buttons
 #define ECSTA_ADDRESSFLAG_CALLADDRESSINVALID				0x00000002
-//! Diese Adresse kann mit setactiveAddress an die PBX (NSX) weitergegeben werden
+//! This address can be forwarded to the PBX (NSX) via setactiveAddress
 #define ECSTA_ADDRESSFLAG_ALLOWACTIVEADDRESS				0x00000004
-//! Diese Adresse ist die ActiveAddress (NSX)
+//! Whether this address is the ActiveAddress (NSX)
 #define ECSTA_ADDRESSFLAG_IS_ACTIVEADDRESS					0x00000008
-//! Diese Adresse ist eine Adresse alleine für Rufumleitungen
+//! Whether this address is exclusively for call forwarding
 #define ECSTA_ADDRESSFLAG_SUPPORTS_FORWARDS_ONLY			0x00000010
-//! Diese Adresse ist eine Gruppenrufnummer
+//! Whether this address is a group call number
 #define ECSTA_ADDRESSFLAG_IS_ACD_GROUP_ADDRESS				0x00000020
-//! Diese Adresse ist eine zusätzliche Gruppenrufnummer
+//! Whether this address is an additional group call number
 #define ECSTA_ADDRESSFLAG_IS_ACD_GROUP_ADDITIONAL_ADDRESS	0x00000040
 
-// ALTE KONSTANTEN (11.07.2024 Jan Fellner)
+// LEGACY CONSTANTS (11.07.2024 Jan Fellner)
 #ifndef NO_ECSTA_LEGACY_ADDRESSFLAGS
 #define ECSTADEVSPECIFICELEMENT_ACTIVEADDRESSFLAGS			ECSTADEVSPECIFICELEMENT_ADDRESSFLAGS
 #define ECSTA_ACTIVEADDRESSFLAG_DYNAMIC_ADDRESS				ECSTA_ADDRESSFLAG_DYNAMIC_ADDRESS
@@ -645,10 +650,10 @@ typedef struct _ECSTADEVSPECIFICELEMENT_VALIDATESERVERCREDENTIALSELEMENT
 //ECSTA Call Features in Devspecific Element in lineGetCallStatus
 //Start Call Recording
 #define ECSTA_CALLFEATURE_CALLRECORDINGSTART	0x00000001
-//Stop Call Recording, nur gesetzt, wenn gerade ein CallRecording läuft
+//Stop Call Recording, only set when a call recording is currently running
 #define ECSTA_CALLFEATURE_CALLRECORDINGSTOP	0x00000002
 
-//Element for ECSTADEVSPECIFICELEMENT_CALLRECORDINGSTART und ECSTADEVSPECIFICELEMENT_CALLRECORDINGSTOP
+//Element for ECSTADEVSPECIFICELEMENT_CALLRECORDINGSTART and ECSTADEVSPECIFICELEMENT_CALLRECORDINGSTOP
 typedef struct _ECSTADEVSPECIFICELEMENT_CALLRECORDINGPARAMS
 {
 	wchar_t szVoiceMailNumber[16];
@@ -661,7 +666,7 @@ typedef struct _ECSTADEVSPECIFICELEMENT_MESSAGEWAITINGPARAMS
 	wchar_t szVoiceMailNumber[16];
 } ECSTADEVSPECIFICELEMENT_MESSAGEWAITINGPARAMS;
 
-//Element for lineGetDevConfig "ecsta/AbsentMessage" und ECSTA150_FEATURE_ABSENTMESSAGE
+//Element for lineGetDevConfig "ecsta/AbsentMessage" and ECSTA150_FEATURE_ABSENTMESSAGE
 typedef struct _ECSTADEVSPECIFICELEMENT_ABSENTMESSAGEPARAMS
 {
 	DWORD dwcaLoginState;	//Ignored in set operation
@@ -685,18 +690,18 @@ typedef struct _ECSTADEVSPECIFICELEMENT_SUPPORTEDAGENTFEATURES
 #define ECSTA150_SUPPORTEDAGENTSTATES_ALL						(ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDOUT | ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDIN_NOTREADY | ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDIN_READY | ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDIN_BUSY | ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDIN_WORKINGAFTERCALL)
 #define ECSTA150_SUPPORTEDAGENTSTATES_MASK						0x0000000ff
 
-// Für das setzen von Not Ready ist ein Reason zu übergeben (Flag in dwSupportedAgentStates)
+// Setting Not Ready requires a reason to be passed (flag in dwSupportedAgentStates)
 #define ECSTA150_SUPPORTEDAGENTSTATES_LOGGEDIN_NOTREADY_REQUIRES_REASON	0x000000100
 
 //Element for lineGetDevConfig "ecsta/AgentFeatures"
 typedef struct _ECSTADEVSPECIFICELEMENT_SUPPORTEDAGENTFEATURES2 : public _ECSTADEVSPECIFICELEMENT_SUPPORTEDAGENTFEATURES
 {
-	// Welche Parameter werden beim Login/Logout benötigt?
-	// ECSTA150_AGENTLOGIN_AGENTID Konstanten
+	// Which parameters are required for Login/Logout?
+	// ECSTA150_AGENTLOGIN_AGENTID constants
 	DWORD dwRequiredLoginLogoutParams;
 } ECSTADEVSPECIFICELEMENT_SUPPORTEDAGENTFEATURES2;
 
-// Für das Login/Logout benötigte Informationen vom Treiber, der Client frägt genau diese Informationen ab
+// Information required by the driver for Login/Logout; the client queries exactly this information
 #define ECSTA150_AGENTLOGIN_AGENTID								0x00000001
 #define ECSTA150_AGENTLOGIN_GROUPID								0x00000002
 #define ECSTA150_AGENTLOGIN_PASSWORD							0x00000004
@@ -710,7 +715,7 @@ typedef struct _ECSTADEVSPECIFICELEMENT_SUPPORTEDAGENTFEATURES2 : public _ECSTAD
 #define ECSTA150DEVSPECIFICNEXTLISTID 0xdeadfeed
 typedef struct _ECSTA150DEVSPECIFICNEXTLIST
 {
-	DWORD       dwID;	//bei den anderen ist das dwAgentstate, dieser Dummy Code ist immer ECSTA150DEVSPECIFICNEXTLISTID um das Struct von den alten zu unterscheiden
+	DWORD       dwID;	//in the others this is dwAgentstate; this dummy code is always ECSTA150DEVSPECIFICNEXTLISTID to distinguish this struct from the older ones
 	DWORD       dwTotalSize;
 	DWORD       dwNeededSize;
 	DWORD       dwUsedSize;

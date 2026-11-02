@@ -17,6 +17,7 @@
 //
 
 #include "stdafx.h"
+#include "TapiEventLog.h"
 #include "atapi.h"
 #include "ecstaext.h"
 #include "tapistr.h"
@@ -97,6 +98,18 @@ DWORD CTapiCall::GetCallState()
 	return m_dwState;
 
 } // CTapiCall::GetCallState
+
+// Re-read LINECALLSTATUS and LINECALLINFO for this call.
+// phone.exe calls this on F5 so the window shows the TSP's current state
+// without waiting for LINE_CALLSTATE. Replaces the cached state and call info.
+void CTapiCall::RefreshStateFromLine()
+{
+	const LPLINECALLSTATUS lpStatus = GetCallStatus();
+	if (lpStatus != NULL)
+		m_dwState = lpStatus->dwCallState;
+
+	GetCallInfo(TRUE);
+}
 
 DWORD CTapiCall::GetCallWasNonIdle() const
 {
@@ -332,6 +345,9 @@ const LPLINECALLINFO CTapiCall::GetCallInfo(BOOL fForceGet)
 	if (m_hCall == NULL)
 		return NULL;
 
+	// Covers every return below, including the retries in the loop.
+	CTapiEventLogScope infoScope(L"lineGetCallInfo");
+
 	// Allocate a buffer for the call information
 	DWORD dwSize = (m_lpCallInfo) ? m_lpCallInfo->dwTotalSize : sizeof(LINECALLINFO) + 1024;
 	while (TRUE)
@@ -380,6 +396,8 @@ HCALL CTapiCall::GetCallHandle() const
 //
 const LPLINECALLSTATUS CTapiCall::GetCallStatus()
 {
+	CTapiEventLogScope statusScope(L"lineGetCallStatus");
+
 	// Allocate a buffer for the call information
 	DWORD dwSize = (m_lpCallStatus) ? m_lpCallStatus->dwTotalSize : sizeof(LINECALLSTATUS) + 1024;
 	while (TRUE)

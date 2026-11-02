@@ -1,87 +1,87 @@
 #ifndef _ECSTALINEDEVCAPSGLOBAL_H
 #define _ECSTALINEDEVCAPSGLOBAL_H
 
-//Erste Version mit Dynamic Line Create
+//First version with Dynamic Line Create
 #define ECSTACAPSEXTVERSION1			1
-//Zweite version mit Async LineOpen
+//Second version with Async LineOpen
 #define ECSTACAPSEXTVERSION2			2
-//Dritte version mit ECSTACapabilities
+//Third version with ECSTACapabilities
 #define ECSTACAPSEXTVERSION3			3
-//Vierte Version mit ECSTA Version
+//Fourth version with ECSTA Version
 #define ECSTACAPSEXTVERSION4			4
 
-/* Line DevCaps Devspecific extension (Version 1 und Version 2)*/
+/* Line DevCaps Devspecific extension (Version 1 and Version 2)*/
 typedef struct _ECSTALINEDEVCAPS
 {
-	//Extended Version dieses ECSTA (ECSTACAPSEXTVERSION1)
+	//Extended version of this ECSTA (ECSTACAPSEXTVERSION1)
 	DWORD       dwCapsExtVersion;
-	//Permanent Provider ID dieser Line
+	//Permanent Provider ID of this line
 	DWORD       dwPermanentProviderID;
-	//UUID der Provider Instanz z.B. {08124B5B-1D7F-49fe-80D0-BFC22B365982}
-	//bleibt konstant solange der Treiber installiert ist.
-	//Dient zur Zuordnung der Leitungen zu der jeweiligen Control Line
+	//UUID of the provider instance e.g. {08124B5B-1D7F-49fe-80D0-BFC22B365982}
+	//remains constant as long as the driver is installed.
+	//used to assign lines to the respective control line
 	wchar_t     szControlUUID[50];
-	//Falls die Line vom CtiServer mit Devspcific hinzugefügt wurde, hat sie diesen Cookie
+	//If the line was added by the CtiServer via Devspecific, it carries this cookie
 	DWORD       dwCreateCookie;
 } ECSTALINEDEVCAPS;
 
-//Property ob query PBX Line exists verwendet werden kann 
-//Speziell für CtiServer ob Leitungen automatisch anlegen angeboten wird
+//Property whether query PBX Line exists can be used
+//Specifically for CtiServer whether automatic line creation is offered
 #define ECSTACONTROLCAPS_QUERYLINEEXISTS			0x00000001
 #define ECSTACONTROLCAPS_QUERYLINEEXISTSV3			0x00000002
 
-//Property, ob diese Leitung das Feature RemoteOffice Unterstützt
-#define ECSTACAPS_REMOTEOFFICE_NATIVE				0x00000004		// Native Unterstützung seitens der PBX
-#define ECSTACAPS_REMOTEOFFICE_EMULATED				0x00000010		// Emulation wird mit diesem Treiber unterstützt
-#define ECSTACAPS_REMOTEOFFICE_NOTSUPPORTED			0x00000020		// Emulation wird mit diesem Treiber NICHT unterstützt
+//Property whether this line supports the RemoteOffice feature
+#define ECSTACAPS_REMOTEOFFICE_NATIVE				0x00000004		// Native support by the PBX
+#define ECSTACAPS_REMOTEOFFICE_EMULATED				0x00000010		// Emulation supported by this driver
+#define ECSTACAPS_REMOTEOFFICE_NOTSUPPORTED			0x00000020		// Emulation NOT supported by this driver
 
-//Property, ob diese Leitung das Feature InvalidPassword (Broadsoft) unterstützt
+//Property whether this line supports the InvalidPassword feature (Broadsoft)
 #define ECSTACAPS_INVALIDPASSWORD					0x00000008
 
-// ECSTA unterstützt die ECSTACALLINFOS die zu einem Call weitere Infos liefern
+// ECSTA supports ECSTACALLINFOS which provide additional info for a call
 #define ECSTACAPS_ECSTACALLINFOS					0x00000040
 
-// ECSTA unterstützt die ActiveAddress - Eine Addresse einer Leitung wird als Default zum Wählen / Annehmen definiert (Panasonic NSX)
+// ECSTA supports ActiveAddress - one address of a line is defined as default for dialing / answering (Panasonic NSX)
 #define ECSTACAPS_ACTIVEADDRESS						0x00000080
 
-// ECSTA unterstützt Call Recording (Panasonic)
+// ECSTA supports Call Recording (Panasonic)
 #define ECSTACAPS_CALLRECORDING						0x00000100
 
-// ECSTA unterstützt Advanced MessageWaiting (Anzahl der Nachrichten) in lineDevspecific (ECSTA150DEVSPECIFICNEXTLIST - ECSTADEVSPECIFICELEMENT_MESSAGEWAITING)
+// ECSTA supports Advanced MessageWaiting (number of messages) in lineDevspecific (ECSTA150DEVSPECIFICNEXTLIST - ECSTADEVSPECIFICELEMENT_MESSAGEWAITING)
 #define ECSTACAPS_MESSAGEWAITINGADV					0x00000200
 
-// ECSTA unterstützt das Ändern des CSTA Passwords (CA Pro) Panasonic lineDevspecific auf der Control Line
+// ECSTA supports changing the CSTA Password (CA Pro) Panasonic lineDevspecific on the Control Line
 #define ECSTACONTROLCAPS_CHANGEPBXPASSWORD			0x00000400
 
-// ECSTA unterstützt das Ändern der Presence und AbsentMessage am Telefon (Panasonic)
+// ECSTA supports changing Presence and AbsentMessage on the phone (Panasonic)
 #define ECSTACAPS_PHONEPRESENCE						0x00000800
 
-// ECSTA unterstützt die AgentGroups Funtionalität (Panasonic)
+// ECSTA supports AgentGroups functionality (Panasonic)
 #define ECSTACAPS_AGENTGROUPS						0x00001000
 
-// ECSTA unterstützt die AgentState Schnittstelle/Funtionalität (z.B. OS4K, nicht für PBXen die AGENTGROUP support anbieten)
+// ECSTA supports AgentState interface/functionality (e.g. OS4K, not for PBXs that offer AGENTGROUP support)
 #define ECSTACAPS_AGENTSUPPORT						0x00002000
 
-// ECSTA stellt die CallLinkageID in der CallInfo als DevSpecific Extension bereit
+// ECSTA provides the CallLinkageID in CallInfo as a DevSpecific extension
 #define ECSTACAPS_CALLLINKAGEID						0x00004000
 
-// ECSTA stellt eine Park Leitung bereit welche die verschiedenen Parkpositionen der PBX überwachen kann
+// ECSTA provides a park line that can monitor the various park positions of the PBX
 #define ECSTACAPS_SUPPORTS_PARK_LINE				0x00008000
 
-// ECSTA stellt eine Que Leitung bereit welche die verschiedenen Wartefelder der PBX überwachen kann
+// ECSTA provides a queue line that can monitor the various wait queues of the PBX
 #define ECSTACAPS_SUPPORTS_QUE_LINE					0x00010000
 
 /* Line DevCaps Devspecific extension (Version 3) */
 typedef struct _ECSTALINEDEVCAPS3 : public _ECSTALINEDEVCAPS
 {
-	//ECSTA Control Line Capabilities - gilt auch für die anderen Leitungen
+	//ECSTA Control Line Capabilities - also applies to the other lines
 	//ECSTACONTROLCAPS_QUERYLINEEXISTS
 	//ECSTACONTROLCAPS_QUERYLINEEXISTSV2
 	DWORD       dwECSTACapabilities;
 } ECSTALINEDEVCAPS3;
 
 /* Line DevCaps Devspecific extension (Version 4) */
-//* Hinzugekommen - Treiber Version
+//* Added - driver version
 typedef struct _ECSTALINEDEVCAPS4 : public _ECSTALINEDEVCAPS3
 {
 	wchar_t     szDriverVersion[50];	// 4.1.5.12056
@@ -112,5 +112,11 @@ typedef struct _ECSTAUCServerProps
 	const wchar_t* szConfigDir;		//Config File Directory
 	IECSTAUIProxyInterface* pUIInterface;	//Interface to ecstaproxy for checking Driver Names
 } ECSTAUCServerProps;
+
+class IUCServerForECSTALogWriterFactory;
+typedef struct _ECSTAUCServerProps2 : public _ECSTAUCServerProps
+{
+	IUCServerForECSTALogWriterFactory* pCustomLogWriterFactory;	// Interface for creating custom log writer, used for logging over UCServer
+} ECSTAUCServerProps2;
 
 #endif

@@ -113,6 +113,7 @@ public:
 
 	UINT_PTR m_uiTimerRefresh;
 	UINT_PTR m_uiTimerReposition;
+	bool m_bF5StatusHeld;
 
 	// calls pending for delete
 	CPtrArray m_arrCallsPendingDelete;
@@ -212,7 +213,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedFeatures();
 	afx_msg void OnBnClickedCompleteAsConference();
+	afx_msg void OnLog();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	void RefreshActiveCallFromLine();
+	void ShowF5Status(const CString& strText);
 	void UpdateButtons(DWORD dwCaps);
 	void RepositionWindow();
 	void UpdateAddressNames();

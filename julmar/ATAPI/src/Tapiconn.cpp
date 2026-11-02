@@ -19,6 +19,7 @@
 
 #include "stdafx.h"
 #include "atapi.h"
+#include "TapiEventLog.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -826,10 +827,20 @@ void CTapiConnection::LineEventProc()
 	// Spin forever waiting on TAPI to shutdown
 	do
 	{
-		// Get the TAPI message
-		lResult = lineGetMessage(m_hLineApp, &lm, 5000);
+		// Get the TAPI message. The scope is the wait itself, so the log
+		// status line shows this thread sitting in lineGetMessage.
+		LONG lResultWait = 0;
+		memset(&lm, 0x00, sizeof(lm));
+		{
+			CTapiEventLogScope waitScope(L"lineGetMessage");
+			lResultWait = lineGetMessage(m_hLineApp, &lm, 5000);
+			TapiEventLogSetWaitResult(lResultWait);
+		}
+		lResult = lResultWait;
 		if (lResult == 0)
 		{
+			TapiEventLogAddLineMessage(&lm);
+
 			// If this is an asynch request completing, then mark it in our list
 			// and then pass it down to the line.
 			if (lm.dwMessageID == LINE_REPLY)
@@ -851,7 +862,10 @@ void CTapiConnection::LineEventProc()
 			{
 				CTapiLine* pLine = (CTapiLine*)lm.dwCallbackInstance;
 				if (pLine != NULL)
+				{
+					CTapiEventLogScope callbackScope(L"LineCallback");
 					pLine->LineCallback(lm.hDevice, lm.dwMessageID, lm.dwParam1, lm.dwParam2, lm.dwParam3);
+				}
 			}
 		}
 

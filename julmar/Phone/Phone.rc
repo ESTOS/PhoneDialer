@@ -201,7 +201,20 @@ BEGIN
     LTEXT           "",IDC_REDIRECTINGNAME,158,186,122,10,SS_WORDELLIPSIS
     CTEXT           "00.00.0000 - 00:00:00",IDC_STATICTIME,218,294,74,10,SS_CENTERIMAGE
     PUSHBUTTON      "Recording",IDC_CMDCALLRECORD,13,274,45,14,WS_DISABLED
+    PUSHBUTTON      "Log",IDC_CMDLOG,242,274,45,14,WS_DISABLED
     PUSHBUTTON      "&Active",IDC_ACTIVE,193,46,29,14,WS_DISABLED
+END
+
+IDD_TAPIEVENTLOG DIALOGEX 0, 0, 420, 240
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX
+CAPTION "TAPI events"
+FONT 9, "Consolas"
+BEGIN
+    EDITTEXT        IDC_TAPIEVENTTEXT,0,0,420,206,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL | NOT WS_TABSTOP
+    PUSHBUTTON      "Copy",IDC_TAPIEVENTCOPY,4,208,40,14
+    PUSHBUTTON      "Save",IDC_TAPIEVENTSAVE,48,208,40,14
+    PUSHBUTTON      "Clear",IDC_TAPIEVENTCLEAR,376,208,40,14
+    LTEXT           "idle",IDC_TAPIEVENTSTATUS,0,226,420,14,SS_SUNKEN | SS_CENTERIMAGE
 END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 184, 114
@@ -692,8 +705,8 @@ IDR_MAINFRAME           ICON                    "res\\Phone.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,4,0,8
- PRODUCTVERSION 4,4,0,8
+ FILEVERSION 4,4,0,13
+ PRODUCTVERSION 4,4,0,13
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -710,12 +723,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "estos GmbH"
             VALUE "FileDescription", "estos Phone Dialer"
-            VALUE "FileVersion", "4.4.0.9"
+            VALUE "FileVersion", "4.4.0.13"
             VALUE "InternalName", "EPHONE.EXE"
-            VALUE "LegalCopyright", "Copyright (C) 2024 estos GmbH"
+            VALUE "LegalCopyright", "Copyright (C) 2025 estos GmbH"
             VALUE "OriginalFilename", "EPhone.EXE"
             VALUE "ProductName", "Phone Application"
-            VALUE "ProductVersion", "4.4.0.9"
+            VALUE "ProductVersion", "4.4.0.13"
         END
     END
     BLOCK "VarFileInfo"
@@ -922,7 +935,7 @@ END
 #define _AFX_NO_PROPERTY_RESOURCES
 
 #include "res\Phone.rc2"  // non-Microsoft Visual C++ edited resources
-#include "afxres.rc"         // Standard components
+#include "afxres.rc"         // Standard components
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

@@ -28,26 +28,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugUnicode|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugUnicode|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -238,6 +238,7 @@ copy X:\dev\global\include\ecstalinedevcaps.h $(ProjectDir)..\include\</Command>
     <ClCompile Include="Tapiaddr.cpp" />
     <ClCompile Include="Tapicall.cpp" />
     <ClCompile Include="Tapiconn.cpp" />
+    <ClCompile Include="TapiEventLog.cpp" />
     <ClCompile Include="Tapiline.cpp" />
     <ClCompile Include="tapiobj.cpp" />
     <ClCompile Include="Tapiphone.cpp" />
@@ -245,6 +246,7 @@ copy X:\dev\global\include\ecstalinedevcaps.h $(ProjectDir)..\include\</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\INCLUDE\Atapi.h" />
+    <ClInclude Include="..\include\TapiEventLog.h" />
     <ClInclude Include="..\include\ecstaext.h" />
     <ClInclude Include="..\include\ecstalinedevcaps.h" />
     <ClInclude Include="Stdafx.h" />

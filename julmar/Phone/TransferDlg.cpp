@@ -27,6 +27,10 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CTransferDlg dialog
 
+// Last number accepted in this dialog. Lives for the process so the next
+// transfer opens with it already filled in. Not written to disk.
+static CString s_strLastTransferNumber;
+
 CTransferDlg::CTransferDlg(CWnd* pParent, CTapiCall* pCall)
 	: CDialog(CTransferDlg::IDD, pParent)
 {
@@ -34,7 +38,7 @@ CTransferDlg::CTransferDlg(CWnd* pParent, CTapiCall* pCall)
 	m_strCallerID = _T("");
 	m_strCallerName = _T("Not Available");
 	m_fConsultation = FALSE;
-	m_strNumber = _T("");
+	m_strNumber = s_strLastTransferNumber;
 	m_pCall = pCall;
 	//}}AFX_DATA_INIT
 }
@@ -102,6 +106,9 @@ BOOL CTransferDlg::OnInitDialog()
 		m_btnConsTrans.EnableWindow(FALSE);
 	}
 
+	if (!m_strNumber.IsEmpty())
+		m_btnOK.EnableWindow(TRUE);
+
 	return TRUE;
 }
 
@@ -114,4 +121,6 @@ void CTransferDlg::OnChangeNumber()
 void CTransferDlg::OnOK()
 {
 	CDialog::OnOK();
+	if (m_nModalResult == IDOK)
+		s_strLastTransferNumber = m_strNumber;
 }

@@ -126,6 +126,7 @@ PhoneDialer 4.4.0.13:
 - The event log shows when lineGetMessage starts waiting and whether it returned a message or timed out
 - The log follows new lines only while the last line is already visible
 - The log text is no longer cut off at 32767 characters
+- The consultation transfer dialog keeps the last number until ephone.exe exits
 
 Sourcecode contains all modifications, and the required ATAPI lib also provided from JulMar Technology.
 

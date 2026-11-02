@@ -238,6 +238,7 @@ copy X:\dev\global\include\ecstalinedevcaps.h $(ProjectDir)..\include\</Command>
     <ClCompile Include="Tapiaddr.cpp" />
     <ClCompile Include="Tapicall.cpp" />
     <ClCompile Include="Tapiconn.cpp" />
+    <ClCompile Include="TapiEventLog.cpp" />
     <ClCompile Include="Tapiline.cpp" />
     <ClCompile Include="tapiobj.cpp" />
     <ClCompile Include="Tapiphone.cpp" />
@@ -245,6 +246,7 @@ copy X:\dev\global\include\ecstalinedevcaps.h $(ProjectDir)..\include\</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\INCLUDE\Atapi.h" />
+    <ClInclude Include="..\include\TapiEventLog.h" />
     <ClInclude Include="..\include\ecstaext.h" />
     <ClInclude Include="..\include\ecstalinedevcaps.h" />
     <ClInclude Include="Stdafx.h" />

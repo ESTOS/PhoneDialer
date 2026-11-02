@@ -213,6 +213,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedFeatures();
 	afx_msg void OnBnClickedCompleteAsConference();
+	afx_msg void OnLog();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	void RefreshActiveCallFromLine();
 	void ShowF5Status(const CString& strText);

@@ -121,6 +121,12 @@ PhoneDialer 4.4.0.10:
 PhoneDialer 4.4.0.11:
 - F5 re-reads the active call from TAPI and reports on the status line whether the shown data changed
 
+PhoneDialer 4.4.0.13:
+- Log button opens a TAPI event window, numbers each message, and shows the call fields plus when a TAPI call has not returned
+- The event log shows when lineGetMessage starts waiting and whether it returned a message or timed out
+- The log follows new lines only while the last line is already visible
+- The log text is no longer cut off at 32767 characters
+
 Sourcecode contains all modifications, and the required ATAPI lib also provided from JulMar Technology.
 
 Sourcecode is available for download from https://github.com/ESTOS/PhoneDialer

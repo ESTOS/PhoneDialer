@@ -34,6 +34,7 @@
 #include "PredDialDlg.h"
 #include "QOSInfo.h"
 #include "SetupConfDlg.h"
+#include "TapiEventLogDlg.h"
 #include "TransferDlg.h"
 #include "UUIDlg.h"
 
@@ -331,6 +332,7 @@ BEGIN_MESSAGE_MAP(CPhoneDlg, CDialog)
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(IDC_FEATURES, OnBnClickedFeatures)
 	ON_BN_CLICKED(IDC_COMPLETECONFERENCE, &CPhoneDlg::OnBnClickedCompleteAsConference)
+	ON_BN_CLICKED(IDC_CMDLOG, OnLog)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -875,6 +877,7 @@ void CPhoneDlg::OnLoadLineInfo(CTapiLine* pLine)
 	m_btnStartSession.SetWindowText(_T("End Session"));
 	m_btnConfig.EnableWindow(TRUE);
 	m_edtNumber.EnableWindow(TRUE);
+	GetDlgItem(IDC_CMDLOG)->EnableWindow(TRUE);
 	m_btnPhoneInfo.EnableWindow(pLine->GetRelatedPhoneID() != 0xffffffff);
 
 	// Set our checkflags
@@ -1213,6 +1216,7 @@ void CPhoneDlg::NoLineSelected()
 	m_btnConfig.EnableWindow(FALSE);
 	m_btnPhoneInfo.EnableWindow(FALSE);
 	m_edtNumber.EnableWindow(FALSE);
+	GetDlgItem(IDC_CMDLOG)->EnableWindow(FALSE);
 
 	EnableLineButtons(0);
 
@@ -3662,6 +3666,13 @@ void CPhoneDlg::ShowF5Status(const CString& strText)
 {
 	SetDlgItemText(IDC_STATUS, strText);
 	m_bF5StatusHeld = true;
+}
+
+// Opens the TAPI event window. Recording starts with the first lineGetMessage,
+// so events from before the button click are already in the list.
+void CPhoneDlg::OnLog()
+{
+	CTapiEventLogDlg::Open();
 }
 
 BOOL CPhoneDlg::PreTranslateMessage(MSG* pMsg)

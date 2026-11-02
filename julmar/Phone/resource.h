@@ -204,14 +204,21 @@
 #define IDC_OPTION_4                    2067
 #define IDC_STATIC_NOT_READY            2069
 #define IDC_TXTNOTREADYDETAIL           2070
+#define IDC_CMDLOG                      2071
+#define IDC_TAPIEVENTTEXT               2072
+#define IDC_TAPIEVENTSTATUS             2073
+#define IDC_TAPIEVENTCOPY               2074
+#define IDC_TAPIEVENTSAVE               2075
+#define IDC_TAPIEVENTCLEAR              2076
+#define IDD_TAPIEVENTLOG                1114
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1114
+#define _APS_NEXT_RESOURCE_VALUE        1115
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2071
+#define _APS_NEXT_CONTROL_VALUE         2077
 #define _APS_NEXT_SYMED_VALUE           107
 #endif
 #endif
